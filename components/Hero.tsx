@@ -1,14 +1,19 @@
 import Link from 'next/link';
+import Image from 'next/image';
 
 export default function Hero() {
     return (
         <section className="relative w-full h-screen flex items-center justify-center overflow-hidden">
             {/* Background Image */}
             <div className="absolute inset-0">
-                <img
+                <Image
                     src="/img/piste.png"
                     alt="Race Track Background"
-                    className="w-full h-full object-cover"
+                    fill
+                    priority
+                    quality={90}
+                    sizes="100vw"
+                    className="object-cover"
                 />
                 {/* Overlay for better text readability */}
                 <div className="absolute inset-0 bg-black/20" />

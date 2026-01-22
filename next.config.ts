@@ -1,7 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  // Turbopack est utilisé par défaut maintenant, plus besoin de watchOptions webpack
 };
 
 export default nextConfig;
