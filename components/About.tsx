@@ -35,13 +35,13 @@ export default function About() {
             <div className="max-w-5xl w-full">
                 <div className="flex flex-col md:flex-row gap-12 items-start">
                     <div className="md:w-1/3">
-                        <h3 className="text-sm font-bold uppercase tracking-widest text-red-500 mb-4 border-l-2 border-red-500 pl-4">Our Mission</h3>
+                        <h3 className="text-sm font-bold uppercase tracking-widest text-red-500 mb-4 border-l-2 border-red-500 pl-4">C UN TRITRE H3</h3>
                     </div>
                     <div className="md:w-2/3">
                         <p ref={textRef} className="text-3xl md:text-5xl font-bold leading-tight text-white mb-8">
-                            We are building the ultimate information hub for the modern motorsport enthusiast.
+                            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt.
                             <span className="text-gray-400 block mt-8 text-xl md:text-2xl font-normal">
-                                From F1 to MotoGP, we dissect the machines, the strategy, and the business behind the speed.
+                                Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
                             </span>
                         </p>
                     </div>

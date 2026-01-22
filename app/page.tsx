@@ -12,7 +12,7 @@ export default function Home() {
 
       {/* 3D Section */}
       <section className="py-20 flex flex-col items-center justify-center text-white" id="model-section">
-        <h2 className="text-4xl font-bold tracking-tighter mb-10">TECH ANALYSIS <span className="text-red-600">COMING SOON</span></h2>
+        <h2 className="text-4xl font-bold tracking-tighter mb-10">TEST DE <span className="text-red-600">MODELE 3D bitch</span></h2>
         <Scene3D />
       </section>
     </main>
