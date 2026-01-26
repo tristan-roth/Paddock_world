@@ -1,0 +1,93 @@
+'use client'
+import { useEffect, useRef } from 'react'
+import Image from 'next/image'
+import gsap from 'gsap'
+
+interface LoadingIntroProps {
+    onComplete: () => void
+}
+
+export default function LoadingIntro({ onComplete }: LoadingIntroProps) {
+    const containerRef = useRef<HTMLDivElement>(null)
+    const imageRef = useRef<HTMLDivElement>(null)
+    const overlayBlackRef = useRef<HTMLDivElement>(null)
+    const hasAnimated = useRef(false)
+
+    useEffect(() => {
+        if (!hasAnimated.current && containerRef.current && imageRef.current && overlayBlackRef.current) {
+            hasAnimated.current = true
+            const timeline = gsap.timeline({
+                onComplete: () => {
+                    onComplete()
+                }
+            })
+
+            // État initial: fenêtre moyenne au centre avec image zoomée
+            gsap.set(containerRef.current, {
+                clipPath: `inset(calc(50% - 200px) calc(50% - 300px) calc(50% - 200px) calc(50% - 300px) round 16px)`,
+                opacity: 1
+            })
+            gsap.set(imageRef.current, {
+                scale: 1.4
+            })
+            gsap.set(overlayBlackRef.current, {
+                opacity: 1
+            })
+
+            timeline
+                // La fenêtre s'agrandit ET l'image dé-zoom en même temps
+                .to(containerRef.current,
+                    {
+                        clipPath: `inset(0% 0% 0% 0% round 0px)`,
+                        duration: 1.5,
+                        ease: "power4.inOut"
+                    },
+                    "expand"
+                )
+                .to(imageRef.current,
+                    {
+                        scale: 1,
+                        duration: 1.5,
+                        ease: "power4.inOut"
+                    },
+                    "expand"
+                )
+                // Petite pause avant de terminer
+                .to({}, { duration: 0.2 })
+                // Fade out simultané du container et de l'overlay
+                .to([containerRef.current, overlayBlackRef.current],
+                    { opacity: 0, duration: 0.4 }
+                )
+        }
+    }, [onComplete])
+
+    return (
+        <>
+            {/* Overlay noir qui entoure la fenêtre */}
+            <div
+                ref={overlayBlackRef}
+                className="fixed inset-0 z-[9998] bg-black pointer-events-none"
+            />
+
+            {/* Container avec l'image de fond */}
+            <div
+                ref={containerRef}
+                className="fixed inset-0 z-[9999] pointer-events-none overflow-hidden"
+            >
+                <div ref={imageRef} className="w-full h-full relative">
+                    <Image
+                        src="/img/piste.png"
+                        alt="Race Track Background"
+                        fill
+                        priority
+                        quality={90}
+                        sizes="100vw"
+                        className="object-cover"
+                    />
+                    {/* Overlay pour assombrir légèrement */}
+                    <div className="absolute inset-0 bg-black/20" />
+                </div>
+            </div>
+        </>
+    )
+}

@@ -1,15 +1,16 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import gsap from 'gsap';
 
 const sportsCategories = [
     {
         name: 'FORMULA 1',
         path: '/sports/f1',
-        image: '/img/f1-bg.jpg'
+        image: '/img/f1-bg.png'
     },
     {
         name: 'INDYCAR',
@@ -38,15 +39,20 @@ const sportsCategories = [
     },
 ];
 
-export default function Navbar() {
+interface NavbarProps {
+    shouldAnimate?: boolean
+}
+
+export default function Navbar({ shouldAnimate = false }: NavbarProps) {
     const pathname = usePathname();
     const [isScrolled, setIsScrolled] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [isSportsOpen, setIsSportsOpen] = useState(false);
+    const headerRef = useRef<HTMLElement>(null);
+    const [hasAnimated, setHasAnimated] = useState(false);
 
     const navItems = [
         { name: 'HOME', path: '/', hasDropdown: false },
-        { name: 'ABOUT', path: '/about', hasDropdown: false },
         { name: 'SPORTS', path: '/sports', hasDropdown: true },
         { name: 'CREATORS', path: '/creators', hasDropdown: false },
     ];
@@ -59,11 +65,28 @@ export default function Navbar() {
         return () => window.removeEventListener('scroll', handleScroll);
     }, []);
 
+    useEffect(() => {
+        if (shouldAnimate && headerRef.current && !hasAnimated) {
+            setHasAnimated(true);
+            gsap.fromTo(headerRef.current,
+                { opacity: 0, y: -50 },
+                {
+                    opacity: 1,
+                    y: 0,
+                    duration: 0.6,
+                    ease: "power3.out"
+                }
+            );
+        }
+    }, [shouldAnimate, hasAnimated]);
+
     return (
         <>
             <header
+                ref={headerRef}
                 className={`fixed top-0 left-0 w-full z-50 transition-all duration-500
-                    ${isScrolled ? 'bg-neutral-950/95 backdrop-blur-md' : 'bg-transparent'}`}
+                    ${isScrolled ? 'bg-[#060918]/95 backdrop-blur-md' : 'bg-transparent'}`}
+                style={{ opacity: 0, transform: 'translateY(-50px)' }}
             >
                 <div className="w-full px-8 md:px-16 h-24 flex items-center justify-between">
 
@@ -197,7 +220,7 @@ export default function Navbar() {
                 onMouseEnter={() => setIsSportsOpen(true)}
                 onMouseLeave={() => setIsSportsOpen(false)}
             >
-                <div className="bg-neutral-950/98 backdrop-blur-xl border-t border-white/10">
+                <div className="bg-[#060918]/98 backdrop-blur-xl border-t border-white/10">
                     <div className="w-full px-8 md:px-16 py-12">
                         <div className="grid grid-cols-3 gap-6">
                             {sportsCategories.map((category, index) => (
@@ -244,7 +267,7 @@ export default function Navbar() {
             </div>
 
             {/* Mobile Menu */}
-            <div className={`fixed inset-0 z-40 bg-neutral-950 transition-all duration-500 md:hidden
+            <div className={`fixed inset-0 z-40 bg-[#060918] transition-all duration-500 md:hidden
                 ${isMobileMenuOpen ? 'opacity-100 visible' : 'opacity-0 invisible'}`}
             >
                 <nav className="h-full flex flex-col items-center justify-center gap-8">
