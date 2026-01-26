@@ -88,7 +88,7 @@ export default function Navbar({ shouldAnimate = false }: NavbarProps) {
                     ${isScrolled ? 'bg-[#060918]/95 backdrop-blur-md' : 'bg-transparent'}`}
                 style={{ opacity: 0, transform: 'translateY(-50px)' }}
             >
-                <div className="w-full px-8 md:px-16 h-24 flex items-center justify-between">
+                <div className="w-full px-8 md:px-16 h-32 flex items-center justify-between">
 
                     {/* Navigation - Gauche */}
                     <nav className="hidden md:flex items-center gap-10 flex-1">
@@ -156,8 +156,8 @@ export default function Navbar({ shouldAnimate = false }: NavbarProps) {
                         <Image
                             src="/img/logo.png"
                             alt="Paddock World"
-                            width={260}
-                            height={85}
+                            width={300}
+                            height={100}
                             className="object-contain"
                             priority
                         />
@@ -214,7 +214,7 @@ export default function Navbar({ shouldAnimate = false }: NavbarProps) {
 
             {/* Sports Mega Menu Dropdown */}
             <div
-                className={`fixed top-24 left-0 w-full z-40 transition-all duration-500 overflow-hidden
+                className={`fixed top-32 left-0 w-full z-40 transition-all duration-700 overflow-hidden
                     ${isSportsOpen ? 'max-h-[700px] opacity-100' : 'max-h-0 opacity-0'}`}
                 style={{ transitionTimingFunction: 'cubic-bezier(0.19, 1, 0.22, 1)' }}
                 onMouseEnter={() => setIsSportsOpen(true)}
@@ -227,7 +227,7 @@ export default function Navbar({ shouldAnimate = false }: NavbarProps) {
                                 <Link
                                     key={category.name}
                                     href={category.path}
-                                    className={`group relative h-64 overflow-hidden transition-all duration-700
+                                    className={`group relative h-64 overflow-hidden transition-all duration-1000
                                         ${isSportsOpen ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}
                                     style={{
                                         transitionDelay: isSportsOpen ? `${index * 100}ms` : '0ms',
