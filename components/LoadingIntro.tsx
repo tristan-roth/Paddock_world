@@ -5,9 +5,10 @@ import gsap from 'gsap'
 
 interface LoadingIntroProps {
     onComplete: () => void
+    hideOverlay: boolean
 }
 
-export default function LoadingIntro({ onComplete }: LoadingIntroProps) {
+export default function LoadingIntro({ onComplete, hideOverlay }: LoadingIntroProps) {
     const containerRef = useRef<HTMLDivElement>(null)
     const imageRef = useRef<HTMLDivElement>(null)
     const overlayBlackRef = useRef<HTMLDivElement>(null)
@@ -54,12 +55,23 @@ export default function LoadingIntro({ onComplete }: LoadingIntroProps) {
                 )
                 // Petite pause avant de terminer
                 .to({}, { duration: 0.2 })
-                // Fade out simultané du container et de l'overlay
-                .to([containerRef.current, overlayBlackRef.current],
+                // Fade out uniquement du container (l'overlay reste visible)
+                .to(containerRef.current,
                     { opacity: 0, duration: 0.4 }
                 )
         }
     }, [onComplete])
+
+    // Gérer la disparition de l'overlay quand Hero commence son animation
+    useEffect(() => {
+        if (hideOverlay && overlayBlackRef.current) {
+            gsap.to(overlayBlackRef.current, {
+                opacity: 0,
+                duration: 0.5,
+                ease: "power2.inOut"
+            })
+        }
+    }, [hideOverlay])
 
     return (
         <>

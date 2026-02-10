@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, Playfair_Display, Russo_One, Shrikhand } from "next/font/google";
+import { Geist, Geist_Mono, Playfair_Display, Russo_One, Shrikhand, Barlow, Outfit } from "next/font/google";
 import "./globals.css";
 import SmoothScroll from "@/components/SmoothScroll";
+import Footer from "@/components/Footer";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -31,6 +32,18 @@ const shrikhand = Shrikhand({
   weight: "400",
 });
 
+const barlow = Barlow({
+  variable: "--font-barlow",
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+});
+
+const outfit = Outfit({
+  variable: "--font-outfit",
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700", "800"],
+});
+
 export const metadata: Metadata = {
   title: "Paddock World",
   description: "Immersive Motorsport Platform",
@@ -44,10 +57,11 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} ${playfair.variable} ${russoOne.variable} ${shrikhand.variable} antialiased bg-black`}
+        className={`${geistSans.variable} ${geistMono.variable} ${playfair.variable} ${russoOne.variable} ${shrikhand.variable} ${barlow.variable} ${outfit.variable} antialiased bg-black`}
       >
         <SmoothScroll>
           {children}
+          <Footer />
         </SmoothScroll>
       </body>
     </html>

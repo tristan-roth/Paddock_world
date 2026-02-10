@@ -8,319 +8,403 @@ import Navbar from '@/components/Navbar'
 
 gsap.registerPlugin(ScrollTrigger)
 
-// Données des équipes F1 2024
-const teams = [
+const f1Tabs = [
     {
-        name: 'Red Bull Racing',
-        color: '#1E41FF',
-        drivers: ['Max Verstappen', 'Sergio Pérez'],
-        logo: '/img/f1/redbull.png'
+        name: 'THE CHAMPIONSHIP',
+        path: '/sports/f1/championship',
+        subTabs: [
+            { name: 'The Drivers', anchor: 'drivers' },
+            { name: 'The Teams', anchor: 'teams' },
+            { name: 'The Calendar', anchor: 'calendar' },
+            { name: 'The Standings', anchor: 'standings' },
+        ],
     },
     {
-        name: 'Ferrari',
-        color: '#DC0000',
-        drivers: ['Charles Leclerc', 'Carlos Sainz'],
-        logo: '/img/f1/ferrari.png'
+        name: 'THE UNIVERS',
+        path: '/sports/f1/univers',
+        subTabs: [
+            { name: 'The History', anchor: 'history' },
+            { name: 'The Impact', anchor: 'impact' },
+            { name: 'The Fans', anchor: 'fans' },
+            { name: 'Follow a Race Week', anchor: 'race-week' },
+        ],
     },
     {
-        name: 'Mercedes',
-        color: '#00D2BE',
-        drivers: ['Lewis Hamilton', 'George Russell'],
-        logo: '/img/f1/mercedes.png'
+        name: 'MASTERING F1',
+        path: '/sports/f1/mastering',
+        subTabs: [
+            { name: 'The Rules', anchor: 'rules' },
+            { name: 'The Strategy', anchor: 'strategy' },
+            { name: 'The Technology', anchor: 'technology' },
+            { name: 'The Driving', anchor: 'driving' },
+        ],
     },
-    {
-        name: 'McLaren',
-        color: '#FF8700',
-        drivers: ['Lando Norris', 'Oscar Piastri'],
-        logo: '/img/f1/mclaren.png'
-    },
-]
-
-// Prochaines courses
-const upcomingRaces = [
-    { name: 'Grand Prix de Bahrain', date: '2 Mars 2025', circuit: 'Bahrain International Circuit', flag: '🇧🇭' },
-    { name: 'Grand Prix d\'Arabie Saoudite', date: '9 Mars 2025', circuit: 'Jeddah Corniche Circuit', flag: '🇸🇦' },
-    { name: 'Grand Prix d\'Australie', date: '23 Mars 2025', circuit: 'Albert Park Circuit', flag: '🇦🇺' },
 ]
 
 export default function F1Page() {
-    const heroRef = useRef<HTMLDivElement>(null)
+    const heroRef = useRef<HTMLElement>(null)
     const titleRef = useRef<HTMLHeadingElement>(null)
-    const subtitleRef = useRef<HTMLParagraphElement>(null)
-    const statsRef = useRef<HTMLDivElement>(null)
-    const teamsRef = useRef<HTMLDivElement>(null)
-    const [isLoaded, setIsLoaded] = useState(false)
+    const overlayRef = useRef<HTMLDivElement>(null)
+    const tabsRef = useRef<HTMLDivElement>(null)
+    const scrollArrowRef = useRef<HTMLDivElement>(null)
+    const bgImageRef = useRef<HTMLDivElement>(null)
+    const accrocheSectionRef = useRef<HTMLElement>(null)
+    const accrocheTextRef = useRef<HTMLDivElement>(null)
+    const redLineRef = useRef<HTMLDivElement>(null)
+
+    const [hoveredTab, setHoveredTab] = useState<number | null>(null)
 
     useEffect(() => {
-        setIsLoaded(true)
+        const ctx = gsap.context(() => {
+            // ── Entry timeline ──
+            const tl = gsap.timeline({ defaults: { ease: 'power4.out' } })
 
-        // Animation du titre
-        if (titleRef.current) {
-            gsap.fromTo(titleRef.current,
-                { opacity: 0, y: 100, scale: 0.9 },
-                {
-                    opacity: 1,
-                    y: 0,
-                    scale: 1,
-                    duration: 1.2,
-                    ease: "power4.out",
-                    delay: 0.3
-                }
+            // Title starts invisible
+            gsap.set(titleRef.current, { opacity: 0 })
+
+            // 1. Red block sweeps across to reveal FORMULA 1 (same as WELCOME on homepage)
+            tl.fromTo(
+                overlayRef.current,
+                { x: '-100%' },
+                { x: '100%', duration: 1.8, ease: 'power2.inOut' },
+                0.4
             )
-        }
+                // Text appears instantly at midpoint
+                .set(titleRef.current, { opacity: 1 }, 0.4 + 0.9)
 
-        // Animation du sous-titre
-        if (subtitleRef.current) {
-            gsap.fromTo(subtitleRef.current,
-                { opacity: 0, y: 50 },
-                {
-                    opacity: 1,
-                    y: 0,
-                    duration: 1,
-                    ease: "power3.out",
-                    delay: 0.6
-                }
+            // Red decorative line
+            tl.fromTo(
+                redLineRef.current,
+                { scaleX: 0 },
+                { scaleX: 1, duration: 0.9, ease: 'power3.inOut' },
+                1.5
             )
-        }
 
-        // Animation des stats
-        if (statsRef.current) {
-            const stats = statsRef.current.querySelectorAll('.stat-item')
-            gsap.fromTo(stats,
-                { opacity: 0, y: 30 },
-                {
-                    opacity: 1,
-                    y: 0,
-                    duration: 0.8,
-                    ease: "power3.out",
-                    stagger: 0.15,
-                    delay: 0.9
-                }
+            // Tab cards – stagger
+            const tabCards = tabsRef.current?.querySelectorAll('.f1-tab-card')
+            if (tabCards) {
+                tl.fromTo(
+                    tabCards,
+                    { opacity: 0, y: 50 },
+                    { opacity: 1, y: 0, duration: 0.7, stagger: 0.15, ease: 'power3.out' },
+                    1.7
+                )
+            }
+
+            // Scroll arrow
+            tl.fromTo(
+                scrollArrowRef.current,
+                { opacity: 0, y: -15 },
+                { opacity: 1, y: 0, duration: 0.6 },
+                2.2
             )
-        }
 
-        // Animation des équipes au scroll
-        if (teamsRef.current) {
-            const teamCards = teamsRef.current.querySelectorAll('.team-card')
-            gsap.fromTo(teamCards,
-                { opacity: 0, x: -100 },
-                {
-                    opacity: 1,
-                    x: 0,
-                    duration: 0.8,
-                    ease: "power3.out",
-                    stagger: 0.2,
+            // ── Parallax on hero background ──
+            gsap.to(bgImageRef.current, {
+                y: 120,
+                ease: 'none',
+                scrollTrigger: {
+                    trigger: heroRef.current,
+                    start: 'top top',
+                    end: 'bottom top',
+                    scrub: true,
+                },
+            })
+
+            // ── Accroche section animations ──
+            if (accrocheSectionRef.current) {
+                const revealBlocks = accrocheSectionRef.current.querySelectorAll('.reveal-block')
+                const accrocheTl = gsap.timeline({
                     scrollTrigger: {
-                        trigger: teamsRef.current,
-                        start: "top 75%",
-                        end: "top 25%",
+                        trigger: accrocheSectionRef.current,
+                        start: 'top 75%',
+                    },
+                })
+
+                revealBlocks.forEach((block, index) => {
+                    const text = block.querySelector('.reveal-text')
+                    const overlay = block.querySelector('.reveal-overlay')
+                    if (!text || !overlay) return
+
+                    gsap.set(text, { opacity: 0 })
+
+                    const revealStart = index * 0.25
+                    accrocheTl
+                        .fromTo(
+                            overlay,
+                            { x: '-100%' },
+                            { x: '100%', duration: 1.2, ease: 'power2.inOut' },
+                            revealStart
+                        )
+                        .set(text, { opacity: 1 }, revealStart + 0.6)
+                })
+
+                // Animate other elements (divider, cta) simply
+                const simpleElements = accrocheSectionRef.current.querySelectorAll('.accroche-simple-animate')
+                gsap.fromTo(simpleElements,
+                    { opacity: 0, y: 30 },
+                    {
+                        opacity: 1,
+                        y: 0,
+                        duration: 0.8,
+                        stagger: 0.2,
+                        scrollTrigger: {
+                            trigger: accrocheSectionRef.current,
+                            start: "top 75%"
+                        }
                     }
-                }
-            )
-        }
+                )
+            }
+        })
+
+        return () => ctx.revert()
     }, [])
 
     return (
-        <main className="relative w-full overflow-hidden bg-[#060918]">
-            <Navbar shouldAnimate={true} />
+        <main className="relative w-full overflow-hidden bg-[#0a0000]">
+            <Navbar shouldAnimate disableEntryAnimation />
 
-            {/* Hero Section */}
-            <section ref={heroRef} className="relative w-full min-h-screen flex items-center justify-center overflow-hidden">
-                {/* Background Image */}
-                <div className="absolute inset-0">
+            {/* ═══════════ HERO SECTION ═══════════ */}
+            <section
+                ref={heroRef as React.RefObject<HTMLElement>}
+                className="relative w-full h-screen flex flex-col items-center justify-center overflow-hidden"
+            >
+                {/* Background image + overlays */}
+                <div ref={bgImageRef} className="absolute inset-0 will-change-transform">
                     <Image
                         src="/img/f1-bg.png"
-                        alt="Formula 1 Background"
+                        alt="Formula 1 Car"
                         fill
                         priority
                         quality={90}
                         sizes="100vw"
-                        className="object-cover"
+                        className="object-cover object-center"
                     />
-                    {/* Overlay gradient */}
-                    <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-[#060918]" />
-                    <div className="absolute inset-0 bg-gradient-to-r from-red-900/20 via-transparent to-red-900/20" />
+                    <div
+                        className="absolute inset-0"
+                        style={{
+                            background:
+                                'linear-gradient(180deg, rgba(0,0,0,0.55) 0%, rgba(60,0,0,0.35) 40%, rgba(10,0,0,0.75) 100%)',
+                        }}
+                    />
+                    <div
+                        className="absolute inset-0"
+                        style={{
+                            background:
+                                'radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,0.7) 100%)',
+                        }}
+                    />
                 </div>
 
-                {/* F1 Racing stripes decoratives */}
-                <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-red-600 via-red-500 to-red-600" />
-                <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-red-600 to-transparent" />
-
-                {/* Content */}
-                <div className="relative z-10 flex flex-col items-center justify-center px-8 pt-32 pb-20 text-center">
-                    {/* Badge */}
-                    <div className="mb-8 px-6 py-2 border border-red-500/50 rounded-full backdrop-blur-sm bg-red-500/10">
-                        <span className="text-red-400 text-sm font-bold tracking-[0.3em] uppercase">Saison 2025</span>
+                {/* ── Content ── */}
+                <div className="relative z-10 flex flex-col items-center justify-center px-6 pt-32 pb-24 w-full max-w-7xl mx-auto">
+                    {/* Title with red block reveal */}
+                    <div className="relative overflow-hidden mb-4">
+                        <h1
+                            ref={titleRef}
+                            className="text-white text-[72px] md:text-[110px] lg:text-[140px] font-black tracking-[0.06em] leading-none select-none drop-shadow-2xl"
+                            style={{ fontFamily: 'var(--font-russo)', opacity: 0 }}
+                        >
+                            FORMULA{' '}
+                            <span className="text-purple-700">1</span>
+                        </h1>
+                        {/* Red sweeping overlay – same as WELCOME animation */}
+                        <div
+                            ref={overlayRef}
+                            className="absolute inset-0 bg-purple-800 z-10"
+                            style={{ transform: 'translateX(-100%)' }}
+                        />
                     </div>
 
-                    {/* Titre principal */}
-                    <h1
-                        ref={titleRef}
-                        className="text-white text-7xl md:text-9xl font-black tracking-tighter mb-6 drop-shadow-2xl"
-                        style={{ fontFamily: 'var(--font-russo)', opacity: 0 }}
-                    >
-                        <span className="text-red-500">F</span>ORMULA
-                        <span className="block md:inline md:ml-6 text-red-500">1</span>
-                    </h1>
+                    {/* Red decorative line */}
+                    <div
+                        ref={redLineRef}
+                        className="w-32 md:w-48 h-[3px] bg-purple-700 mb-14 origin-center"
+                        style={{ transform: 'scaleX(0)' }}
+                    />
 
-                    {/* Sous-titre */}
-                    <p
-                        ref={subtitleRef}
-                        className="text-gray-300 text-xl md:text-2xl max-w-3xl mx-auto mb-12 leading-relaxed"
-                        style={{ opacity: 0 }}
+                    {/* Tab Cards with hover sub-tabs */}
+                    <div
+                        ref={tabsRef}
+                        className="grid grid-cols-1 md:grid-cols-3 gap-5 md:gap-6 w-full max-w-5xl"
                     >
-                        Plongez au cœur du pinnacle du sport automobile mondial.
-                        Vitesse, technologie et passion à l'état pur.
-                    </p>
+                        {f1Tabs.map((tab, index) => (
+                            <div
+                                key={tab.name}
+                                className="f1-tab-card relative"
+                                style={{ opacity: 0 }}
+                                onMouseEnter={() => setHoveredTab(index)}
+                                onMouseLeave={() => setHoveredTab(null)}
+                            >
+                                {/* Main tab link */}
+                                <Link href={tab.path} className="block group">
+                                    <div
+                                        className={`relative overflow-hidden rounded-sm border bg-black/30 backdrop-blur-md
+                                                   px-6 py-5 md:px-8 md:py-6 text-center
+                                                   transition-all duration-500 ease-[cubic-bezier(0.19,1,0.22,1)]
+                                                   group-hover:bg-white/10 group-hover:scale-[1.03]
+                                                   group-hover:shadow-[0_0_40px_rgba(126,34,206,0.15)]
+                                                   ${hoveredTab === index ? 'border-white/80' : 'border-white/30'}`}
+                                    >
+                                        <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none"
+                                            style={{
+                                                background: 'radial-gradient(ellipse at center, rgba(126,34,206,0.08) 0%, transparent 70%)',
+                                            }}
+                                        />
+                                        <span
+                                            className="relative z-10 text-white text-sm md:text-base font-bold tracking-[0.2em] uppercase
+                                                       transition-colors duration-300 group-hover:text-purple-500"
+                                            style={{ fontFamily: 'var(--font-outfit)' }}
+                                        >
+                                            {tab.name}
+                                        </span>
+                                        <div className="absolute bottom-0 left-0 w-0 h-[2px] bg-purple-700 group-hover:w-full transition-all duration-500 ease-[cubic-bezier(0.19,1,0.22,1)]" />
+                                    </div>
+                                </Link>
 
-                    {/* Stats rapides */}
-                    <div ref={statsRef} className="flex flex-wrap justify-center gap-8 md:gap-16">
-                        <div className="stat-item text-center" style={{ opacity: 0 }}>
-                            <span className="block text-5xl md:text-6xl font-black text-white mb-2">24</span>
-                            <span className="text-gray-400 text-sm tracking-wider uppercase">Grands Prix</span>
-                        </div>
-                        <div className="stat-item text-center" style={{ opacity: 0 }}>
-                            <span className="block text-5xl md:text-6xl font-black text-white mb-2">10</span>
-                            <span className="text-gray-400 text-sm tracking-wider uppercase">Écuries</span>
-                        </div>
-                        <div className="stat-item text-center" style={{ opacity: 0 }}>
-                            <span className="block text-5xl md:text-6xl font-black text-white mb-2">20</span>
-                            <span className="text-gray-400 text-sm tracking-wider uppercase">Pilotes</span>
-                        </div>
-                        <div className="stat-item text-center" style={{ opacity: 0 }}>
-                            <span className="block text-5xl md:text-6xl font-black text-red-500 mb-2">370</span>
-                            <span className="text-gray-400 text-sm tracking-wider uppercase">Km/h Max</span>
-                        </div>
+                                {/* Sub-tabs dropdown on hover */}
+                                <div
+                                    className={`absolute left-0 right-0 top-full z-30 pt-2 transition-all duration-400 ease-[cubic-bezier(0.19,1,0.22,1)]
+                                               ${hoveredTab === index ? 'opacity-100 translate-y-0 pointer-events-auto' : 'opacity-0 -translate-y-2 pointer-events-none'}`}
+                                >
+                                    <div className="bg-black/80 backdrop-blur-xl border border-white/15 rounded-sm overflow-hidden shadow-2xl shadow-black/60">
+                                        {tab.subTabs.map((sub, subIdx) => (
+                                            <Link
+                                                key={sub.anchor}
+                                                href={`${tab.path}#${sub.anchor}`}
+                                                className="group/sub flex items-center gap-3 px-5 py-3 transition-all duration-300
+                                                           hover:bg-white/10"
+                                            >
+                                                <span className="w-1.5 h-1.5 rounded-full bg-purple-700/50 group-hover/sub:bg-purple-700 transition-colors duration-300" />
+                                                <span
+                                                    className="text-gray-400 text-xs md:text-sm tracking-wider uppercase
+                                                               group-hover/sub:text-white transition-colors duration-300"
+                                                    style={{ fontFamily: 'var(--font-barlow)' }}
+                                                >
+                                                    {sub.name}
+                                                </span>
+                                                <svg
+                                                    className="w-3 h-3 text-gray-600 ml-auto opacity-0 group-hover/sub:opacity-100 group-hover/sub:translate-x-0 -translate-x-2 transition-all duration-300"
+                                                    fill="none"
+                                                    viewBox="0 0 24 24"
+                                                    stroke="currentColor"
+                                                >
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                                </svg>
+                                            </Link>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
                     </div>
                 </div>
 
                 {/* Scroll indicator */}
-                <div className="absolute bottom-10 left-1/2 -translate-x-1/2 animate-bounce">
-                    <div className="w-8 h-12 rounded-full border-2 border-white/30 flex items-start justify-center pt-2">
-                        <div className="w-1 h-3 bg-red-500 rounded-full animate-pulse" />
+                <div ref={scrollArrowRef} className="absolute bottom-10 z-10" style={{ opacity: 0 }}>
+                    <div className="flex flex-col items-center gap-2 animate-bounce">
+                        <div className="w-10 h-10 rounded-full border-2 border-white/40 flex items-center justify-center backdrop-blur-sm">
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                strokeWidth={1.5}
+                                stroke="currentColor"
+                                className="w-5 h-5 text-white"
+                            >
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 13.5L12 21m0 0l-7.5-7.5M12 21V3" />
+                            </svg>
+                        </div>
                     </div>
                 </div>
+
+                {/* Top racing stripe */}
+                <div className="absolute top-0 left-0 w-full h-[3px] bg-gradient-to-r from-transparent via-purple-700 to-transparent" />
             </section>
 
-            {/* Section Équipes */}
-            <section className="relative py-24 px-8 md:px-16">
-                <div className="max-w-7xl mx-auto">
-                    {/* Titre de section */}
-                    <div className="mb-16">
-                        <h2 className="text-5xl md:text-6xl font-bold text-white tracking-tight mb-4" style={{ fontFamily: 'var(--font-russo)' }}>
-                            Les <span className="text-red-500">Écuries</span>
+            {/* ═══════════ ACCROCHE SECTION ═══════════ */}
+            <section
+                ref={accrocheSectionRef as React.RefObject<HTMLElement>}
+                className="relative py-28 md:py-40 px-8 md:px-16"
+                style={{
+                    background: 'linear-gradient(180deg, #0a0000 0%, #060918 40%, #0a0e27 100%)',
+                }}
+            >
+                <div
+                    className="absolute inset-0 opacity-[0.03] pointer-events-none"
+                    style={{
+                        backgroundImage:
+                            'linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)',
+                        backgroundSize: '60px 60px',
+                    }}
+                />
+
+                <div ref={accrocheTextRef} className="relative z-10 max-w-4xl mx-auto text-center">
+
+                    {/* Block Reveal for Main Title */}
+                    <div className="reveal-block relative inline-block mb-10 overflow-hidden">
+                        <h2
+                            className="reveal-text text-3xl md:text-5xl lg:text-6xl text-white font-normal leading-tight relative z-20"
+                            style={{ fontFamily: 'var(--font-playfair)', fontStyle: 'italic', opacity: 0 }}
+                        >
+                            So… you've found yourself here.
                         </h2>
-                        <p className="text-gray-400 text-lg max-w-2xl">
-                            Découvrez les équipes qui repoussent les limites de la technologie et de la performance.
-                        </p>
+                        <div
+                            className="reveal-overlay absolute inset-0 bg-purple-600 z-30"
+                            style={{ transform: 'translateX(-100%)' }}
+                        />
                     </div>
 
-                    {/* Grille des équipes */}
-                    <div ref={teamsRef} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                        {teams.map((team, index) => (
-                            <div
-                                key={team.name}
-                                className="team-card group relative overflow-hidden rounded-2xl bg-white/5 border border-white/10 backdrop-blur-sm p-6 hover:bg-white/10 transition-all duration-500 cursor-pointer"
+                    <div className="accroche-simple-animate flex items-center justify-center gap-4 mb-10" style={{ opacity: 0 }}>
+                        <div className="w-16 h-[1px] bg-gradient-to-r from-transparent to-purple-700" />
+                        <div className="w-2 h-2 rounded-full bg-purple-700" />
+                        <div className="w-16 h-[1px] bg-gradient-to-l from-transparent to-purple-700" />
+                    </div>
+
+                    {/* Line-by-line reveal for introduction paragraph */}
+                    <div className="max-w-3xl mx-auto mb-8 space-y-3">
+                        <div className="reveal-block relative overflow-hidden">
+                            <p
+                                className="reveal-text text-gray-400 text-lg md:text-xl leading-relaxed relative z-20"
                                 style={{ opacity: 0 }}
                             >
-                                {/* Accent line */}
-                                <div
-                                    className="absolute top-0 left-0 w-full h-1 transition-all duration-500"
-                                    style={{ backgroundColor: team.color }}
-                                />
-
-                                {/* Glow effect on hover */}
-                                <div
-                                    className="absolute inset-0 opacity-0 group-hover:opacity-20 transition-opacity duration-500"
-                                    style={{ background: `radial-gradient(circle at center, ${team.color}, transparent)` }}
-                                />
-
-                                {/* Content */}
-                                <div className="relative z-10">
-                                    <h3 className="text-2xl font-bold text-white mb-4 group-hover:translate-x-2 transition-transform duration-300">
-                                        {team.name}
-                                    </h3>
-                                    <div className="space-y-2">
-                                        {team.drivers.map((driver) => (
-                                            <p key={driver} className="text-gray-400 text-sm flex items-center gap-2">
-                                                <span className="w-2 h-2 rounded-full" style={{ backgroundColor: team.color }} />
-                                                {driver}
-                                            </p>
-                                        ))}
-                                    </div>
-                                </div>
-
-                                {/* Arrow icon */}
-                                <div className="absolute bottom-6 right-6 opacity-0 group-hover:opacity-100 transform translate-x-4 group-hover:translate-x-0 transition-all duration-300">
-                                    <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                                    </svg>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            </section>
-
-            {/* Section Calendrier */}
-            <section className="relative py-24 px-8 md:px-16 bg-gradient-to-b from-transparent to-black/50">
-                <div className="max-w-7xl mx-auto">
-                    {/* Titre de section */}
-                    <div className="mb-16 text-center">
-                        <h2 className="text-5xl md:text-6xl font-bold text-white tracking-tight mb-4" style={{ fontFamily: 'var(--font-russo)' }}>
-                            Prochaines <span className="text-red-500">Courses</span>
-                        </h2>
-                        <p className="text-gray-400 text-lg">
-                            Ne manquez aucun départ de la saison 2025
-                        </p>
-                    </div>
-
-                    {/* Liste des courses */}
-                    <div className="space-y-4">
-                        {upcomingRaces.map((race, index) => (
+                                Whether you're a lifelong fan who knows every championship battle, or someone who just discovered the thrill of lights out —
+                                <span className="text-white font-medium"> this is your paddock</span>.
+                            </p>
                             <div
-                                key={race.name}
-                                className="group relative overflow-hidden rounded-xl bg-white/5 border border-white/10 p-6 md:p-8 hover:bg-white/10 transition-all duration-500 cursor-pointer"
+                                className="reveal-overlay absolute inset-0 bg-purple-600 z-30"
+                                style={{ transform: 'translateX(-100%)' }}
+                            />
+                        </div>
+                        <div className="reveal-block relative overflow-hidden">
+                            <p
+                                className="reveal-text text-gray-400 text-lg md:text-xl leading-relaxed relative z-20"
+                                style={{ opacity: 0 }}
                             >
-                                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                                    {/* Info course */}
-                                    <div className="flex items-center gap-6">
-                                        <span className="text-4xl">{race.flag}</span>
-                                        <div>
-                                            <h3 className="text-xl md:text-2xl font-bold text-white group-hover:text-red-400 transition-colors duration-300">
-                                                {race.name}
-                                            </h3>
-                                            <p className="text-gray-500 text-sm">{race.circuit}</p>
-                                        </div>
-                                    </div>
-
-                                    {/* Date */}
-                                    <div className="flex items-center gap-4">
-                                        <span className="text-red-400 font-bold text-lg md:text-xl tracking-wide">
-                                            {race.date}
-                                        </span>
-                                        <div className="w-10 h-10 rounded-full border border-white/20 flex items-center justify-center group-hover:border-red-500 group-hover:bg-red-500/20 transition-all duration-300">
-                                            <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                                            </svg>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {/* Decorative line */}
-                                <div className="absolute bottom-0 left-0 w-0 h-[2px] bg-red-500 group-hover:w-full transition-all duration-500" />
-                            </div>
-                        ))}
+                                Dive into the history, the rivalries, the technology, and the raw emotion that make Formula 1 the greatest show on wheels.
+                            </p>
+                            <div
+                                className="reveal-overlay absolute inset-0 bg-purple-600 z-30"
+                                style={{ transform: 'translateX(-100%)' }}
+                            />
+                        </div>
                     </div>
 
-                    {/* CTA */}
-                    <div className="mt-12 text-center">
+                    <div className="accroche-simple-animate" style={{ opacity: 0 }}>
                         <Link
-                            href="/sports/f1/calendar"
-                            className="inline-flex items-center gap-3 px-8 py-4 bg-red-600 hover:bg-red-500 text-white font-bold text-lg rounded-full transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-red-500/30"
+                            href="/sports/f1/univers"
+                            className="group inline-flex items-center gap-3 px-8 py-4 border border-white/20 rounded-full
+                                       text-white font-semibold tracking-wider text-sm uppercase
+                                       transition-all duration-500 ease-[cubic-bezier(0.19,1,0.22,1)]
+                                       hover:border-purple-700 hover:bg-purple-700/10 hover:shadow-[0_0_30px_rgba(126,34,206,0.15)]"
                         >
-                            Voir le calendrier complet
-                            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            Start exploring
+                            <svg
+                                className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                            >
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
                             </svg>
                         </Link>
@@ -328,83 +412,7 @@ export default function F1Page() {
                 </div>
             </section>
 
-            {/* Section News / Articles */}
-            <section className="relative py-24 px-8 md:px-16">
-                <div className="max-w-7xl mx-auto">
-                    <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-6">
-                        <div>
-                            <h2 className="text-5xl md:text-6xl font-bold text-white tracking-tight mb-4" style={{ fontFamily: 'var(--font-russo)' }}>
-                                Dernières <span className="text-red-500">Actualités</span>
-                            </h2>
-                            <p className="text-gray-400 text-lg max-w-2xl">
-                                Restez informé de toutes les nouvelles du paddock
-                            </p>
-                        </div>
-                        <Link href="/sports/f1/news" className="text-red-400 hover:text-red-300 font-medium tracking-wide flex items-center gap-2 transition-colors">
-                            Toutes les actualités
-                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                            </svg>
-                        </Link>
-                    </div>
 
-                    {/* Grille d'articles */}
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        {/* Article 1 - Grand */}
-                        <div className="md:col-span-2 group relative overflow-hidden rounded-2xl bg-white/5 border border-white/10 aspect-[16/9] cursor-pointer">
-                            <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent z-10" />
-                            <Image
-                                src="/img/f1-bg.png"
-                                alt="Article F1"
-                                fill
-                                className="object-cover group-hover:scale-110 transition-transform duration-700"
-                            />
-                            <div className="absolute bottom-0 left-0 right-0 p-8 z-20">
-                                <span className="inline-block px-3 py-1 bg-red-600 text-white text-xs font-bold rounded-full mb-4">BREAKING</span>
-                                <h3 className="text-2xl md:text-3xl font-bold text-white mb-2 group-hover:text-red-400 transition-colors">
-                                    Les nouveautés techniques pour la saison 2025
-                                </h3>
-                                <p className="text-gray-400 line-clamp-2">
-                                    Découvrez toutes les évolutions réglementaires et techniques prévues pour cette nouvelle saison de Formule 1.
-                                </p>
-                            </div>
-                        </div>
-
-                        {/* Articles 2 & 3 */}
-                        <div className="space-y-6">
-                            <div className="group relative overflow-hidden rounded-2xl bg-white/5 border border-white/10 aspect-[4/3] cursor-pointer">
-                                <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent z-10" />
-                                <div className="absolute inset-0 bg-[#1E41FF]/30" />
-                                <div className="absolute bottom-0 left-0 right-0 p-6 z-20">
-                                    <span className="inline-block px-3 py-1 bg-blue-600 text-white text-xs font-bold rounded-full mb-3">RED BULL</span>
-                                    <h3 className="text-lg font-bold text-white group-hover:text-red-400 transition-colors">
-                                        Verstappen vise un quatrième titre consécutif
-                                    </h3>
-                                </div>
-                            </div>
-                            <div className="group relative overflow-hidden rounded-2xl bg-white/5 border border-white/10 aspect-[4/3] cursor-pointer">
-                                <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent z-10" />
-                                <div className="absolute inset-0 bg-[#DC0000]/30" />
-                                <div className="absolute bottom-0 left-0 right-0 p-6 z-20">
-                                    <span className="inline-block px-3 py-1 bg-red-700 text-white text-xs font-bold rounded-full mb-3">FERRARI</span>
-                                    <h3 className="text-lg font-bold text-white group-hover:text-red-400 transition-colors">
-                                        Ferrari dévoile sa nouvelle monoplace
-                                    </h3>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            {/* Footer de la page */}
-            <footer className="relative py-12 px-8 border-t border-white/10">
-                <div className="max-w-7xl mx-auto text-center">
-                    <p className="text-gray-500 text-sm">
-                        © 2025 Paddock World. Tous droits réservés.
-                    </p>
-                </div>
-            </footer>
         </main>
     )
 }

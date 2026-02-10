@@ -5,10 +5,10 @@ import gsap from 'gsap';
 
 interface HeroProps {
     startAnimation: boolean
-    onNavbarShow?: () => void
+    disableArrivalAnimation?: boolean
 }
 
-export default function Hero({ startAnimation, onNavbarShow }: HeroProps) {
+export default function Hero({ startAnimation, disableArrivalAnimation = false }: HeroProps) {
     const backgroundRef = useRef<HTMLDivElement>(null);
     const titleRef = useRef<HTMLHeadingElement>(null);
     const overlayRef = useRef<HTMLDivElement>(null);
@@ -17,6 +17,10 @@ export default function Hero({ startAnimation, onNavbarShow }: HeroProps) {
     const hasAnimatedRef = useRef(false);
 
     useEffect(() => {
+        if (disableArrivalAnimation) {
+            return;
+        }
+
         if (startAnimation && !hasAnimatedRef.current && backgroundRef.current && titleRef.current && overlayRef.current && arrowRef.current && sectionRef.current) {
             hasAnimatedRef.current = true;
 
@@ -27,34 +31,21 @@ export default function Hero({ startAnimation, onNavbarShow }: HeroProps) {
             gsap.set(titleRef.current, { opacity: 0 });
 
             timeline
-                // 1. Callback pour afficher le header
-                .call(() => {
-                    if (onNavbarShow) onNavbarShow();
-                })
-                // Pause pour laisser le header apparaître
-                .to({}, { duration: 0.3 })
-                // 2. Animation du bloc rouge traverse l'écran
+                // 1. Animation du bloc rouge traverse l'écran → WELCOME apparaît
                 .fromTo(overlayRef.current,
                     { x: '-100%' },
                     { x: '100%', duration: 1.8, ease: "power2.inOut" },
                     "reveal"
                 )
-                // Le texte apparaît instantanément quand le bloc commence à disparaître
-                .set(titleRef.current,
-                    { opacity: 1 },
-                    "reveal+=0.9"
-                )
-                // 3. Flèche apparaît
-                .fromTo(arrowRef.current,
-                    { opacity: 0, y: -20 },
-                    { opacity: 1, y: 0, duration: 0.6, ease: "power2.out" },
-                    "-=0.3"
-                );
+                .set(titleRef.current, { opacity: 1 }, "reveal+=0.9")
         }
-    }, [startAnimation, onNavbarShow]);
+    }, [startAnimation, disableArrivalAnimation]);
 
     return (
         <section ref={sectionRef} className="relative w-full h-screen flex items-center justify-center overflow-hidden">
+            {/* Top racing stripe */}
+            <div className="absolute top-0 left-0 w-full h-[3px] bg-gradient-to-r from-transparent via-purple-700 to-transparent z-50" />
+
             {/* Background Image */}
             <div ref={backgroundRef} className="absolute inset-0">
                 <Image
@@ -76,21 +67,29 @@ export default function Hero({ startAnimation, onNavbarShow }: HeroProps) {
                     <h1
                         ref={titleRef}
                         className="text-white text-[120px] md:text-[180px] font-normal tracking-wide leading-none drop-shadow-xl select-none"
-                        style={{ fontFamily: 'var(--font-shrikhand)', opacity: 0 }}
+                        style={{ fontFamily: 'var(--font-shrikhand)', opacity: disableArrivalAnimation ? 1 : 0 }}
                     >
                         WELCOME
                     </h1>
-                    {/* Overlay coloré qui traverse de gauche vers droite et masque/révèle le texte */}
-                    <div
-                        ref={overlayRef}
-                        className="absolute inset-0 bg-red-600 z-10"
-                        style={{ transform: 'translateX(-100%)' }}
-                    />
+                    {!disableArrivalAnimation && (
+                        <div
+                            ref={overlayRef}
+                            className="absolute inset-0 bg-purple-800 z-10"
+                            style={{ transform: 'translateX(-100%)' }}
+                        />
+                    )}
                 </div>
+
+                {/* Red decorative line */}
+                <div
+                    id="hero-line"
+                    className="w-32 md:w-48 h-[3px] bg-purple-700 mt-6 origin-center"
+                    style={{ transform: 'scaleX(0)' }}
+                />
             </div>
 
             {/* Scroll Indicator */}
-            <div ref={arrowRef} className="absolute bottom-10 z-10" style={{ opacity: 0 }}>
+            <div ref={arrowRef} className="absolute bottom-10 z-10" style={{ opacity: disableArrivalAnimation ? 1 : 0 }}>
                 <div className="w-12 h-12 rounded-full border-2 border-white flex items-center justify-center animate-bounce">
                     <svg
                         xmlns="http://www.w3.org/2000/svg"

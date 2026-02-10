@@ -41,15 +41,16 @@ const sportsCategories = [
 
 interface NavbarProps {
     shouldAnimate?: boolean
+    disableEntryAnimation?: boolean
 }
 
-export default function Navbar({ shouldAnimate = false }: NavbarProps) {
+export default function Navbar({ shouldAnimate = false, disableEntryAnimation = false }: NavbarProps) {
     const pathname = usePathname();
     const [isScrolled, setIsScrolled] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [isSportsOpen, setIsSportsOpen] = useState(false);
     const headerRef = useRef<HTMLElement>(null);
-    const [hasAnimated, setHasAnimated] = useState(false);
+    const hasAnimatedRef = useRef(false);
 
     const navItems = [
         { name: 'HOME', path: '/', hasDropdown: false },
@@ -66,8 +67,13 @@ export default function Navbar({ shouldAnimate = false }: NavbarProps) {
     }, []);
 
     useEffect(() => {
-        if (shouldAnimate && headerRef.current && !hasAnimated) {
-            setHasAnimated(true);
+        if (disableEntryAnimation && headerRef.current) {
+            gsap.set(headerRef.current, { opacity: 1, y: 0 });
+            return;
+        }
+
+        if (shouldAnimate && headerRef.current && !hasAnimatedRef.current) {
+            hasAnimatedRef.current = true;
             gsap.fromTo(headerRef.current,
                 { opacity: 0, y: -50 },
                 {
@@ -78,7 +84,7 @@ export default function Navbar({ shouldAnimate = false }: NavbarProps) {
                 }
             );
         }
-    }, [shouldAnimate, hasAnimated]);
+    }, [shouldAnimate, disableEntryAnimation]);
 
     return (
         <>
@@ -86,7 +92,10 @@ export default function Navbar({ shouldAnimate = false }: NavbarProps) {
                 ref={headerRef}
                 className={`fixed top-0 left-0 w-full z-50 transition-all duration-500
                     ${isScrolled ? 'bg-[#060918]/95 backdrop-blur-md' : 'bg-transparent'}`}
-                style={{ opacity: 0, transform: 'translateY(-50px)' }}
+                style={disableEntryAnimation
+                    ? { opacity: 1, transform: 'translateY(0)' }
+                    : { opacity: 0, transform: 'translateY(-50px)' }
+                }
             >
                 <div className="w-full px-8 md:px-16 h-32 flex items-center justify-between">
 
@@ -120,7 +129,7 @@ export default function Navbar({ shouldAnimate = false }: NavbarProps) {
                                             </svg>
                                             {/* Underline animé */}
                                             <span
-                                                className={`absolute -bottom-1 left-0 h-[2px] bg-red-500 transition-all duration-500 origin-left
+                                                className={`absolute -bottom-1 left-0 h-[2px] bg-purple-700 transition-all duration-500 origin-left
                                                     ${isActive || isSportsOpen ? 'w-full' : 'w-0 group-hover:w-full'}`}
                                                 style={{ transitionTimingFunction: 'cubic-bezier(0.19, 1, 0.22, 1)' }}
                                             />
@@ -142,7 +151,7 @@ export default function Navbar({ shouldAnimate = false }: NavbarProps) {
                                     </span>
                                     {/* Underline animé */}
                                     <span
-                                        className={`absolute -bottom-1 left-0 h-[2px] bg-red-500 transition-all duration-500 origin-left
+                                        className={`absolute -bottom-1 left-0 h-[2px] bg-purple-700 transition-all duration-500 origin-left
                                             ${isActive ? 'w-full' : 'w-0 group-hover:w-full'}`}
                                         style={{ transitionTimingFunction: 'cubic-bezier(0.19, 1, 0.22, 1)' }}
                                     />
@@ -173,7 +182,7 @@ export default function Navbar({ shouldAnimate = false }: NavbarProps) {
                                 ACCOUNT
                             </span>
                             <span
-                                className="absolute -bottom-1 left-0 h-[2px] bg-red-500 w-0 group-hover:w-full transition-all duration-500 origin-left"
+                                className="absolute -bottom-1 left-0 h-[2px] bg-purple-700 w-0 group-hover:w-full transition-all duration-500 origin-left"
                                 style={{ transitionTimingFunction: 'cubic-bezier(0.19, 1, 0.22, 1)' }}
                             />
                         </Link>
@@ -185,7 +194,7 @@ export default function Navbar({ shouldAnimate = false }: NavbarProps) {
                                 SHOP
                             </span>
                             <span
-                                className="absolute -bottom-1 left-0 h-[2px] bg-red-500 w-0 group-hover:w-full transition-all duration-500 origin-left"
+                                className="absolute -bottom-1 left-0 h-[2px] bg-purple-700 w-0 group-hover:w-full transition-all duration-500 origin-left"
                                 style={{ transitionTimingFunction: 'cubic-bezier(0.19, 1, 0.22, 1)' }}
                             />
                         </Link>
@@ -251,14 +260,14 @@ export default function Navbar({ shouldAnimate = false }: NavbarProps) {
                                                 {category.name}
                                             </h3>
                                             {/* Underline animé */}
-                                            <div className="h-[3px] bg-red-500 w-0 group-hover:w-full transition-all duration-500 origin-left"
+                                            <div className="h-[3px] bg-purple-700 w-0 group-hover:w-full transition-all duration-500 origin-left"
                                                 style={{ transitionTimingFunction: 'cubic-bezier(0.19, 1, 0.22, 1)' }}
                                             />
                                         </div>
                                     </div>
 
                                     {/* Border hover effect */}
-                                    <div className="absolute inset-0 border-2 border-transparent group-hover:border-red-500/50 transition-all duration-500" />
+                                    <div className="absolute inset-0 border-2 border-transparent group-hover:border-purple-700/50 transition-all duration-500" />
                                 </Link>
                             ))}
                         </div>
@@ -286,7 +295,7 @@ export default function Navbar({ shouldAnimate = false }: NavbarProps) {
                                     {item.name}
                                 </span>
                                 <span
-                                    className={`absolute -bottom-2 left-0 h-[2px] bg-red-500 transition-all duration-500 origin-left
+                                    className={`absolute -bottom-2 left-0 h-[2px] bg-purple-700 transition-all duration-500 origin-left
                                         ${isActive ? 'w-full' : 'w-0 group-hover:w-full'}`}
                                     style={{ transitionTimingFunction: 'cubic-bezier(0.19, 1, 0.22, 1)' }}
                                 />
@@ -303,7 +312,7 @@ export default function Navbar({ shouldAnimate = false }: NavbarProps) {
                                 ACCOUNT
                             </span>
                             <span
-                                className="absolute -bottom-1 left-0 h-[2px] bg-red-500 w-0 group-hover:w-full transition-all duration-500 origin-left"
+                                className="absolute -bottom-1 left-0 h-[2px] bg-purple-700 w-0 group-hover:w-full transition-all duration-500 origin-left"
                                 style={{ transitionTimingFunction: 'cubic-bezier(0.19, 1, 0.22, 1)' }}
                             />
                         </Link>
@@ -316,7 +325,7 @@ export default function Navbar({ shouldAnimate = false }: NavbarProps) {
                                 SHOP
                             </span>
                             <span
-                                className="absolute -bottom-1 left-0 h-[2px] bg-red-500 w-0 group-hover:w-full transition-all duration-500 origin-left"
+                                className="absolute -bottom-1 left-0 h-[2px] bg-purple-700 w-0 group-hover:w-full transition-all duration-500 origin-left"
                                 style={{ transitionTimingFunction: 'cubic-bezier(0.19, 1, 0.22, 1)' }}
                             />
                         </Link>
