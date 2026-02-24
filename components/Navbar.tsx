@@ -15,7 +15,7 @@ const sportsCategories = [
     {
         name: 'INDYCAR',
         path: '/sports/indycar',
-        image: '/img/indycar-bg.jpg'
+        image: '/img/indycar.png'
     },
     {
         name: 'MOTOGP',
@@ -49,6 +49,7 @@ export default function Navbar({ shouldAnimate = false, disableEntryAnimation = 
     const [isScrolled, setIsScrolled] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [isSportsOpen, setIsSportsOpen] = useState(false);
+    const [hoveredSportIndex, setHoveredSportIndex] = useState(0);
     const headerRef = useRef<HTMLElement>(null);
     const hasAnimatedRef = useRef(false);
 
@@ -221,56 +222,105 @@ export default function Navbar({ shouldAnimate = false, disableEntryAnimation = 
                 </div>
             </header>
 
-            {/* Sports Mega Menu Dropdown */}
+            {/* Sports Mega Menu — Split Screen Takeover */}
             <div
-                className={`fixed top-32 left-0 w-full z-40 transition-all duration-700 overflow-hidden
-                    ${isSportsOpen ? 'max-h-[700px] opacity-100' : 'max-h-0 opacity-0'}`}
-                style={{ transitionTimingFunction: 'cubic-bezier(0.19, 1, 0.22, 1)' }}
+                className={`fixed top-32 left-0 w-full z-40 transition-all duration-700
+                    ${isSportsOpen ? 'h-[calc(100vh-8rem)] opacity-100' : 'h-0 opacity-0'}`}
+                style={{
+                    transitionTimingFunction: 'cubic-bezier(0.19, 1, 0.22, 1)',
+                    overflow: isSportsOpen ? 'visible' : 'hidden'
+                }}
                 onMouseEnter={() => setIsSportsOpen(true)}
                 onMouseLeave={() => setIsSportsOpen(false)}
             >
-                <div className="bg-[#060918]/98 backdrop-blur-xl border-t border-white/10">
-                    <div className="w-full px-8 md:px-16 py-12">
-                        <div className="grid grid-cols-3 gap-6">
-                            {sportsCategories.map((category, index) => (
+                <div className="h-full bg-[#060918] border-t border-white/5 flex">
+
+                    {/* LEFT — Sports List */}
+                    <div className="w-full md:w-[45%] h-full flex flex-col justify-center px-8 md:px-16 py-10">
+                        {sportsCategories.map((category, index) => {
+                            const isHovered = hoveredSportIndex === index;
+                            return (
                                 <Link
                                     key={category.name}
                                     href={category.path}
-                                    className={`group relative h-64 overflow-hidden transition-all duration-1000
-                                        ${isSportsOpen ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}
+                                    className={`group relative block py-5 transition-all duration-700
+                                        ${isSportsOpen ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-12'}`}
                                     style={{
-                                        transitionDelay: isSportsOpen ? `${index * 100}ms` : '0ms',
+                                        transitionDelay: isSportsOpen ? `${200 + index * 80}ms` : '0ms',
                                         transitionTimingFunction: 'cubic-bezier(0.19, 1, 0.22, 1)'
                                     }}
+                                    onMouseEnter={() => setHoveredSportIndex(index)}
                                 >
-                                    {/* Background Image */}
-                                    <div className="absolute inset-0 bg-neutral-800">
-                                        <div
-                                            className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-110"
-                                            style={{ backgroundImage: `url(${category.image})` }}
-                                        />
-                                        {/* Overlay */}
-                                        <div className="absolute inset-0 bg-black/50 group-hover:bg-black/30 transition-all duration-500" />
-                                    </div>
-
-                                    {/* Content */}
-                                    <div className="relative h-full flex items-end p-8">
-                                        <div className="w-full">
-                                            <h3 className="text-white text-3xl font-bold tracking-tight mb-2 group-hover:translate-x-2 transition-transform duration-500">
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-baseline gap-5">
+                                            {/* Index */}
+                                            <span className={`text-xs font-mono tracking-[0.3em] transition-colors duration-500
+                                                ${isHovered ? 'text-purple-400' : 'text-white/20'}`}
+                                            >
+                                                0{index + 1}
+                                            </span>
+                                            {/* Sport Name */}
+                                            <h3
+                                                className={`text-3xl md:text-[42px] font-bold uppercase tracking-[0.08em] leading-none transition-all duration-500
+                                                    ${isHovered ? 'text-white translate-x-3' : 'text-white/30'}`}
+                                                style={{ fontFamily: 'var(--font-outfit)' }}
+                                            >
                                                 {category.name}
                                             </h3>
-                                            {/* Underline animé */}
-                                            <div className="h-[3px] bg-purple-700 w-0 group-hover:w-full transition-all duration-500 origin-left"
-                                                style={{ transitionTimingFunction: 'cubic-bezier(0.19, 1, 0.22, 1)' }}
-                                            />
                                         </div>
+
+                                        {/* Arrow */}
+                                        <svg
+                                            className={`w-6 h-6 transition-all duration-500
+                                                ${isHovered ? 'text-purple-400 translate-x-0 opacity-100' : 'text-white/10 -translate-x-3 opacity-0'}`}
+                                            fill="none"
+                                            viewBox="0 0 24 24"
+                                            stroke="currentColor"
+                                            strokeWidth={1.5}
+                                        >
+                                            <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12h15m0 0l-6.75-6.75M19.5 12l-6.75 6.75" />
+                                        </svg>
                                     </div>
 
-                                    {/* Border hover effect */}
-                                    <div className="absolute inset-0 border-2 border-transparent group-hover:border-purple-700/50 transition-all duration-500" />
+                                    {/* Animated underline */}
+                                    <div className="mt-4 h-[1px] w-full relative overflow-hidden">
+                                        <div className="absolute inset-0 bg-white/5" />
+                                        <div
+                                            className="absolute inset-y-0 left-0 bg-gradient-to-r from-purple-600 to-purple-400 transition-all duration-700 ease-out"
+                                            style={{
+                                                width: isHovered ? '100%' : '0%',
+                                                transitionTimingFunction: 'cubic-bezier(0.19, 1, 0.22, 1)'
+                                            }}
+                                        />
+                                    </div>
                                 </Link>
-                            ))}
-                        </div>
+                            );
+                        })}
+                    </div>
+
+                    {/* RIGHT — Dynamic Image Panel */}
+                    <div className="hidden md:block relative w-[55%] h-full overflow-hidden">
+                        {sportsCategories.map((category, index) => (
+                            <div
+                                key={category.name}
+                                className="absolute inset-0 transition-opacity duration-700 ease-in-out"
+                                style={{ opacity: hoveredSportIndex === index ? 1 : 0 }}
+                            >
+                                <div
+                                    className="absolute inset-0 bg-cover bg-center transition-transform duration-[1.5s] ease-out"
+                                    style={{
+                                        backgroundImage: `url(${category.image})`,
+                                        transform: hoveredSportIndex === index ? 'scale(1.05)' : 'scale(1)'
+                                    }}
+                                />
+                                {/* Gradient overlay for seamless blend */}
+                                <div className="absolute inset-0 bg-gradient-to-l from-transparent via-transparent to-[#060918]" />
+                                <div className="absolute inset-0 bg-gradient-to-t from-[#060918]/80 via-transparent to-[#060918]/40" />
+                            </div>
+                        ))}
+
+                        {/* Decorative purple line at the bottom of image panel */}
+                        <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-gradient-to-l from-purple-700 via-purple-500 to-transparent z-10" />
                     </div>
                 </div>
             </div>

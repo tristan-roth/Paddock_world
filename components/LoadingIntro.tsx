@@ -1,6 +1,5 @@
 'use client'
 import { useEffect, useRef } from 'react'
-import Image from 'next/image'
 import gsap from 'gsap'
 
 interface LoadingIntroProps {
@@ -87,14 +86,13 @@ export default function LoadingIntro({ onComplete, hideOverlay }: LoadingIntroPr
                 className="fixed inset-0 z-[9999] pointer-events-none overflow-hidden"
             >
                 <div ref={imageRef} className="w-full h-full relative">
-                    <Image
-                        src="/img/piste.png"
-                        alt="Race Track Background"
-                        fill
-                        priority
-                        quality={90}
-                        sizes="100vw"
-                        className="object-cover"
+                    <video
+                        src="/video/home.mp4"
+                        autoPlay
+                        loop
+                        muted
+                        playsInline
+                        className="absolute inset-0 w-full h-full object-cover"
                     />
                     {/* Overlay pour assombrir légèrement */}
                     <div className="absolute inset-0 bg-black/20" />

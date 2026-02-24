@@ -1,7 +1,9 @@
 'use client'
 import { useEffect, useRef } from 'react';
-import Image from 'next/image';
 import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+
+gsap.registerPlugin(ScrollTrigger);
 
 interface HeroProps {
     startAnimation: boolean
@@ -14,31 +16,70 @@ export default function Hero({ startAnimation, disableArrivalAnimation = false }
     const overlayRef = useRef<HTMLDivElement>(null);
     const arrowRef = useRef<HTMLDivElement>(null);
     const sectionRef = useRef<HTMLElement>(null);
-    const hasAnimatedRef = useRef(false);
-
+    const lineRef = useRef<HTMLDivElement>(null);
+    // Use gsap.context to properly handle animations and cleanup in React Strict Mode / Fast Refresh
     useEffect(() => {
-        if (disableArrivalAnimation) {
-            return;
-        }
+        if (!backgroundRef.current || !sectionRef.current) return;
 
-        if (startAnimation && !hasAnimatedRef.current && backgroundRef.current && titleRef.current && overlayRef.current && arrowRef.current && sectionRef.current) {
-            hasAnimatedRef.current = true;
+        const ctx = gsap.context(() => {
+            // Scroll animation for the oval bottom effect
+            const bg = backgroundRef.current;
+            if (bg) {
+                // Start with no clip-path (fully visible)
+                bg.style.clipPath = 'none';
 
-            // Séquence d'animation complète
-            const timeline = gsap.timeline();
+                ScrollTrigger.create({
+                    trigger: sectionRef.current,
+                    start: 'top top',
+                    end: 'bottom top',
+                    scrub: 0.5,
+                    onUpdate: (self) => {
+                        const progress = self.progress; // 0 → 1
+                        if (progress < 0.01) {
+                            bg.style.clipPath = 'none';
+                            return;
+                        }
+                        // Bottom border radius effect using border-radius approach
+                        // At progress 0: flat (no curve)
+                        // At progress 1: fully oval bottom
+                        const curveAmount = Math.round(progress * 50); // 0 to 50%
+                        bg.style.clipPath = 'none';
+                        bg.style.borderRadius = `0 0 ${curveAmount}% ${curveAmount}% / 0 0 ${Math.round(progress * 30)}% ${Math.round(progress * 30)}%`;
+                    },
+                });
+            }
 
-            // Le texte WELCOME est invisible au début
-            gsap.set(titleRef.current, { opacity: 0 });
+            // Entry Arrival Animation
+            if (!disableArrivalAnimation && startAnimation && titleRef.current && overlayRef.current && arrowRef.current && lineRef.current) {
+                const timeline = gsap.timeline();
 
-            timeline
-                // 1. Animation du bloc rouge traverse l'écran → WELCOME apparaît
-                .fromTo(overlayRef.current,
-                    { x: '-100%' },
-                    { x: '100%', duration: 1.8, ease: "power2.inOut" },
-                    "reveal"
-                )
-                .set(titleRef.current, { opacity: 1 }, "reveal+=0.9")
-        }
+                // Le texte WELCOME est invisible au début
+                gsap.set(titleRef.current, { opacity: 0 });
+
+                timeline
+                    // 1. Animation du bloc rouge traverse l'écran → WELCOME apparaît
+                    .fromTo(overlayRef.current,
+                        { x: '-100%' },
+                        { x: '100%', duration: 1.8, ease: "power2.inOut" },
+                        "reveal"
+                    )
+                    .set(titleRef.current, { opacity: 1 }, "reveal+=0.9")
+                    // 2. Animation de la ligne rouge
+                    .fromTo(lineRef.current,
+                        { scaleX: 0 },
+                        { scaleX: 1, duration: 0.9, ease: 'power3.inOut' },
+                        "reveal+=1.1"
+                    )
+                    // 3. Apparition de la flèche de scroll
+                    .fromTo(arrowRef.current,
+                        { opacity: 0, y: -15 },
+                        { opacity: 1, y: 0, duration: 0.6 },
+                        "reveal+=1.8"
+                    );
+            }
+        }, sectionRef);
+
+        return () => ctx.revert(); // Automatically kills ScrollTriggers and reverts timeline animations
     }, [startAnimation, disableArrivalAnimation]);
 
     return (
@@ -46,16 +87,15 @@ export default function Hero({ startAnimation, disableArrivalAnimation = false }
             {/* Top racing stripe */}
             <div className="absolute top-0 left-0 w-full h-[3px] bg-gradient-to-r from-transparent via-purple-700 to-transparent z-50" />
 
-            {/* Background Image */}
-            <div ref={backgroundRef} className="absolute inset-0">
-                <Image
-                    src="/img/piste.png"
-                    alt="Race Track Background"
-                    fill
-                    priority
-                    quality={90}
-                    sizes="100vw"
-                    className="object-cover"
+            {/* Background Video */}
+            <div ref={backgroundRef} className="absolute inset-0 overflow-hidden" style={{ zIndex: 0 }}>
+                <video
+                    src="/video/home.mp4"
+                    autoPlay
+                    loop
+                    muted
+                    playsInline
+                    className="absolute inset-0 w-full h-full object-cover"
                 />
                 {/* Overlay for better text readability */}
                 <div className="absolute inset-0 bg-black/20" />
@@ -82,6 +122,7 @@ export default function Hero({ startAnimation, disableArrivalAnimation = false }
 
                 {/* Red decorative line */}
                 <div
+                    ref={lineRef}
                     id="hero-line"
                     className="w-32 md:w-48 h-[3px] bg-purple-700 mt-6 origin-center"
                     style={{ transform: 'scaleX(0)' }}
