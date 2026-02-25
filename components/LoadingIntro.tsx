@@ -24,7 +24,7 @@ export default function LoadingIntro({ onComplete, hideOverlay }: LoadingIntroPr
 
             // État initial: fenêtre moyenne au centre avec image zoomée
             gsap.set(containerRef.current, {
-                clipPath: `inset(calc(50% - 200px) calc(50% - 300px) calc(50% - 200px) calc(50% - 300px) round 16px)`,
+                clipPath: `inset(25% 10% 25% 10% round 16px)`,
                 opacity: 1
             })
             gsap.set(imageRef.current, {

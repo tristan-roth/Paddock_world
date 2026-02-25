@@ -5,39 +5,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import gsap from 'gsap';
-
-const sportsCategories = [
-    {
-        name: 'FORMULA 1',
-        path: '/sports/f1',
-        image: '/img/f1-bg.png'
-    },
-    {
-        name: 'INDYCAR',
-        path: '/sports/indycar',
-        image: '/img/indycar.png'
-    },
-    {
-        name: 'MOTOGP',
-        path: '/sports/motogp',
-        image: '/img/motogp-bg.jpg'
-    },
-    {
-        name: 'WRC',
-        path: '/sports/wrc',
-        image: '/img/wrc-bg.jpg'
-    },
-    {
-        name: 'F1 ACADEMY',
-        path: '/sports/f1-academy',
-        image: '/img/f1-academy-bg.jpg'
-    },
-    {
-        name: 'SUPERMOT',
-        path: '/sports/supermot',
-        image: '/img/supermot-bg.jpg'
-    },
-];
+import { sportsCategories } from '@/data/sportsData';
 
 interface NavbarProps {
     shouldAnimate?: boolean
@@ -49,9 +17,11 @@ export default function Navbar({ shouldAnimate = false, disableEntryAnimation = 
     const [isScrolled, setIsScrolled] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [isSportsOpen, setIsSportsOpen] = useState(false);
+    const [isMobileSportsOpen, setIsMobileSportsOpen] = useState(false);
     const [hoveredSportIndex, setHoveredSportIndex] = useState(0);
     const headerRef = useRef<HTMLElement>(null);
     const hasAnimatedRef = useRef(false);
+    const mobileMenuRef = useRef<HTMLDivElement>(null);
 
     const navItems = [
         { name: 'HOME', path: '/', hasDropdown: false },
@@ -59,13 +29,40 @@ export default function Navbar({ shouldAnimate = false, disableEntryAnimation = 
         { name: 'CREATORS', path: '/creators', hasDropdown: false },
     ];
 
+    // Close mobile menu on scroll
     useEffect(() => {
         const handleScroll = () => {
             setIsScrolled(window.scrollY > 50);
+            if (isMobileMenuOpen && window.scrollY > 50) {
+                setIsMobileMenuOpen(false);
+                setIsMobileSportsOpen(false);
+            }
         };
         window.addEventListener('scroll', handleScroll);
         return () => window.removeEventListener('scroll', handleScroll);
+    }, [isMobileMenuOpen]);
+
+    // Close mobile menu on resize to desktop
+    useEffect(() => {
+        const handleResize = () => {
+            if (window.innerWidth >= 768) {
+                setIsMobileMenuOpen(false);
+                setIsMobileSportsOpen(false);
+            }
+        };
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
     }, []);
+
+    // Lock body scroll when mobile menu is open
+    useEffect(() => {
+        if (isMobileMenuOpen) {
+            document.body.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = '';
+        }
+        return () => { document.body.style.overflow = ''; };
+    }, [isMobileMenuOpen]);
 
     useEffect(() => {
         if (disableEntryAnimation && headerRef.current) {
@@ -87,6 +84,11 @@ export default function Navbar({ shouldAnimate = false, disableEntryAnimation = 
         }
     }, [shouldAnimate, disableEntryAnimation]);
 
+    const closeMobileMenu = () => {
+        setIsMobileMenuOpen(false);
+        setIsMobileSportsOpen(false);
+    };
+
     return (
         <>
             <header
@@ -98,7 +100,7 @@ export default function Navbar({ shouldAnimate = false, disableEntryAnimation = 
                     : { opacity: 0, transform: 'translateY(-50px)' }
                 }
             >
-                <div className="w-full px-8 md:px-16 h-32 flex items-center justify-between">
+                <div className="w-full px-4 sm:px-8 md:px-16 h-20 md:h-32 flex items-center justify-between">
 
                     {/* Navigation - Gauche */}
                     <nav className="hidden md:flex items-center gap-10 flex-1">
@@ -162,13 +164,13 @@ export default function Navbar({ shouldAnimate = false, disableEntryAnimation = 
                     </nav>
 
                     {/* Logo - Centre */}
-                    <Link href="/" className="relative z-50 shrink-0 mx-8">
+                    <Link href="/" className="relative z-50 shrink-0 mx-4 md:mx-8">
                         <Image
                             src="/img/logo.png"
                             alt="Paddock World"
                             width={300}
                             height={100}
-                            className="object-contain"
+                            className="object-contain w-[180px] sm:w-[220px] md:w-[300px]"
                             priority
                         />
                     </Link>
@@ -203,7 +205,10 @@ export default function Navbar({ shouldAnimate = false, disableEntryAnimation = 
 
                     {/* Mobile Menu Button */}
                     <button
-                        onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                        onClick={() => {
+                            setIsMobileMenuOpen(!isMobileMenuOpen);
+                            if (isMobileMenuOpen) setIsMobileSportsOpen(false);
+                        }}
                         className="md:hidden relative z-50 w-10 h-10 flex items-center justify-center"
                         aria-label="Menu"
                     >
@@ -222,9 +227,9 @@ export default function Navbar({ shouldAnimate = false, disableEntryAnimation = 
                 </div>
             </header>
 
-            {/* Sports Mega Menu — Split Screen Takeover */}
+            {/* Sports Mega Menu — Split Screen Takeover (Desktop) */}
             <div
-                className={`fixed top-32 left-0 w-full z-40 transition-all duration-700
+                className={`fixed top-32 left-0 w-full z-40 transition-all duration-700 hidden md:block
                     ${isSportsOpen ? 'h-[calc(100vh-8rem)] opacity-100' : 'h-0 opacity-0'}`}
                 style={{
                     transitionTimingFunction: 'cubic-bezier(0.19, 1, 0.22, 1)',
@@ -236,7 +241,7 @@ export default function Navbar({ shouldAnimate = false, disableEntryAnimation = 
                 <div className="h-full bg-[#060918] border-t border-white/5 flex">
 
                     {/* LEFT — Sports List */}
-                    <div className="w-full md:w-[45%] h-full flex flex-col justify-center px-8 md:px-16 py-10">
+                    <div className="w-[45%] h-full flex flex-col justify-center px-16 py-10">
                         {sportsCategories.map((category, index) => {
                             const isHovered = hoveredSportIndex === index;
                             return (
@@ -261,7 +266,7 @@ export default function Navbar({ shouldAnimate = false, disableEntryAnimation = 
                                             </span>
                                             {/* Sport Name */}
                                             <h3
-                                                className={`text-3xl md:text-[42px] font-bold uppercase tracking-[0.08em] leading-none transition-all duration-500
+                                                className={`text-[42px] font-bold uppercase tracking-[0.08em] leading-none transition-all duration-500
                                                     ${isHovered ? 'text-white translate-x-3' : 'text-white/30'}`}
                                                 style={{ fontFamily: 'var(--font-outfit)' }}
                                             >
@@ -299,7 +304,7 @@ export default function Navbar({ shouldAnimate = false, disableEntryAnimation = 
                     </div>
 
                     {/* RIGHT — Dynamic Image Panel */}
-                    <div className="hidden md:block relative w-[55%] h-full overflow-hidden">
+                    <div className="relative w-[55%] h-full overflow-hidden">
                         {sportsCategories.map((category, index) => (
                             <div
                                 key={category.name}
@@ -325,62 +330,133 @@ export default function Navbar({ shouldAnimate = false, disableEntryAnimation = 
                 </div>
             </div>
 
-            {/* Mobile Menu */}
-            <div className={`fixed inset-0 z-40 bg-[#060918] transition-all duration-500 md:hidden
-                ${isMobileMenuOpen ? 'opacity-100 visible' : 'opacity-0 invisible'}`}
+            {/* Mobile Dropdown Backdrop */}
+            <div
+                className={`fixed inset-0 z-30 bg-black/60 backdrop-blur-sm transition-opacity duration-300 md:hidden
+                    ${isMobileMenuOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
+                onClick={closeMobileMenu}
+            />
+
+            {/* Mobile Dropdown Menu */}
+            <div
+                ref={mobileMenuRef}
+                className={`fixed top-20 left-0 right-0 z-40 md:hidden transition-all duration-500 ease-[cubic-bezier(0.19,1,0.22,1)]
+                    ${isMobileMenuOpen ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-4 pointer-events-none'}`}
             >
-                <nav className="h-full flex flex-col items-center justify-center gap-8">
-                    {navItems.map((item) => {
-                        const isActive = pathname === item.path;
-                        return (
-                            <Link
-                                key={item.name}
-                                href={item.path}
-                                onClick={() => setIsMobileMenuOpen(false)}
-                                className="group relative"
-                            >
-                                <span className={`text-3xl font-medium tracking-tight transition-colors duration-300
-                                    ${isActive ? 'text-white' : 'text-gray-500 group-hover:text-white'}`}
+                <div className="mx-3 bg-[#0a0e27]/95 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl shadow-black/50 overflow-hidden max-h-[calc(100vh-6rem)] overflow-y-auto">
+                    {/* Navigation Links */}
+                    <nav className="py-2">
+                        {navItems.map((item) => {
+                            const isActive = pathname === item.path || pathname.startsWith(item.path + '/');
+
+                            if (item.hasDropdown) {
+                                return (
+                                    <div key={item.name}>
+                                        {/* Sports button with accordion */}
+                                        <button
+                                            onClick={() => setIsMobileSportsOpen(!isMobileSportsOpen)}
+                                            className="w-full flex items-center justify-between px-6 py-4 group"
+                                        >
+                                            <span className={`text-sm font-semibold tracking-[0.15em] uppercase transition-colors duration-300
+                                                ${isActive ? 'text-white' : 'text-gray-400'}`}
+                                            >
+                                                {item.name}
+                                            </span>
+                                            <svg
+                                                className={`w-4 h-4 text-gray-500 transition-transform duration-300
+                                                    ${isMobileSportsOpen ? 'rotate-180 text-purple-400' : ''}`}
+                                                fill="none"
+                                                viewBox="0 0 24 24"
+                                                stroke="currentColor"
+                                            >
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                            </svg>
+                                        </button>
+
+                                        {/* Sports sub-menu accordion */}
+                                        <div
+                                            className={`overflow-hidden transition-all duration-500 ease-[cubic-bezier(0.19,1,0.22,1)]
+                                                ${isMobileSportsOpen ? 'max-h-[500px] opacity-100' : 'max-h-0 opacity-0'}`}
+                                        >
+                                            <div className="px-4 pb-3">
+                                                {sportsCategories.map((sport, index) => (
+                                                    <Link
+                                                        key={sport.name}
+                                                        href={sport.path}
+                                                        onClick={closeMobileMenu}
+                                                        className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-white/5 transition-colors duration-200 group"
+                                                    >
+                                                        <span className="text-[10px] font-mono text-purple-500/60 tracking-wider">
+                                                            0{index + 1}
+                                                        </span>
+                                                        <span className="text-white text-sm font-medium tracking-wider uppercase">
+                                                            {sport.name}
+                                                        </span>
+                                                        <svg
+                                                            className="w-3.5 h-3.5 text-gray-600 group-hover:text-purple-400 transition-colors duration-200"
+                                                            fill="none"
+                                                            viewBox="0 0 24 24"
+                                                            stroke="currentColor"
+                                                            strokeWidth={1.5}
+                                                        >
+                                                            <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+                                                        </svg>
+                                                    </Link>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    </div>
+                                );
+                            }
+
+                            return (
+                                <Link
+                                    key={item.name}
+                                    href={item.path}
+                                    onClick={closeMobileMenu}
+                                    className="flex items-center px-6 py-4 group"
                                 >
-                                    {item.name}
-                                </span>
-                                <span
-                                    className={`absolute -bottom-2 left-0 h-[2px] bg-purple-700 transition-all duration-500 origin-left
-                                        ${isActive ? 'w-full' : 'w-0 group-hover:w-full'}`}
-                                    style={{ transitionTimingFunction: 'cubic-bezier(0.19, 1, 0.22, 1)' }}
-                                />
-                            </Link>
-                        );
-                    })}
-                    <div className="flex flex-col items-center gap-6 mt-8">
+                                    <span className={`text-sm font-semibold tracking-[0.15em] uppercase transition-colors duration-300
+                                        ${isActive ? 'text-white' : 'text-gray-400 group-hover:text-white'}`}
+                                    >
+                                        {item.name}
+                                    </span>
+                                </Link>
+                            );
+                        })}
+                    </nav>
+
+                    {/* Divider */}
+                    <div className="mx-6 h-[1px] bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+
+                    {/* Account & Shop */}
+                    <div className="py-3 px-6 flex items-center gap-6">
                         <Link
                             href="/account"
-                            onClick={() => setIsMobileMenuOpen(false)}
-                            className="group relative"
+                            onClick={closeMobileMenu}
+                            className="flex items-center gap-2 py-2 group"
                         >
-                            <span className="text-gray-400 text-lg tracking-wider group-hover:text-white transition-colors duration-300">
-                                ACCOUNT
+                            <svg className="w-4 h-4 text-gray-500 group-hover:text-purple-400 transition-colors duration-200" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+                            </svg>
+                            <span className="text-gray-400 text-xs tracking-[0.15em] uppercase group-hover:text-white transition-colors duration-200">
+                                Account
                             </span>
-                            <span
-                                className="absolute -bottom-1 left-0 h-[2px] bg-purple-700 w-0 group-hover:w-full transition-all duration-500 origin-left"
-                                style={{ transitionTimingFunction: 'cubic-bezier(0.19, 1, 0.22, 1)' }}
-                            />
                         </Link>
                         <Link
                             href="/shop"
-                            onClick={() => setIsMobileMenuOpen(false)}
-                            className="group relative"
+                            onClick={closeMobileMenu}
+                            className="flex items-center gap-2 py-2 group"
                         >
-                            <span className="text-gray-400 text-lg tracking-wider group-hover:text-white transition-colors duration-300">
-                                SHOP
+                            <svg className="w-4 h-4 text-gray-500 group-hover:text-purple-400 transition-colors duration-200" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 01-1.12-1.243l1.264-12A1.125 1.125 0 015.513 7.5h12.974c.576 0 1.059.435 1.119 1.007zM8.625 10.5a.375.375 0 11-.75 0 .375.375 0 01.75 0zm7.5 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
+                            </svg>
+                            <span className="text-gray-400 text-xs tracking-[0.15em] uppercase group-hover:text-white transition-colors duration-200">
+                                Shop
                             </span>
-                            <span
-                                className="absolute -bottom-1 left-0 h-[2px] bg-purple-700 w-0 group-hover:w-full transition-all duration-500 origin-left"
-                                style={{ transitionTimingFunction: 'cubic-bezier(0.19, 1, 0.22, 1)' }}
-                            />
                         </Link>
                     </div>
-                </nav>
+                </div>
             </div>
         </>
     );

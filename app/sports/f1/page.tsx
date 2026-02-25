@@ -202,7 +202,7 @@ export default function F1Page() {
                     <div className="relative overflow-hidden mb-4">
                         <h1
                             ref={titleRef}
-                            className="text-white text-[72px] md:text-[110px] lg:text-[140px] font-black tracking-[0.06em] leading-none select-none drop-shadow-2xl"
+                            className="text-white text-[48px] sm:text-[72px] md:text-[110px] lg:text-[140px] font-black tracking-[0.06em] leading-none select-none drop-shadow-2xl"
                             style={{ fontFamily: 'var(--font-russo)', opacity: 0 }}
                         >
                             FORMULA{' '}
@@ -325,7 +325,7 @@ export default function F1Page() {
             {/* ═══════════ ACCROCHE SECTION ═══════════ */}
             <section
                 ref={accrocheSectionRef as React.RefObject<HTMLElement>}
-                className="relative py-28 md:py-40 px-8 md:px-16"
+                className="relative py-16 sm:py-28 md:py-40 px-5 sm:px-8 md:px-16"
                 style={{
                     background: 'linear-gradient(180deg, #0a0000 0%, #060918 40%, #0a0e27 100%)',
                 }}
@@ -344,10 +344,10 @@ export default function F1Page() {
                     {/* Block Reveal for Main Title */}
                     <div className="reveal-block relative inline-block mb-10 overflow-hidden">
                         <h2
-                            className="reveal-text text-3xl md:text-5xl lg:text-6xl text-white font-normal leading-tight relative z-20"
+                            className="reveal-text text-2xl sm:text-3xl md:text-5xl lg:text-6xl text-white font-normal leading-tight relative z-20"
                             style={{ fontFamily: 'var(--font-playfair)', fontStyle: 'italic', opacity: 0 }}
                         >
-                            So… you've found yourself here.
+                            ✮ Welcome to the World of Formula&nbsp;1! ✮
                         </h2>
                         <div
                             className="reveal-overlay absolute inset-0 bg-purple-600 z-30"
@@ -361,27 +361,31 @@ export default function F1Page() {
                         <div className="w-16 h-[1px] bg-gradient-to-l from-transparent to-purple-700" />
                     </div>
 
-                    {/* Line-by-line reveal for introduction paragraph */}
-                    <div className="max-w-3xl mx-auto mb-8 space-y-3">
+                    {/* Welcome paragraphs */}
+                    <div className="max-w-3xl mx-auto mb-8 space-y-6 text-left">
                         <div className="reveal-block relative overflow-hidden">
                             <p
                                 className="reveal-text text-gray-400 text-lg md:text-xl leading-relaxed relative z-20"
                                 style={{ opacity: 0 }}
                             >
-                                Whether you're a lifelong fan who knows every championship battle, or someone who just discovered the thrill of lights out —
-                                <span className="text-white font-medium"> this is your paddock</span>.
+                                Whether your friends won't stop arguing about Norris vs Verstappen, or Netflix's{' '}
+                                <span className="text-white font-medium italic">Drive to Survive</span>{' '}roped you in with its chaotic team radios — or you're just curious
+                                about what makes people wake up at 7&nbsp;AM on a Sunday to watch 20&nbsp;cars race around weird-shaped circles,{' '}
+                                <span className="text-white font-medium">you're in the right place</span>.
                             </p>
                             <div
                                 className="reveal-overlay absolute inset-0 bg-purple-600 z-30"
                                 style={{ transform: 'translateX(-100%)' }}
                             />
                         </div>
+
                         <div className="reveal-block relative overflow-hidden">
                             <p
                                 className="reveal-text text-gray-400 text-lg md:text-xl leading-relaxed relative z-20"
                                 style={{ opacity: 0 }}
                             >
-                                Dive into the history, the rivalries, the technology, and the raw emotion that make Formula 1 the greatest show on wheels.
+                                F1 can seem intimidating — "undercut," "ERS deployment," "degradation" — but that's exactly why this guide exists: to break things down clearly, simply, and with a touch of fun.
+                                {' '}<span className="text-white font-medium">Let's start with the basics.</span>
                             </p>
                             <div
                                 className="reveal-overlay absolute inset-0 bg-purple-600 z-30"

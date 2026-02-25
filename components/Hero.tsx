@@ -102,11 +102,11 @@ export default function Hero({ startAnimation, disableArrivalAnimation = false }
             </div>
 
             {/* Content */}
-            <div className="relative z-10 flex flex-col items-center justify-center pt-20">
+            <div className="relative z-10 flex flex-col items-center justify-center pt-20 px-4">
                 <div className="relative overflow-hidden">
                     <h1
                         ref={titleRef}
-                        className="text-white text-[120px] md:text-[180px] font-normal tracking-wide leading-none drop-shadow-xl select-none"
+                        className="text-white text-[64px] sm:text-[100px] md:text-[180px] font-normal tracking-wide leading-none drop-shadow-xl select-none"
                         style={{ fontFamily: 'var(--font-shrikhand)', opacity: disableArrivalAnimation ? 1 : 0 }}
                     >
                         WELCOME
@@ -131,7 +131,7 @@ export default function Hero({ startAnimation, disableArrivalAnimation = false }
 
             {/* Scroll Indicator */}
             <div ref={arrowRef} className="absolute bottom-10 z-10" style={{ opacity: disableArrivalAnimation ? 1 : 0 }}>
-                <div className="w-12 h-12 rounded-full border-2 border-white flex items-center justify-center animate-bounce">
+                <div className="w-10 h-10 md:w-12 md:h-12 rounded-full border-2 border-white flex items-center justify-center animate-bounce">
                     <svg
                         xmlns="http://www.w3.org/2000/svg"
                         fill="none"

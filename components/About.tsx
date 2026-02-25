@@ -1,5 +1,5 @@
 'use client'
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useCallback, useState } from 'react'
 import Image from 'next/image'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
@@ -13,6 +13,51 @@ export default function About() {
     const bloc1Ref = useRef<HTMLDivElement>(null)
     const bloc2Ref = useRef<HTMLDivElement>(null)
     const portraitRef = useRef<HTMLDivElement>(null)
+    const gradientSpanRef = useRef<HTMLSpanElement>(null)
+    const mousePos = useRef({ x: 50, y: 50 })
+    const animatedPos = useRef({ x: 50, y: 50 })
+    const rafId = useRef<number>(0)
+
+    // Smooth mouse-reactive gradient with requestAnimationFrame
+    useEffect(() => {
+        const section = sectionRef.current
+        const span = gradientSpanRef.current
+        if (!section || !span) return
+
+        const onMouseMove = (e: MouseEvent) => {
+            const rect = section.getBoundingClientRect()
+            mousePos.current = {
+                x: ((e.clientX - rect.left) / rect.width) * 100,
+                y: ((e.clientY - rect.top) / rect.height) * 100,
+            }
+        }
+
+        const animate = () => {
+            // Lerp for smooth following
+            animatedPos.current.x += (mousePos.current.x - animatedPos.current.x) * 0.08
+            animatedPos.current.y += (mousePos.current.y - animatedPos.current.y) * 0.08
+
+            const { x, y } = animatedPos.current
+            const angle = 90 + (x - 50) * 1.2 // ±60° rotation
+            const glowIntensity = 0.6 + Math.abs(x - 50) / 100
+            const hueShift = Math.round(260 + (x - 50) * 0.8) // shift between purple/pink hues
+
+            span.style.backgroundImage = `linear-gradient(${angle}deg, #a855f7, #ec4899, #818cf8, #a855f7)`
+            span.style.backgroundSize = '300% 300%'
+            span.style.backgroundPosition = `${x}% ${y}%`
+            span.style.filter = `drop-shadow(0 0 ${12 + Math.abs(x - 50) * 0.4}px hsla(${hueShift}, 80%, 65%, ${glowIntensity}))`
+
+            rafId.current = requestAnimationFrame(animate)
+        }
+
+        section.addEventListener('mousemove', onMouseMove)
+        rafId.current = requestAnimationFrame(animate)
+
+        return () => {
+            section.removeEventListener('mousemove', onMouseMove)
+            cancelAnimationFrame(rafId.current)
+        }
+    }, [])
 
     useEffect(() => {
         // Animation du titre principal (block reveal horizontal)
@@ -102,10 +147,22 @@ export default function About() {
             <div className="reveal-block relative overflow-hidden">
                 <h2
                     ref={titleRef}
-                    className="reveal-text text-6xl md:text-8xl font-normal text-white tracking-wider uppercase text-center relative z-20"
+                    className="reveal-text text-5xl sm:text-6xl md:text-8xl font-normal text-white tracking-wider uppercase text-center relative z-20"
                     style={{ fontFamily: 'var(--font-russo)', opacity: 0 }}
                 >
-                    What is Paddock World?
+                    What is{' '}
+                    <span
+                        ref={gradientSpanRef}
+                        className="bg-clip-text text-transparent"
+                        style={{
+                            backgroundImage: 'linear-gradient(90deg, #a855f7, #ec4899, #818cf8, #a855f7)',
+                            backgroundSize: '300% 300%',
+                            backgroundPosition: '50% 50%',
+                        }}
+                    >
+                        Paddock World
+                    </span>
+                    ?
                 </h2>
                 <div
                     ref={titleOverlayRef}

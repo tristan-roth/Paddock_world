@@ -24,7 +24,7 @@ function RotatingCube() {
 
 export default function Scene3D() {
     return (
-        <div className="w-full h-[400px] bg-neutral-900">
+        <div className="w-full h-[250px] md:h-[400px] bg-neutral-900">
             <Canvas camera={{ position: [0, 0, 5] }}>
                 <Suspense fallback={null}>
                     <ambientLight intensity={0.5} />
