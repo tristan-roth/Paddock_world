@@ -1,28 +1,30 @@
 'use client'
-import { useEffect, useRef, useCallback, useState } from 'react'
+import { useEffect, useRef, useState, useCallback, useMemo } from 'react'
 import Image from 'next/image'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
+import RevealText, { Token } from './RevealText'
 
 gsap.registerPlugin(ScrollTrigger)
 
 export default function About() {
     const sectionRef = useRef<HTMLDivElement>(null)
-    const titleRef = useRef<HTMLHeadingElement>(null)
-    const titleOverlayRef = useRef<HTMLDivElement>(null)
     const bloc1Ref = useRef<HTMLDivElement>(null)
     const bloc2Ref = useRef<HTMLDivElement>(null)
     const portraitRef = useRef<HTMLDivElement>(null)
-    const gradientSpanRef = useRef<HTMLSpanElement>(null)
+    const gradientSpansRef = useRef<HTMLSpanElement[]>([])
     const mousePos = useRef({ x: 50, y: 50 })
     const animatedPos = useRef({ x: 50, y: 50 })
     const rafId = useRef<number>(0)
 
-    // Smooth mouse-reactive gradient with requestAnimationFrame
-    useEffect(() => {
+    const handleGradientSpansReady = useCallback((spans: HTMLSpanElement[]) => {
+        gradientSpansRef.current = spans
+        // Start mouse-reactive gradient animation
         const section = sectionRef.current
-        const span = gradientSpanRef.current
-        if (!section || !span) return
+        if (!section || spans.length === 0) return
+
+        // Cancel any existing animation
+        cancelAnimationFrame(rafId.current)
 
         const onMouseMove = (e: MouseEvent) => {
             const rect = section.getBoundingClientRect()
@@ -33,53 +35,34 @@ export default function About() {
         }
 
         const animate = () => {
-            // Lerp for smooth following
-            animatedPos.current.x += (mousePos.current.x - animatedPos.current.x) * 0.08
-            animatedPos.current.y += (mousePos.current.y - animatedPos.current.y) * 0.08
+            animatedPos.current.x += (mousePos.current.x - animatedPos.current.x) * 0.04
+            animatedPos.current.y += (mousePos.current.y - animatedPos.current.y) * 0.04
 
             const { x, y } = animatedPos.current
-            const angle = 90 + (x - 50) * 1.2 // ±60° rotation
-            const glowIntensity = 0.6 + Math.abs(x - 50) / 100
-            const hueShift = Math.round(260 + (x - 50) * 0.8) // shift between purple/pink hues
+            const angle = 90 + (x - 50) * 0.6
 
-            span.style.backgroundImage = `linear-gradient(${angle}deg, #a855f7, #ec4899, #818cf8, #a855f7)`
-            span.style.backgroundSize = '300% 300%'
-            span.style.backgroundPosition = `${x}% ${y}%`
-            span.style.filter = `drop-shadow(0 0 ${12 + Math.abs(x - 50) * 0.4}px hsla(${hueShift}, 80%, 65%, ${glowIntensity}))`
+            gradientSpansRef.current.forEach(span => {
+                span.style.backgroundImage = `linear-gradient(${angle}deg, #c084fc, #a855f7, #7c3aed, #a855f7)`
+                span.style.backgroundSize = '250% 250%'
+                span.style.backgroundPosition = `${x}% ${y}%`
+                span.style.filter = 'none'
+            })
 
             rafId.current = requestAnimationFrame(animate)
         }
 
         section.addEventListener('mousemove', onMouseMove)
         rafId.current = requestAnimationFrame(animate)
+    }, [])
 
+    // Cleanup animation frame on unmount
+    useEffect(() => {
         return () => {
-            section.removeEventListener('mousemove', onMouseMove)
             cancelAnimationFrame(rafId.current)
         }
     }, [])
 
     useEffect(() => {
-        // Animation du titre principal (block reveal horizontal)
-        if (titleRef.current && titleOverlayRef.current) {
-            gsap.set(titleRef.current, { opacity: 0 })
-
-            const titleTl = gsap.timeline({
-                scrollTrigger: {
-                    trigger: titleRef.current,
-                    start: 'top 75%',
-                },
-            })
-
-            titleTl
-                .fromTo(
-                    titleOverlayRef.current,
-                    { x: '-100%' },
-                    { x: '100%', duration: 1.2, ease: 'power2.inOut' }
-                )
-                .set(titleRef.current, { opacity: 1 }, 0.6)
-        }
-
         // Animation du premier bloc (arrive de la gauche)
         if (bloc1Ref.current) {
             gsap.fromTo(bloc1Ref.current,
@@ -141,35 +124,30 @@ export default function About() {
         }
     }, [])
 
+    const titleTokens: Token[] = useMemo(() => [
+        { text: 'What', type: 'normal', spaceBefore: false },
+        { text: 'is', type: 'normal', spaceBefore: true },
+        { text: 'Paddock', type: 'gradient', spaceBefore: true },
+        { text: 'World', type: 'gradient', spaceBefore: true },
+        { text: '?', type: 'normal', spaceBefore: false },
+    ], [])
+
     return (
         <section ref={sectionRef} className="min-h-screen flex flex-col items-center justify-center p-8 md:p-20 relative z-10 gap-24" id="about">
-            {/* Titre principal */}
-            <div className="reveal-block relative overflow-hidden">
-                <h2
-                    ref={titleRef}
-                    className="reveal-text text-5xl sm:text-6xl md:text-8xl font-normal text-white tracking-wider uppercase text-center relative z-20"
-                    style={{ fontFamily: 'var(--font-russo)', opacity: 0 }}
-                >
-                    What is{' '}
-                    <span
-                        ref={gradientSpanRef}
-                        className="bg-clip-text text-transparent"
-                        style={{
-                            backgroundImage: 'linear-gradient(90deg, #a855f7, #ec4899, #818cf8, #a855f7)',
-                            backgroundSize: '300% 300%',
-                            backgroundPosition: '50% 50%',
-                        }}
-                    >
-                        Paddock World
-                    </span>
-                    ?
-                </h2>
-                <div
-                    ref={titleOverlayRef}
-                    className="reveal-overlay absolute inset-0 bg-purple-600 z-30"
-                    style={{ transform: 'translateX(-100%)' }}
-                />
-            </div>
+            {/* Titre principal — animation ligne par ligne */}
+            <RevealText
+                as="h2"
+                tokens={titleTokens}
+                className="text-5xl sm:text-6xl md:text-8xl font-normal text-white tracking-wider uppercase text-center relative z-20"
+                style={{ fontFamily: 'var(--font-russo)' }}
+                onGradientSpansReady={handleGradientSpansReady}
+                gradientStyle={{
+                    fontFamily: 'var(--font-playfair)',
+                    backgroundImage: 'linear-gradient(90deg, #c084fc, #a855f7, #7c3aed, #a855f7)',
+                    backgroundSize: '250% 250%',
+                    backgroundPosition: '50% 50%',
+                }}
+            />
 
             <div className="max-w-6xl w-full">
                 {/* Premier bloc : Titre à gauche, texte à droite */}

@@ -4,6 +4,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
+import RevealText from '@/components/RevealText'
 import Navbar from '@/components/Navbar'
 
 gsap.registerPlugin(ScrollTrigger)
@@ -113,31 +114,6 @@ export default function F1Page() {
 
             // ── Accroche section animations ──
             if (accrocheSectionRef.current) {
-                const revealBlocks = accrocheSectionRef.current.querySelectorAll('.reveal-block')
-                const accrocheTl = gsap.timeline({
-                    scrollTrigger: {
-                        trigger: accrocheSectionRef.current,
-                        start: 'top 75%',
-                    },
-                })
-
-                revealBlocks.forEach((block, index) => {
-                    const text = block.querySelector('.reveal-text')
-                    const overlay = block.querySelector('.reveal-overlay')
-                    if (!text || !overlay) return
-
-                    gsap.set(text, { opacity: 0 })
-
-                    const revealStart = index * 0.25
-                    accrocheTl
-                        .fromTo(
-                            overlay,
-                            { x: '-100%' },
-                            { x: '100%', duration: 1.2, ease: 'power2.inOut' },
-                            revealStart
-                        )
-                        .set(text, { opacity: 1 }, revealStart + 0.6)
-                })
 
                 // Animate other elements (divider, cta) simply
                 const simpleElements = accrocheSectionRef.current.querySelectorAll('.accroche-simple-animate')
@@ -342,18 +318,19 @@ export default function F1Page() {
                 <div ref={accrocheTextRef} className="relative z-10 max-w-4xl mx-auto text-center">
 
                     {/* Block Reveal for Main Title */}
-                    <div className="reveal-block relative inline-block mb-10 overflow-hidden">
-                        <h2
-                            className="reveal-text text-2xl sm:text-3xl md:text-5xl lg:text-6xl text-white font-normal leading-tight relative z-20"
-                            style={{ fontFamily: 'var(--font-playfair)', fontStyle: 'italic', opacity: 0 }}
-                        >
-                            ✮ Welcome to the World of Formula&nbsp;1! ✮
-                        </h2>
-                        <div
-                            className="reveal-overlay absolute inset-0 bg-purple-600 z-30"
-                            style={{ transform: 'translateX(-100%)' }}
-                        />
-                    </div>
+                    <RevealText
+                        as="h2"
+                        className="mb-10 text-2xl sm:text-3xl md:text-5xl lg:text-6xl text-white font-normal leading-tight relative z-20"
+                        style={{ fontFamily: 'var(--font-playfair)', fontStyle: 'italic' }}
+                        tokens={[
+                            { text: '✮ Welcome', type: 'normal', spaceBefore: false },
+                            { text: 'to', type: 'normal', spaceBefore: true },
+                            { text: 'the', type: 'normal', spaceBefore: true },
+                            { text: 'World', type: 'normal', spaceBefore: true },
+                            { text: 'of', type: 'normal', spaceBefore: true },
+                            { text: 'Formula 1! ✮', type: 'normal', spaceBefore: true },
+                        ]}
+                    />
 
                     <div className="accroche-simple-animate flex items-center justify-center gap-4 mb-10" style={{ opacity: 0 }}>
                         <div className="w-16 h-[1px] bg-gradient-to-r from-transparent to-purple-700" />
@@ -363,35 +340,95 @@ export default function F1Page() {
 
                     {/* Welcome paragraphs */}
                     <div className="max-w-3xl mx-auto mb-8 space-y-6 text-left">
-                        <div className="reveal-block relative overflow-hidden">
-                            <p
-                                className="reveal-text text-gray-400 text-lg md:text-xl leading-relaxed relative z-20"
-                                style={{ opacity: 0 }}
-                            >
-                                Whether your friends won't stop arguing about Norris vs Verstappen, or Netflix's{' '}
-                                <span className="text-white font-medium italic">Drive to Survive</span>{' '}roped you in with its chaotic team radios — or you're just curious
-                                about what makes people wake up at 7&nbsp;AM on a Sunday to watch 20&nbsp;cars race around weird-shaped circles,{' '}
-                                <span className="text-white font-medium">you're in the right place</span>.
-                            </p>
-                            <div
-                                className="reveal-overlay absolute inset-0 bg-purple-600 z-30"
-                                style={{ transform: 'translateX(-100%)' }}
-                            />
-                        </div>
+                        <RevealText
+                            as="p"
+                            className="text-gray-400 text-lg md:text-xl leading-relaxed relative z-20"
+                            tokens={[
+                                { text: "Whether", type: "normal", spaceBefore: false },
+                                { text: "your", type: "normal", spaceBefore: true },
+                                { text: "friends", type: "normal", spaceBefore: true },
+                                { text: "won't", type: "normal", spaceBefore: true },
+                                { text: "stop", type: "normal", spaceBefore: true },
+                                { text: "arguing", type: "normal", spaceBefore: true },
+                                { text: "about", type: "normal", spaceBefore: true },
+                                { text: "Norris", type: "normal", spaceBefore: true },
+                                { text: "vs", type: "normal", spaceBefore: true },
+                                { text: "Verstappen,", type: "normal", spaceBefore: true },
+                                { text: "or", type: "normal", spaceBefore: true },
+                                { text: "Netflix's", type: "normal", spaceBefore: true },
+                                { text: "Drive to Survive", type: "highlight", spaceBefore: true },
+                                { text: "roped", type: "normal", spaceBefore: true },
+                                { text: "you", type: "normal", spaceBefore: true },
+                                { text: "in", type: "normal", spaceBefore: true },
+                                { text: "with", type: "normal", spaceBefore: true },
+                                { text: "its", type: "normal", spaceBefore: true },
+                                { text: "chaotic", type: "normal", spaceBefore: true },
+                                { text: "team", type: "normal", spaceBefore: true },
+                                { text: "radios", type: "normal", spaceBefore: true },
+                                { text: "—", type: "normal", spaceBefore: true },
+                                { text: "or", type: "normal", spaceBefore: true },
+                                { text: "you're", type: "normal", spaceBefore: true },
+                                { text: "just", type: "normal", spaceBefore: true },
+                                { text: "curious", type: "normal", spaceBefore: true },
+                                { text: "about", type: "normal", spaceBefore: true },
+                                { text: "what", type: "normal", spaceBefore: true },
+                                { text: "makes", type: "normal", spaceBefore: true },
+                                { text: "people", type: "normal", spaceBefore: true },
+                                { text: "wake", type: "normal", spaceBefore: true },
+                                { text: "up", type: "normal", spaceBefore: true },
+                                { text: "at", type: "normal", spaceBefore: true },
+                                { text: "7 AM", type: "normal", spaceBefore: true },
+                                { text: "on", type: "normal", spaceBefore: true },
+                                { text: "a", type: "normal", spaceBefore: true },
+                                { text: "Sunday", type: "normal", spaceBefore: true },
+                                { text: "to", type: "normal", spaceBefore: true },
+                                { text: "watch", type: "normal", spaceBefore: true },
+                                { text: "20 cars", type: "normal", spaceBefore: true },
+                                { text: "race", type: "normal", spaceBefore: true },
+                                { text: "around", type: "normal", spaceBefore: true },
+                                { text: "weird-shaped", type: "normal", spaceBefore: true },
+                                { text: "circles,", type: "normal", spaceBefore: true },
+                                { text: "you're in the right place.", type: "highlight", spaceBefore: true },
+                            ]}
+                            highlightClassName="text-white font-medium italic"
+                        />
 
-                        <div className="reveal-block relative overflow-hidden">
-                            <p
-                                className="reveal-text text-gray-400 text-lg md:text-xl leading-relaxed relative z-20"
-                                style={{ opacity: 0 }}
-                            >
-                                F1 can seem intimidating — "undercut," "ERS deployment," "degradation" — but that's exactly why this guide exists: to break things down clearly, simply, and with a touch of fun.
-                                {' '}<span className="text-white font-medium">Let's start with the basics.</span>
-                            </p>
-                            <div
-                                className="reveal-overlay absolute inset-0 bg-purple-600 z-30"
-                                style={{ transform: 'translateX(-100%)' }}
-                            />
-                        </div>
+                        <RevealText
+                            as="p"
+                            className="text-gray-400 text-lg md:text-xl leading-relaxed relative z-20"
+                            tokens={[
+                                { text: "F1", type: "normal", spaceBefore: false },
+                                { text: "can", type: "normal", spaceBefore: true },
+                                { text: "seem", type: "normal", spaceBefore: true },
+                                { text: "intimidating", type: "normal", spaceBefore: true },
+                                { text: "—", type: "normal", spaceBefore: true },
+                                { text: '"undercut,"', type: "normal", spaceBefore: true },
+                                { text: '"ERS deployment,"', type: "normal", spaceBefore: true },
+                                { text: '"degradation"', type: "normal", spaceBefore: true },
+                                { text: "—", type: "normal", spaceBefore: true },
+                                { text: "but", type: "normal", spaceBefore: true },
+                                { text: "that's", type: "normal", spaceBefore: true },
+                                { text: "exactly", type: "normal", spaceBefore: true },
+                                { text: "why", type: "normal", spaceBefore: true },
+                                { text: "this", type: "normal", spaceBefore: true },
+                                { text: "guide", type: "normal", spaceBefore: true },
+                                { text: "exists:", type: "normal", spaceBefore: true },
+                                { text: "to", type: "normal", spaceBefore: true },
+                                { text: "break", type: "normal", spaceBefore: true },
+                                { text: "things", type: "normal", spaceBefore: true },
+                                { text: "down", type: "normal", spaceBefore: true },
+                                { text: "clearly,", type: "normal", spaceBefore: true },
+                                { text: "simply,", type: "normal", spaceBefore: true },
+                                { text: "and", type: "normal", spaceBefore: true },
+                                { text: "with", type: "normal", spaceBefore: true },
+                                { text: "a", type: "normal", spaceBefore: true },
+                                { text: "touch", type: "normal", spaceBefore: true },
+                                { text: "of", type: "normal", spaceBefore: true },
+                                { text: "fun.", type: "normal", spaceBefore: true },
+                                { text: "Let's start with the basics.", type: "highlight", spaceBefore: true },
+                            ]}
+                            highlightClassName="text-white font-medium"
+                        />
                     </div>
 
                     <div className="accroche-simple-animate" style={{ opacity: 0 }}>

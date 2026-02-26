@@ -15,6 +15,7 @@ interface NavbarProps {
 export default function Navbar({ shouldAnimate = false, disableEntryAnimation = false }: NavbarProps) {
     const pathname = usePathname();
     const [isScrolled, setIsScrolled] = useState(false);
+    const [isNavHidden, setIsNavHidden] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [isSportsOpen, setIsSportsOpen] = useState(false);
     const [isMobileSportsOpen, setIsMobileSportsOpen] = useState(false);
@@ -22,6 +23,7 @@ export default function Navbar({ shouldAnimate = false, disableEntryAnimation = 
     const headerRef = useRef<HTMLElement>(null);
     const hasAnimatedRef = useRef(false);
     const mobileMenuRef = useRef<HTMLDivElement>(null);
+    const lastScrollYRef = useRef(0);
 
     const navItems = [
         { name: 'HOME', path: '/', hasDropdown: false },
@@ -29,16 +31,36 @@ export default function Navbar({ shouldAnimate = false, disableEntryAnimation = 
         { name: 'CREATORS', path: '/creators', hasDropdown: false },
     ];
 
-    // Close mobile menu on scroll
+    // Scroll handler: background change, mobile menu close, and navbar hide/show
     useEffect(() => {
         const handleScroll = () => {
-            setIsScrolled(window.scrollY > 50);
-            if (isMobileMenuOpen && window.scrollY > 50) {
+            const currentY = window.scrollY;
+            setIsScrolled(currentY > 50);
+
+            // Hide navbar when sports-categories section is reached
+            const sportsSection = document.getElementById('sports-categories');
+            if (sportsSection) {
+                const sportsTop = sportsSection.getBoundingClientRect().top;
+                if (sportsTop <= 80) {
+                    // Sports section is at or above the navbar — hide
+                    if (currentY > lastScrollYRef.current + 3) {
+                        setIsNavHidden(true);
+                    } else if (currentY < lastScrollYRef.current - 3) {
+                        setIsNavHidden(false);
+                    }
+                } else {
+                    // Above the sports section — always show
+                    setIsNavHidden(false);
+                }
+            }
+            lastScrollYRef.current = currentY;
+
+            if (isMobileMenuOpen && currentY > 50) {
                 setIsMobileMenuOpen(false);
                 setIsMobileSportsOpen(false);
             }
         };
-        window.addEventListener('scroll', handleScroll);
+        window.addEventListener('scroll', handleScroll, { passive: true });
         return () => window.removeEventListener('scroll', handleScroll);
     }, [isMobileMenuOpen]);
 
@@ -66,7 +88,7 @@ export default function Navbar({ shouldAnimate = false, disableEntryAnimation = 
 
     useEffect(() => {
         if (disableEntryAnimation && headerRef.current) {
-            gsap.set(headerRef.current, { opacity: 1, y: 0 });
+            gsap.set(headerRef.current, { opacity: 1, clearProps: 'transform' });
             return;
         }
 
@@ -78,7 +100,13 @@ export default function Navbar({ shouldAnimate = false, disableEntryAnimation = 
                     opacity: 1,
                     y: 0,
                     duration: 0.6,
-                    ease: "power3.out"
+                    ease: "power3.out",
+                    onComplete: () => {
+                        // Clear inline transform so Tailwind translate classes can take over
+                        if (headerRef.current) {
+                            headerRef.current.style.transform = '';
+                        }
+                    }
                 }
             );
         }
@@ -94,13 +122,14 @@ export default function Navbar({ shouldAnimate = false, disableEntryAnimation = 
             <header
                 ref={headerRef}
                 className={`fixed top-0 left-0 w-full z-50 transition-all duration-500
-                    ${isScrolled ? 'bg-[#060918]/95 backdrop-blur-md' : 'bg-transparent'}`}
+                    ${isScrolled ? 'bg-[#060918]/95 backdrop-blur-md' : 'bg-transparent'}
+                    ${isNavHidden && !isMobileMenuOpen && !isSportsOpen ? '-translate-y-full' : 'translate-y-0'}`}
                 style={disableEntryAnimation
-                    ? { opacity: 1, transform: 'translateY(0)' }
+                    ? { opacity: 1 }
                     : { opacity: 0, transform: 'translateY(-50px)' }
                 }
             >
-                <div className="w-full px-4 sm:px-8 md:px-16 h-20 md:h-32 flex items-center justify-between">
+                <div className="w-full px-4 sm:px-8 md:px-16 h-14 md:h-20 flex items-center justify-between">
 
                     {/* Navigation - Gauche */}
                     <nav className="hidden md:flex items-center gap-10 flex-1">
@@ -170,7 +199,7 @@ export default function Navbar({ shouldAnimate = false, disableEntryAnimation = 
                             alt="Paddock World"
                             width={300}
                             height={100}
-                            className="object-contain w-[180px] sm:w-[220px] md:w-[300px]"
+                            className="object-contain w-[140px] sm:w-[180px] md:w-[240px]"
                             priority
                         />
                     </Link>
@@ -229,8 +258,8 @@ export default function Navbar({ shouldAnimate = false, disableEntryAnimation = 
 
             {/* Sports Mega Menu — Split Screen Takeover (Desktop) */}
             <div
-                className={`fixed top-32 left-0 w-full z-40 transition-all duration-700 hidden md:block
-                    ${isSportsOpen ? 'h-[calc(100vh-8rem)] opacity-100' : 'h-0 opacity-0'}`}
+                className={`fixed top-20 left-0 w-full z-40 transition-all duration-700 hidden md:block
+                    ${isSportsOpen ? 'h-[calc(100vh-5rem)] opacity-100' : 'h-0 opacity-0'}`}
                 style={{
                     transitionTimingFunction: 'cubic-bezier(0.19, 1, 0.22, 1)',
                     overflow: isSportsOpen ? 'visible' : 'hidden'
@@ -340,7 +369,7 @@ export default function Navbar({ shouldAnimate = false, disableEntryAnimation = 
             {/* Mobile Dropdown Menu */}
             <div
                 ref={mobileMenuRef}
-                className={`fixed top-20 left-0 right-0 z-40 md:hidden transition-all duration-500 ease-[cubic-bezier(0.19,1,0.22,1)]
+                className={`fixed top-14 left-0 right-0 z-40 md:hidden transition-all duration-500 ease-[cubic-bezier(0.19,1,0.22,1)]
                     ${isMobileMenuOpen ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-4 pointer-events-none'}`}
             >
                 <div className="mx-3 bg-[#0a0e27]/95 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl shadow-black/50 overflow-hidden max-h-[calc(100vh-6rem)] overflow-y-auto">
