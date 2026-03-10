@@ -6,7 +6,7 @@ services:
     container_name: tailscale
     hostname: paddock-pi
     environment:
-      - TS_AUTHKEY=tskey-auth-kQzmycthze11CNTRL-LJ7xLxRu7PgErGyRFpMvNgQnnNXQgjme
+      - TS_AUTHKEY=tskey-auth-kEEmvdzd4n11CNTRL-LCjs2BBpEpDp1yi1fU2EoDjG7pCS2RrQ
       - TS_STATE_DIR=/var/lib/tailscale
     volumes:
       - tailscale-data:/var/lib/tailscale
