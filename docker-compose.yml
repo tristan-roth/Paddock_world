@@ -1,0 +1,27 @@
+version: '3.8'
+
+services:
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: paddock_frontend
+    ports:
+      - "3000:3000"
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+    # Uncomment lines below when you add a backend!
+    # depends_on:
+    #   - backend
+
+    # Example setup for future backend:
+    # backend:
+    #   build:
+    #     context: ./backend
+    #     dockerfile: Dockerfile
+    #   container_name: paddock_backend
+    #   ports:
+    #     - "8080:8080"
+    #   restart: unless-stopped

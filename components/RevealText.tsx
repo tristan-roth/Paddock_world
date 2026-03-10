@@ -19,6 +19,8 @@ interface RevealTextProps {
     onGradientSpansReady?: (spans: HTMLSpanElement[]) => void
     gradientStyle?: React.CSSProperties
     highlightClassName?: string
+    onAnimationComplete?: () => void
+    manualTrigger?: boolean
 }
 
 /**
@@ -33,6 +35,8 @@ export default function RevealText({
     onGradientSpansReady,
     gradientStyle,
     highlightClassName = 'text-white font-medium',
+    onAnimationComplete,
+    manualTrigger,
 }: RevealTextProps) {
     const containerRef = useRef<HTMLDivElement>(null)
     const hiddenTextRef = useRef<HTMLElement>(null)
@@ -112,6 +116,10 @@ export default function RevealText({
 
         if (lines.length === 0 || !containerRef.current || !fontsReady) return
 
+        // If manualTrigger is defined but false, don't set up the animation yet.
+        // The text will remain in its hidden layout state but won't have opacity forced to 0.
+        if (manualTrigger !== undefined && !manualTrigger) return
+
         // While animating, pass the animated gradient spans to parent
         if (onGradientSpansReady) {
             const spans = containerRef.current.querySelectorAll<HTMLSpanElement>('[data-gradient-animated]')
@@ -132,12 +140,15 @@ export default function RevealText({
         }
 
         const tl = gsap.timeline({
-            scrollTrigger: {
-                trigger: containerRef.current,
-                start: 'top 75%',
-            },
+            ...(manualTrigger === undefined ? {
+                scrollTrigger: {
+                    trigger: containerRef.current,
+                    start: 'top 75%',
+                },
+            } : {}),
             onComplete: () => {
                 setIsDone(true)
+                onAnimationComplete?.()
             },
         })
         tlRef.current = tl
@@ -162,7 +173,7 @@ export default function RevealText({
                 tlRef.current.kill()
             }
         }
-    }, [lines, isDone, fontsReady, onGradientSpansReady])
+    }, [lines, isDone, fontsReady, onGradientSpansReady, manualTrigger, onAnimationComplete])
 
     const renderToken = (token: Token, isAnimatedLayer: boolean) => {
         if (token.type === 'gradient') {

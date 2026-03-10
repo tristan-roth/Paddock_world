@@ -18,79 +18,71 @@ const teams = [
     "HAAS"
 ]
 
+// Duplicate the list so the second copy creates a seamless loop
+const teamsDouble = [...teams, ...teams]
+
 export default function F1TeamsMarquee() {
-    const marqueeRef = useRef<HTMLDivElement>(null)
-    const elementsRef = useRef<HTMLDivElement[]>([])
+    const trackRef = useRef<HTMLDivElement>(null)
+    const tlRef = useRef<gsap.core.Timeline | null>(null)
 
     useEffect(() => {
-        if (!marqueeRef.current || elementsRef.current.length === 0) return
+        if (!trackRef.current) return
 
         const ctx = gsap.context(() => {
-            const tl = gsap.timeline({ repeat: -1 })
+            // Animate the WHOLE track from 0% to -50%
+            // Since the track contains two identical copies, position -50% looks exactly like 0%
+            // → perfectly seamless infinite loop
+            const tl = gsap.timeline({ repeat: -1, defaults: { ease: 'none' } })
+            tl.fromTo(
+                trackRef.current,
+                { xPercent: 0 },
+                { xPercent: -50, duration: 20 }
+            )
+            tlRef.current = tl
 
-            // Default: moving left to right (so xPercent goes from -50 to 0)
-            gsap.set(elementsRef.current, { xPercent: -50 })
-            tl.to(elementsRef.current, {
-                xPercent: 0,
-                duration: 15, // Made it significantly faster
-                ease: "none"
-            })
-
-            // ScrollTrigger to change direction based on scroll up/down
+            // Reverse/forward based on scroll direction
             ScrollTrigger.create({
                 start: 0,
-                end: "max",
+                end: 'max',
                 onUpdate: (self) => {
                     const targetTimeScale = self.direction === 1 ? 1 : -1
                     gsap.to(tl, {
                         timeScale: targetTimeScale,
-                        duration: 0.5,
-                        ease: "power1.inOut"
+                        duration: 0.4,
+                        ease: 'power1.inOut',
                     })
-                }
+                },
             })
-        }, marqueeRef)
+        })
 
         return () => ctx.revert()
     }, [])
 
     return (
-        // The width and positioning is now handled natively here using absolute positioning and bounds breaking transform
-        <div className="absolute left-0 w-screen max-w-[100vw] overflow-hidden bg-[#050505] py-10 border-y border-white/5 flex items-center shadow-2xl pointer-events-auto" style={{ zIndex: 9999 }}>
+        <div
+            className="absolute left-0 w-screen max-w-[100vw] overflow-hidden bg-[#050505] py-10 border-y border-white/5 flex items-center shadow-2xl pointer-events-auto"
+            style={{ zIndex: 9999 }}
+        >
+            {/* Single track holding 2 copies – width is 200% so -50% = one full copy */}
             <div
-                ref={marqueeRef}
-                className="relative flex w-max"
+                ref={trackRef}
+                className="flex w-max will-change-transform"
             >
-                <div
-                    ref={(el) => { if (el) elementsRef.current[0] = el }}
-                    className="flex w-max shrink-0 px-8"
-                >
-                    {teams.map((team, idx) => (
-                        <div key={`team1-${idx}`} className="flex items-center justify-center min-w-[200px] md:min-w-[250px]">
-                            <span
-                                className="text-xl md:text-2xl font-black uppercase tracking-[0.25em] text-white/40 shadow-sm hover:text-white/100 transition-colors duration-300 select-none cursor-default"
-                                style={{ fontFamily: 'var(--font-russo)' }}
-                            >
-                                {team}
-                            </span>
-                        </div>
-                    ))}
-                </div>
-                <div
-                    ref={(el) => { if (el) elementsRef.current[1] = el }}
-                    className="flex w-max shrink-0 px-8"
-                >
-                    {teams.map((team, idx) => (
-                        <div key={`team2-${idx}`} className="flex items-center justify-center min-w-[200px] md:min-w-[250px]">
-                            <span
-                                className="text-xl md:text-2xl font-black uppercase tracking-[0.25em] text-white/40 shadow-sm hover:text-white/100 transition-colors duration-300 select-none cursor-default"
-                                style={{ fontFamily: 'var(--font-russo)' }}
-                            >
-                                {team}
-                            </span>
-                        </div>
-                    ))}
-                </div>
+                {teamsDouble.map((team, idx) => (
+                    <div
+                        key={idx}
+                        className="flex items-center justify-center min-w-[200px] md:min-w-[250px] px-4"
+                    >
+                        <span
+                            className="text-xl md:text-2xl font-black uppercase tracking-[0.25em] text-white/40 hover:text-white/100 transition-colors duration-300 select-none cursor-default"
+                            style={{ fontFamily: 'var(--font-russo)' }}
+                        >
+                            {team}
+                        </span>
+                        {/* Decorative separator */}
+                        <span className="ml-8 text-purple-700/50 text-sm select-none">✦</span>
+                    </div>
+                ))}
             </div>
         </div>
     )

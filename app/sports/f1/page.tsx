@@ -54,6 +54,7 @@ export default function F1Page() {
     const redLineRef = useRef<HTMLDivElement>(null)
 
     const [hoveredTab, setHoveredTab] = useState<number | null>(null)
+    const [firstParagraphDone, setFirstParagraphDone] = useState(false)
 
     useEffect(() => {
         const ctx = gsap.context(() => {
@@ -391,6 +392,7 @@ export default function F1Page() {
                                 { text: "you're in the right place.", type: "highlight", spaceBefore: true },
                             ]}
                             highlightClassName="text-white font-medium italic"
+                            onAnimationComplete={() => setFirstParagraphDone(true)}
                         />
 
                         <RevealText
@@ -428,6 +430,7 @@ export default function F1Page() {
                                 { text: "Let's start with the basics.", type: "highlight", spaceBefore: true },
                             ]}
                             highlightClassName="text-white font-medium"
+                            manualTrigger={firstParagraphDone}
                         />
                     </div>
 
