@@ -1,13 +1,33 @@
 version: '3.8'
 
 services:
+  tailscale:
+    image: tailscale/tailscale:latest
+    container_name: tailscale
+    hostname: paddock-pi
+    environment:
+      - TS_AUTHKEY=tskey-auth-kQzmycthze11CNTRL-LJ7xLxRu7PgErGyRFpMvNgQnnNXQgjme
+      - TS_STATE_DIR=/var/lib/tailscale
+    volumes:
+      - tailscale-data:/var/lib/tailscale
+      - /dev/net/tun:/dev/net/tun
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+    restart: unless-stopped
+
   frontend:
     build:
       context: .
       dockerfile: Dockerfile
     container_name: paddock_frontend
-    ports:
-      - "3000:3000"
+    # L'application passe désormais par le conteneur Tailscale
+    network_mode: service:tailscale
+    depends_on:
+      - tailscale
+    # Les ports ne sont plus nécessaires ici car exposés via l'IP Tailscale
+    # ports:
+    #   - "3000:3000"
     restart: unless-stopped
     environment:
       - NODE_ENV=production
@@ -25,3 +45,6 @@ services:
     #   ports:
     #     - "8080:8080"
     #   restart: unless-stopped
+
+volumes:
+  tailscale-data:
