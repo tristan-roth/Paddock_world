@@ -1,11 +1,12 @@
 'use client'
 
-import { ReactNode, useEffect } from 'react'
+import { ReactNode, useEffect, useRef } from 'react'
 import Lenis from 'lenis'
 
 export default function SmoothScroll({ children }: { children: ReactNode }) {
+  const rafRef = useRef<number | null>(null)
+
   useEffect(() => {
-    // Initialize Lenis with optimized settings
     const lenis = new Lenis({
       duration: 1.2,
       easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
@@ -18,13 +19,15 @@ export default function SmoothScroll({ children }: { children: ReactNode }) {
 
     function raf(time: number) {
       lenis.raf(time)
-      requestAnimationFrame(raf)
+      rafRef.current = requestAnimationFrame(raf)
     }
 
-    const rafId = requestAnimationFrame(raf)
+    rafRef.current = requestAnimationFrame(raf)
 
     return () => {
-      cancelAnimationFrame(rafId) // Important: Cancel the animation frame
+      if (rafRef.current !== null) {
+        cancelAnimationFrame(rafRef.current)
+      }
       lenis.destroy()
     }
   }, [])

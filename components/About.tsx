@@ -1,11 +1,19 @@
 'use client'
-import { useEffect, useRef, useState, useCallback, useMemo } from 'react'
+import { useCallback, useEffect, useRef } from 'react'
 import Image from 'next/image'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import RevealText, { Token } from './RevealText'
 
 gsap.registerPlugin(ScrollTrigger)
+
+const TITLE_TOKENS: Token[] = [
+    { text: 'What', type: 'normal', spaceBefore: false },
+    { text: 'is', type: 'normal', spaceBefore: true },
+    { text: 'Paddock', type: 'gradient', spaceBefore: true },
+    { text: 'World', type: 'gradient', spaceBefore: true },
+    { text: '?', type: 'normal', spaceBefore: false },
+]
 
 export default function About() {
     const sectionRef = useRef<HTMLDivElement>(null)
@@ -16,15 +24,14 @@ export default function About() {
     const mousePos = useRef({ x: 50, y: 50 })
     const animatedPos = useRef({ x: 50, y: 50 })
     const rafId = useRef<number>(0)
+    const cleanupGradientRef = useRef<(() => void) | null>(null)
 
     const handleGradientSpansReady = useCallback((spans: HTMLSpanElement[]) => {
         gradientSpansRef.current = spans
-        // Start mouse-reactive gradient animation
+        cleanupGradientRef.current?.()
+
         const section = sectionRef.current
         if (!section || spans.length === 0) return
-
-        // Cancel any existing animation
-        cancelAnimationFrame(rafId.current)
 
         const onMouseMove = (e: MouseEvent) => {
             const rect = section.getBoundingClientRect()
@@ -53,91 +60,85 @@ export default function About() {
 
         section.addEventListener('mousemove', onMouseMove)
         rafId.current = requestAnimationFrame(animate)
-    }, [])
 
-    // Cleanup animation frame on unmount
-    useEffect(() => {
-        return () => {
+        cleanupGradientRef.current = () => {
+            section.removeEventListener('mousemove', onMouseMove)
             cancelAnimationFrame(rafId.current)
         }
     }, [])
 
     useEffect(() => {
-        // Animation du premier bloc (arrive de la gauche)
-        if (bloc1Ref.current) {
-            gsap.fromTo(bloc1Ref.current,
-                { opacity: 0, x: -200 },
-                {
-                    opacity: 1,
-                    x: 0,
-                    duration: 1.5,
-                    ease: "power3.out",
-                    scrollTrigger: {
-                        trigger: bloc1Ref.current,
-                        start: "top 75%",
-                        end: "top 25%",
-                        scrub: 1.5,
+        const ctx = gsap.context(() => {
+            if (bloc1Ref.current) {
+                gsap.fromTo(bloc1Ref.current,
+                    { opacity: 0, x: -200 },
+                    {
+                        opacity: 1,
+                        x: 0,
+                        duration: 1.5,
+                        ease: 'power3.out',
+                        scrollTrigger: {
+                            trigger: bloc1Ref.current,
+                            start: 'top 75%',
+                            end: 'top 25%',
+                            scrub: 1.5,
+                        }
                     }
-                }
-            )
-        }
+                )
+            }
 
-        // Animation du deuxième bloc (arrive de la droite)
-        if (bloc2Ref.current) {
-            gsap.fromTo(bloc2Ref.current,
-                { opacity: 0, x: 200 },
-                {
-                    opacity: 1,
-                    x: 0,
-                    duration: 1.5,
-                    ease: "power3.out",
-                    scrollTrigger: {
-                        trigger: bloc2Ref.current,
-                        start: "top 75%",
-                        end: "top 25%",
-                        scrub: 1.5,
+            if (bloc2Ref.current) {
+                gsap.fromTo(bloc2Ref.current,
+                    { opacity: 0, x: 200 },
+                    {
+                        opacity: 1,
+                        x: 0,
+                        duration: 1.5,
+                        ease: 'power3.out',
+                        scrollTrigger: {
+                            trigger: bloc2Ref.current,
+                            start: 'top 75%',
+                            end: 'top 25%',
+                            scrub: 1.5,
+                        }
                     }
-                }
-            )
-        }
+                )
+            }
 
-        // Animation du portrait (clip-path reveal + scale)
-        if (portraitRef.current) {
-            gsap.set(portraitRef.current, {
-                clipPath: 'inset(100% 0% 0% 0%)',
-                scale: 1.15,
-                opacity: 0,
-            })
-            gsap.to(portraitRef.current, {
-                clipPath: 'inset(0% 0% 0% 0%)',
-                scale: 1,
-                opacity: 1,
-                duration: 1.8,
-                ease: 'power4.out',
-                scrollTrigger: {
-                    trigger: portraitRef.current,
-                    start: 'top 60%',
-                    end: 'top 15%',
-                    scrub: 1.5,
-                },
-            })
+            if (portraitRef.current) {
+                gsap.set(portraitRef.current, {
+                    clipPath: 'inset(100% 0% 0% 0%)',
+                    scale: 1.15,
+                    opacity: 0,
+                })
+                gsap.to(portraitRef.current, {
+                    clipPath: 'inset(0% 0% 0% 0%)',
+                    scale: 1,
+                    opacity: 1,
+                    duration: 1.8,
+                    ease: 'power4.out',
+                    scrollTrigger: {
+                        trigger: portraitRef.current,
+                        start: 'top 60%',
+                        end: 'top 15%',
+                        scrub: 1.5,
+                    },
+                })
+            }
+        }, sectionRef)
+
+        return () => {
+            cleanupGradientRef.current?.()
+            ctx.revert()
         }
     }, [])
-
-    const titleTokens: Token[] = useMemo(() => [
-        { text: 'What', type: 'normal', spaceBefore: false },
-        { text: 'is', type: 'normal', spaceBefore: true },
-        { text: 'Paddock', type: 'gradient', spaceBefore: true },
-        { text: 'World', type: 'gradient', spaceBefore: true },
-        { text: '?', type: 'normal', spaceBefore: false },
-    ], [])
 
     return (
         <section ref={sectionRef} className="min-h-screen flex flex-col items-center justify-center p-8 md:p-20 relative z-10 gap-24" id="about">
             {/* Titre principal — animation ligne par ligne */}
             <RevealText
                 as="h2"
-                tokens={titleTokens}
+                tokens={TITLE_TOKENS}
                 className="text-5xl sm:text-6xl md:text-8xl font-normal text-white tracking-wider uppercase text-center relative z-20"
                 style={{ fontFamily: 'var(--font-russo)' }}
                 onGradientSpansReady={handleGradientSpansReady}
@@ -171,7 +172,7 @@ export default function About() {
                     <div className="md:w-2/3">
                         <p className="text-2xl md:text-3xl leading-relaxed text-gray-200 font-light">
                             After graduating from my business Master I had a hard time finding a meaningful job. I had that idea to bring all information for fans into one place and I thought that it was the perfect time to do it.
-                            I wanted to make a motorsport website more accessible and engaging for new fans — combining fun, educational content with curated resources and creator spotlights. It's my way of turning passion into action and helping people connect with the sport in a meaningful way.
+                            I wanted to make a motorsport website more accessible and engaging for new fans — combining fun, educational content with curated resources and creator spotlights. It&apos;s my way of turning passion into action and helping people connect with the sport in a meaningful way.
                         </p>
                     </div>
                 </div>

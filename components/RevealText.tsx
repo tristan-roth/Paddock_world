@@ -35,16 +35,25 @@ export default function RevealText({
     highlightClassName = 'text-white font-medium',
 }: RevealTextProps) {
     const containerRef = useRef<HTMLDivElement>(null)
-    const hiddenTextRef = useRef<HTMLElement>(null)
+    const hiddenTextRef = useRef<HTMLDivElement>(null)
     const [lines, setLines] = useState<Token[][]>([])
     const [isDone, setIsDone] = useState(false)
     const [fontsReady, setFontsReady] = useState(false)
     const tlRef = useRef<gsap.core.Timeline | null>(null)
+    const measureFrameRef = useRef<number | null>(null)
 
     useEffect(() => {
+        let isMounted = true
+
         document.fonts.ready.then(() => {
-            setFontsReady(true)
+            if (isMounted) {
+                setFontsReady(true)
+            }
         })
+
+        return () => {
+            isMounted = false
+        }
     }, [])
 
     const processedTokens = useMemo(() => {
@@ -91,13 +100,31 @@ export default function RevealText({
         setLines(groupedLines)
     }, [isDone, fontsReady, processedTokens])
 
-    // Detect lines on mount and on resize
-    useEffect(() => {
-        buildLines()
-        const onResize = () => buildLines()
-        window.addEventListener('resize', onResize)
-        return () => window.removeEventListener('resize', onResize)
+    const scheduleBuildLines = useCallback(() => {
+        if (measureFrameRef.current !== null) {
+            cancelAnimationFrame(measureFrameRef.current)
+        }
+
+        measureFrameRef.current = requestAnimationFrame(() => {
+            measureFrameRef.current = null
+            buildLines()
+        })
     }, [buildLines])
+
+    useEffect(() => {
+        if (!fontsReady || isDone) return
+
+        scheduleBuildLines()
+        window.addEventListener('resize', scheduleBuildLines)
+
+        return () => {
+            window.removeEventListener('resize', scheduleBuildLines)
+            if (measureFrameRef.current !== null) {
+                cancelAnimationFrame(measureFrameRef.current)
+                measureFrameRef.current = null
+            }
+        }
+    }, [fontsReady, isDone, scheduleBuildLines])
 
     // Orchestrate animation and ref passing
     useEffect(() => {
@@ -189,21 +216,22 @@ export default function RevealText({
     return (
         <div ref={containerRef} className="reveal-block relative md:inline-block w-full">
             {/* The natural text block determining the layout */}
-            <Component
-                ref={hiddenTextRef as any}
-                className={className}
-                style={{ ...style, visibility: isDone ? 'visible' : 'hidden', opacity: 1, margin: 0 }}
-                aria-hidden={!isDone ? "true" : undefined}
-            >
-                {processedTokens.map((token, i) => (
-                    <span key={i} style={{ display: 'inline' }}>
-                        {token.spaceBefore ? ' ' : ''}
-                        <span data-token style={{ display: 'inline' }}>
-                            {renderToken(token, false)}
+            <div ref={hiddenTextRef}>
+                <Component
+                    className={className}
+                    style={{ ...style, visibility: isDone ? 'visible' : 'hidden', opacity: 1, margin: 0 }}
+                    aria-hidden={!isDone ? "true" : undefined}
+                >
+                    {processedTokens.map((token, i) => (
+                        <span key={i} style={{ display: 'inline' }}>
+                            {token.spaceBefore ? ' ' : ''}
+                            <span data-token style={{ display: 'inline' }}>
+                                {renderToken(token, false)}
+                            </span>
                         </span>
-                    </span>
-                ))}
-            </Component>
+                    ))}
+                </Component>
+            </div>
 
             {/* Absolute overlay for animation */}
             {!isDone && lines.length > 0 && (

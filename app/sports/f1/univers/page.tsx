@@ -3,7 +3,6 @@ import { useEffect, useRef } from 'react'
 import Image from 'next/image'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
-import RevealText from '@/components/RevealText'
 import Navbar from '@/components/Navbar'
 import F1TeamsMarquee from '@/components/F1TeamsMarquee'
 
@@ -234,6 +233,7 @@ export default function UniversPage() {
                         <div className="mt-20 lg:mt-32 block w-[100vw] pointer-events-auto z-[9999]" style={{ marginLeft: 'calc(-50vw + 50%)' }}>
                             <F1TeamsMarquee />
                         </div>
+
                     </div>
 
                     {/* ── RIGHT COLUMN: Sticky hero-img-layer ── */}

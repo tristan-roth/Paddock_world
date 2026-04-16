@@ -10,7 +10,7 @@ body {
   color: var(--foreground);
   background: linear-gradient(to bottom, #000000 0%, #050812 40%, var(--navy-dark) 100%);
   background-attachment: fixed;
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
 }
 
 p {

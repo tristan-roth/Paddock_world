@@ -7,6 +7,12 @@ import { usePathname } from 'next/navigation';
 import gsap from 'gsap';
 import { sportsCategories } from '@/data/sportsData';
 
+const navItems = [
+    { name: 'HOME', path: '/', hasDropdown: false },
+    { name: 'SPORTS', path: '/sports', hasDropdown: true },
+    { name: 'CREATORS', path: '/creators', hasDropdown: false },
+];
+
 interface NavbarProps {
     shouldAnimate?: boolean
     disableEntryAnimation?: boolean
@@ -22,34 +28,23 @@ export default function Navbar({ shouldAnimate = false, disableEntryAnimation = 
     const [hoveredSportIndex, setHoveredSportIndex] = useState(0);
     const headerRef = useRef<HTMLElement>(null);
     const hasAnimatedRef = useRef(false);
-    const mobileMenuRef = useRef<HTMLDivElement>(null);
     const lastScrollYRef = useRef(0);
 
-    const navItems = [
-        { name: 'HOME', path: '/', hasDropdown: false },
-        { name: 'SPORTS', path: '/sports', hasDropdown: true },
-        { name: 'CREATORS', path: '/creators', hasDropdown: false },
-    ];
-
-    // Scroll handler: background change, mobile menu close, and navbar hide/show
     useEffect(() => {
         const handleScroll = () => {
             const currentY = window.scrollY;
             setIsScrolled(currentY > 50);
 
-            // Hide navbar when sports-categories section is reached
             const sportsSection = document.getElementById('sports-categories');
             if (sportsSection) {
                 const sportsTop = sportsSection.getBoundingClientRect().top;
                 if (sportsTop <= 80) {
-                    // Sports section is at or above the navbar — hide
                     if (currentY > lastScrollYRef.current + 3) {
                         setIsNavHidden(true);
                     } else if (currentY < lastScrollYRef.current - 3) {
                         setIsNavHidden(false);
                     }
                 } else {
-                    // Above the sports section — always show
                     setIsNavHidden(false);
                 }
             }
@@ -64,7 +59,6 @@ export default function Navbar({ shouldAnimate = false, disableEntryAnimation = 
         return () => window.removeEventListener('scroll', handleScroll);
     }, [isMobileMenuOpen]);
 
-    // Close mobile menu on resize to desktop
     useEffect(() => {
         const handleResize = () => {
             if (window.innerWidth >= 768) {
@@ -76,7 +70,6 @@ export default function Navbar({ shouldAnimate = false, disableEntryAnimation = 
         return () => window.removeEventListener('resize', handleResize);
     }, []);
 
-    // Lock body scroll when mobile menu is open
     useEffect(() => {
         if (isMobileMenuOpen) {
             document.body.style.overflow = 'hidden';
@@ -143,7 +136,7 @@ export default function Navbar({ shouldAnimate = false, disableEntryAnimation = 
                                         className="relative"
                                         onMouseEnter={() => setIsSportsOpen(true)}
                                         onMouseLeave={() => setIsSportsOpen(false)}
-                                    >
+                    >
                                         <button className="group relative py-2 flex items-center gap-1">
                                             <span className={`text-[13px] font-medium tracking-[0.15em] uppercase transition-colors duration-300
                                                 ${isActive || isSportsOpen ? 'text-white' : 'text-gray-400 group-hover:text-white'}`}
@@ -240,6 +233,7 @@ export default function Navbar({ shouldAnimate = false, disableEntryAnimation = 
                         }}
                         className="md:hidden relative z-50 w-10 h-10 flex items-center justify-center"
                         aria-label="Menu"
+                        aria-expanded={isMobileMenuOpen}
                     >
                         <div className="relative w-6 h-4 flex flex-col justify-between">
                             <span className={`w-full h-[2px] bg-white transition-all duration-300 origin-center
@@ -368,7 +362,6 @@ export default function Navbar({ shouldAnimate = false, disableEntryAnimation = 
 
             {/* Mobile Dropdown Menu */}
             <div
-                ref={mobileMenuRef}
                 className={`fixed top-14 left-0 right-0 z-40 md:hidden transition-all duration-500 ease-[cubic-bezier(0.19,1,0.22,1)]
                     ${isMobileMenuOpen ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-4 pointer-events-none'}`}
             >
@@ -385,6 +378,7 @@ export default function Navbar({ shouldAnimate = false, disableEntryAnimation = 
                                         <button
                                             onClick={() => setIsMobileSportsOpen(!isMobileSportsOpen)}
                                             className="w-full flex items-center justify-between px-6 py-4 group"
+                                            aria-expanded={isMobileSportsOpen}
                                         >
                                             <span className={`text-sm font-semibold tracking-[0.15em] uppercase transition-colors duration-300
                                                 ${isActive ? 'text-white' : 'text-gray-400'}`}

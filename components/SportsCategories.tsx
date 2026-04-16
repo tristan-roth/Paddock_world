@@ -27,6 +27,7 @@ export default function SportsCategories() {
     const lineRef = useRef<HTMLDivElement>(null)
     const cardsRef = useRef<(HTMLAnchorElement | null)[]>([])
     const [hoveredIndex, setHoveredIndex] = useState<number | null>(null)
+    const hoveredIndexRef = useRef<number | null>(null)
     const mouseRef = useRef({ x: 0, y: 0 })
     const rafRef = useRef<number>(0)
 
@@ -40,7 +41,10 @@ export default function SportsCategories() {
         return () => window.removeEventListener('mousemove', handleMouseMove)
     }, [handleMouseMove])
 
-    // Mouse-reactive parallax loop
+    useEffect(() => {
+        hoveredIndexRef.current = hoveredIndex
+    }, [hoveredIndex])
+
     useEffect(() => {
         const tick = () => {
             cardsRef.current.forEach((card, index) => {
@@ -50,7 +54,7 @@ export default function SportsCategories() {
                 const cy = rect.top + rect.height / 2
                 const dx = (mouseRef.current.x - cx) / 50
                 const dy = (mouseRef.current.y - cy) / 50
-                const isHovered = hoveredIndex === index
+                const isHovered = hoveredIndexRef.current === index
                 const config = scatteredConfigs[index % scatteredConfigs.length]
 
                 // Card subtle mouse follow
@@ -80,7 +84,7 @@ export default function SportsCategories() {
         }
         rafRef.current = requestAnimationFrame(tick)
         return () => cancelAnimationFrame(rafRef.current)
-    }, [hoveredIndex])
+    }, [])
 
     // GSAP: horizontal scroll + reveals
     useEffect(() => {
