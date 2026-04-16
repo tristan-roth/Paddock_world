@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  tailscale:
+    image: tailscale/tailscale:latest
+    container_name: tailscale
+    hostname: paddock-pi
+    environment:
+      - TS_AUTHKEY=${TS_AUTHKEY} # Utilisation d'une variable d'environnement
+      - TS_STATE_DIR=/var/lib/tailscale
+      # On ajoute ces lignes pour forcer la connexion en arrière-plan et éviter la révocation
+      - TS_USERSPACE=false
+      - TS_ACCEPT_DNS=true
+    volumes:
+      # On utilise un vrai dossier sur le Raspberry Pi plutôt qu'un volume Docker abstrait
+      - ./tailscale_state:/var/lib/tailscale
+      - /dev/net/tun:/dev/net/tun
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: paddock_frontend
+    network_mode: service:tailscale
+    depends_on:
+      - tailscale
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+
+# On supprime la déclaration du volume à la fin puisqu'on utilise un dossier local
