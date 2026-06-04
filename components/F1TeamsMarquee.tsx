@@ -60,8 +60,7 @@ export default function F1TeamsMarquee() {
 
     return (
         <div
-            className="absolute left-0 w-screen max-w-[100vw] overflow-hidden bg-[#050505] py-10 border-y border-white/5 flex items-center shadow-2xl pointer-events-auto"
-            style={{ zIndex: 9999 }}
+            className="relative w-full overflow-hidden bg-[#050505] py-10 border-y border-white/5 flex items-center shadow-2xl pointer-events-auto"
         >
             {/* Single track holding 2 copies – width is 200% so -50% = one full copy */}
             <div

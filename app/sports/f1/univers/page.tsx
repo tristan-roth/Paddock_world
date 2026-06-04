@@ -153,7 +153,7 @@ export default function UniversPage() {
                   Extra tall container to allow plenty of scrolling.
                   Grid layout: text on left, pinning container on right.
                 */}
-                <div className="relative w-full max-w-[1920px] mx-auto min-h-[400vh] flex flex-col lg:flex-row">
+                <div className="relative w-full max-w-[1920px] mx-auto min-h-[180vh] flex flex-col lg:flex-row">
 
                     {/* ── LEFT COLUMN: Text content ── */}
                     {/* Increased width to 50% for more text breathing room */}
@@ -229,11 +229,6 @@ export default function UniversPage() {
                             </span>
                         </div>
 
-                        {/* Scrolling F1 Teams Marquee added here */}
-                        <div className="mt-20 lg:mt-32 block w-[100vw] pointer-events-auto z-[9999]" style={{ marginLeft: 'calc(-50vw + 50%)' }}>
-                            <F1TeamsMarquee />
-                        </div>
-
                     </div>
 
                     {/* ── RIGHT COLUMN: Sticky hero-img-layer ── */}
@@ -303,6 +298,128 @@ export default function UniversPage() {
                             />
                             <div className="absolute inset-0 bg-black/30" />
                         </div>
+                    </div>
+                </div>
+            </section>
+
+            {/* ═══════════════════════════════════════════════════
+                MARQUEE — full width, right after the sticky section
+            ═══════════════════════════════════════════════════ */}
+            <div className="relative z-10 w-full">
+                <F1TeamsMarquee />
+            </div>
+
+            {/* ═══════════════════════════════════════════════════
+                EXTENDED HISTORY — 2-column layout with images
+            ═══════════════════════════════════════════════════ */}
+            <section className="relative z-10 w-full bg-[#0a0000] py-24 lg:py-40">
+                <div className="max-w-[1400px] mx-auto px-6 sm:px-12 md:px-20 xl:px-32">
+                    <div className="grid lg:grid-cols-2 gap-x-20 gap-y-12 items-start">
+
+                        {/* ── LEFT COLUMN: text → image ── */}
+                        <div className="flex flex-col gap-10">
+                            <p
+                                className="text-gray-400 text-lg sm:text-xl leading-relaxed"
+                                style={{ fontFamily: 'var(--font-barlow)' }}
+                            >
+                                Since then, F1&apos;s history has been filled with legendary drivers, fierce rivalries,
+                                and unforgettable moments. From the intense{' '}
+                                <span className="text-white font-medium">Senna vs Prost</span> rivalry in the 80s to the
+                                iconic <span className="text-white font-medium">Schumacher era</span> in the early 2000s,
+                                the sport has evolved from dangerous, seat-of-the-pants racing to the high-tech,
+                                meticulously controlled world we see today.
+                            </p>
+
+                            <p
+                                className="text-gray-400 text-lg sm:text-xl leading-relaxed"
+                                style={{ fontFamily: 'var(--font-barlow)' }}
+                            >
+                                The early days of F1 were raw and dangerous — cars were fast but fragile, and safety was
+                                almost an afterthought. Drivers like{' '}
+                                <span className="italic text-purple-400">Juan Manuel Fangio</span> and{' '}
+                                <span className="italic text-purple-400">Jim Clark</span> became legends not only for their
+                                skill but for their bravery in an era when fatal crashes were sadly common. The turning
+                                point came with Ayrton Senna&apos;s tragic death at Imola in{' '}
+                                <span className="text-white font-medium">1994</span> — a moment that shook the entire sport.
+                            </p>
+
+                            <p
+                                className="text-gray-400 text-lg sm:text-xl leading-relaxed"
+                                style={{ fontFamily: 'var(--font-barlow)' }}
+                            >
+                                Senna&apos;s death forced F1 to face its safety shortcomings. The{' '}
+                                <span className="text-white font-medium">FIA</span> introduced major safety regulations in
+                                the following years — from redesigned cockpits to improved barriers and mandatory crash
+                                tests. That&apos;s why you now see features like the{' '}
+                                <span className="italic text-purple-400">halo</span> — changes that have literally saved
+                                lives in modern races.
+                            </p>
+
+                            {/* Image */}
+                            <div className="relative w-full aspect-[16/10] rounded-sm overflow-hidden">
+                                <Image
+                                    src="/img/f1-univers-pitstop.png"
+                                    alt="F1 pit stop action"
+                                    fill
+                                    quality={90}
+                                    sizes="(max-width: 1024px) 100vw, 50vw"
+                                    className="object-cover object-center"
+                                />
+                                <div className="absolute inset-0 bg-black/20" />
+                            </div>
+                        </div>
+
+                        {/* ── RIGHT COLUMN: image → text (décalé vers le bas) ── */}
+                        <div className="flex flex-col gap-10 lg:pt-40">
+                            {/* Image */}
+                            <div className="relative w-full aspect-[16/10] rounded-sm overflow-hidden">
+                                <Image
+                                    src="/img/f1-univers-monaco.png"
+                                    alt="Monaco Grand Prix circuit"
+                                    fill
+                                    quality={90}
+                                    sizes="(max-width: 1024px) 100vw, 50vw"
+                                    className="object-cover object-center"
+                                />
+                                <div className="absolute inset-0 bg-black/20" />
+                            </div>
+
+                            <p
+                                className="text-gray-400 text-lg sm:text-xl leading-relaxed"
+                                style={{ fontFamily: 'var(--font-barlow)' }}
+                            >
+                                The evolution of F1 didn&apos;t just happen on the safety side. Over the decades, F1 cars
+                                have become faster, more complex, and more sophisticated. The introduction of{' '}
+                                <span className="text-white font-medium">hybrid power units in 2014</span> marked a shift
+                                toward efficiency and technological innovation, making F1 a proving ground for automotive
+                                advancements.
+                            </p>
+
+                            <p
+                                className="text-gray-400 text-lg sm:text-xl leading-relaxed"
+                                style={{ fontFamily: 'var(--font-barlow)' }}
+                            >
+                                But F1 is still unpredictable — and that&apos;s what makes it thrilling. You never know
+                                when a last-minute strategy gamble, a rain-soaked track, or a dramatic late-race crash will
+                                turn the championship on its head. Remember the{' '}
+                                <span className="italic text-purple-400">2008 Brazilian Grand Prix</span>? Lewis Hamilton
+                                secured his first championship on the last lap of the last race — passing Timo Glock in the
+                                final corners to win the title by a single point.
+                            </p>
+
+                            <p
+                                className="text-gray-400 text-lg sm:text-xl leading-relaxed"
+                                style={{ fontFamily: 'var(--font-barlow)' }}
+                            >
+                                And let&apos;s not forget the human element. Rivalries like{' '}
+                                <span className="text-white font-medium">Senna vs Prost</span>,{' '}
+                                <span className="text-white font-medium">Schumacher vs Hill</span>, and{' '}
+                                <span className="text-white font-medium">Hamilton vs Verstappen</span> have defined eras
+                                and created storylines that keep fans coming back. F1 isn&apos;t just about the cars —
+                                it&apos;s about the personalities, the politics, and the passion behind the scenes.
+                            </p>
+                        </div>
+
                     </div>
                 </div>
             </section>
