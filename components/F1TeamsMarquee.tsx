@@ -28,10 +28,9 @@ export default function F1TeamsMarquee() {
     useEffect(() => {
         if (!trackRef.current) return
 
+        let currentDirection = 1
+
         const ctx = gsap.context(() => {
-            // Animate the WHOLE track from 0% to -50%
-            // Since the track contains two identical copies, position -50% looks exactly like 0%
-            // → perfectly seamless infinite loop
             const tl = gsap.timeline({ repeat: -1, defaults: { ease: 'none' } })
             tl.fromTo(
                 trackRef.current,
@@ -40,16 +39,18 @@ export default function F1TeamsMarquee() {
             )
             tlRef.current = tl
 
-            // Reverse/forward based on scroll direction
             ScrollTrigger.create({
                 start: 0,
                 end: 'max',
                 onUpdate: (self) => {
-                    const targetTimeScale = self.direction === 1 ? 1 : -1
+                    const newDirection = self.direction === 1 ? 1 : -1
+                    if (newDirection === currentDirection) return
+                    currentDirection = newDirection
                     gsap.to(tl, {
-                        timeScale: targetTimeScale,
-                        duration: 0.4,
-                        ease: 'power1.inOut',
+                        timeScale: newDirection,
+                        duration: 0.5,
+                        ease: 'power2.inOut',
+                        overwrite: true,
                     })
                 },
             })

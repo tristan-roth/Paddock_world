@@ -90,7 +90,7 @@ export default function UniversPage() {
                 imgContainerTl.to(imgWrapperRef.current, {
                     scale: 0.45,       // Se réduit de plus en plus
                     xPercent: -45,     // Se déplace fortement vers la gauche (jusqu'au centre)
-                    y: window.innerHeight * 0.4, // Descend progressivement avec le scroll
+                    y: window.innerHeight * 0.15,
                     ease: 'none'
                 }, 0)
 
@@ -118,7 +118,7 @@ export default function UniversPage() {
 
     return (
         // Reset to dark theme #0a0000
-        <main className="relative w-full bg-[#0a0000] min-h-[500vh]" style={{ overflowX: 'clip' }}>
+        <main className="relative w-full bg-[#0a0000] min-h-0" style={{ overflowX: 'clip' }}>
             <Navbar shouldAnimate disableEntryAnimation />
 
             {/* BIG BACKGROUND TEXT - Placed absolute at the top so it doesn't stay fixed the whole way down */}
@@ -153,7 +153,7 @@ export default function UniversPage() {
                   Extra tall container to allow plenty of scrolling.
                   Grid layout: text on left, pinning container on right.
                 */}
-                <div className="relative w-full max-w-[1920px] mx-auto min-h-[180vh] flex flex-col lg:flex-row">
+                <div className="relative w-full max-w-[1920px] mx-auto flex flex-col lg:flex-row">
 
                     {/* ── LEFT COLUMN: Text content ── */}
                     {/* Increased width to 50% for more text breathing room */}
@@ -195,14 +195,13 @@ export default function UniversPage() {
                             className="text-gray-400 text-lg sm:text-xl leading-relaxed mb-6 w-full pr-4"
                             style={{ fontFamily: 'var(--font-barlow)' }}
                         >
-                            Formula 1 was officially established in 1950, but its roots trace back even further to the
-                            early 20th century. Before it became the highly regulated and globally recognized sport we
-                            know today, motor racing was more chaotic and dangerous — with various Grand Prix events held
-                            across Europe under inconsistent rules. The{' '}
-                            <span className="text-white font-medium">FIA (Fédération Internationale de l&apos;Automobile)</span>{' '}
-                            stepped in to create a single set of rules, known as the{' '}
-                            <span className="italic text-purple-400">&quot;Formula,&quot;</span>{' '}
-                            to standardize competition.
+                            It all started in{' '}
+                            <span className="text-white font-medium">1950</span>.
+                            Not with a bang — well, actually yes, with a bang. Twenty-one cars lined up at{' '}
+                            <span className="text-white font-medium">Silverstone</span>, on a converted RAF airfield,
+                            and the world&apos;s most intense motorsport championship was born.{' '}
+                            <span className="italic text-purple-400">Giuseppe Farina</span> crossed the finish line first,
+                            driving for <span className="italic text-purple-400">Alfa Romeo</span>, and F1 history began.
                         </p>
 
                         {/* Paragraph 2 */}
@@ -210,13 +209,11 @@ export default function UniversPage() {
                             className="text-gray-400 text-lg sm:text-xl leading-relaxed mb-16 w-full pr-4"
                             style={{ fontFamily: 'var(--font-barlow)' }}
                         >
-                            The first ever official Formula 1 World Championship race took place on{' '}
-                            <span className="text-white font-medium">May 13, 1950</span>, at{' '}
-                            <span className="text-white font-medium">Silverstone Circuit</span> in the United Kingdom.
-                            That race, held on a converted Royal Air Force airfield, was won by{' '}
-                            <span className="italic text-purple-400">Giuseppe Farina</span> driving for{' '}
-                            <span className="italic text-purple-400">Alfa Romeo</span> — setting the tone for decades of
-                            fierce competition and technological innovation.
+                            But the story didn&apos;t start there. Long before the{' '}
+                            <span className="text-white font-medium">FIA</span> created a unified rulebook — the{' '}
+                            <span className="italic text-purple-400">&quot;Formula&quot;</span> — Grand Prix racing
+                            across Europe was wild, inconsistent, and frankly dangerous. The FIA stepped in to bring
+                            order to the chaos. It worked. Mostly.
                         </p>
 
                         <div className="flex items-center gap-3 mt-4">
@@ -318,41 +315,44 @@ export default function UniversPage() {
 
                         {/* ── LEFT COLUMN: text → image ── */}
                         <div className="flex flex-col gap-10">
-                            <p
-                                className="text-gray-400 text-lg sm:text-xl leading-relaxed"
-                                style={{ fontFamily: 'var(--font-barlow)' }}
+                            <h3
+                                className="text-2xl sm:text-3xl text-white font-bold uppercase tracking-tight"
+                                style={{ fontFamily: 'var(--font-russo)' }}
                             >
-                                Since then, F1&apos;s history has been filled with legendary drivers, fierce rivalries,
-                                and unforgettable moments. From the intense{' '}
-                                <span className="text-white font-medium">Senna vs Prost</span> rivalry in the 80s to the
-                                iconic <span className="text-white font-medium">Schumacher era</span> in the early 2000s,
-                                the sport has evolved from dangerous, seat-of-the-pants racing to the high-tech,
-                                meticulously controlled world we see today.
-                            </p>
+                                The <span className="text-purple-400">Legends</span> Era
+                            </h3>
 
                             <p
                                 className="text-gray-400 text-lg sm:text-xl leading-relaxed"
                                 style={{ fontFamily: 'var(--font-barlow)' }}
                             >
-                                The early days of F1 were raw and dangerous — cars were fast but fragile, and safety was
-                                almost an afterthought. Drivers like{' '}
+                                The early decades of F1 were defined by two things: breathtaking skill and terrifying
+                                danger. Drivers like{' '}
                                 <span className="italic text-purple-400">Juan Manuel Fangio</span> and{' '}
-                                <span className="italic text-purple-400">Jim Clark</span> became legends not only for their
-                                skill but for their bravery in an era when fatal crashes were sadly common. The turning
-                                point came with Ayrton Senna&apos;s tragic death at Imola in{' '}
-                                <span className="text-white font-medium">1994</span> — a moment that shook the entire sport.
+                                <span className="italic text-purple-400">Jim Clark</span> became icons — not just for
+                                their speed, but for their bravery in an era where fatal crashes were a real and regular
+                                part of the sport. Safety was almost an afterthought. Cars were fast, fragile, and
+                                unforgiving.
                             </p>
 
                             <p
                                 className="text-gray-400 text-lg sm:text-xl leading-relaxed"
                                 style={{ fontFamily: 'var(--font-barlow)' }}
                             >
-                                Senna&apos;s death forced F1 to face its safety shortcomings. The{' '}
-                                <span className="text-white font-medium">FIA</span> introduced major safety regulations in
-                                the following years — from redesigned cockpits to improved barriers and mandatory crash
-                                tests. That&apos;s why you now see features like the{' '}
-                                <span className="italic text-purple-400">halo</span> — changes that have literally saved
-                                lives in modern races.
+                                Then came <span className="text-white font-medium">Ayrton Senna</span>.
+                                His death at Imola in <span className="text-white font-medium">1994</span> shook F1 to
+                                its core — and changed it forever. The FIA responded with sweeping safety reforms:
+                                redesigned cockpits, stronger barriers, mandatory crash tests.
+                            </p>
+
+                            <p
+                                className="text-gray-400 text-lg sm:text-xl leading-relaxed"
+                                style={{ fontFamily: 'var(--font-barlow)' }}
+                            >
+                                That titanium frame arching over the driver&apos;s head today? That&apos;s the{' '}
+                                <span className="italic text-purple-400">halo</span> — and it has literally saved lives.
+                                Senna&apos;s legacy isn&apos;t just his three world titles. It&apos;s the sport he
+                                helped make safer for everyone who came after.
                             </p>
 
                             {/* Image */}
@@ -384,39 +384,55 @@ export default function UniversPage() {
                                 <div className="absolute inset-0 bg-black/20" />
                             </div>
 
-                            <p
-                                className="text-gray-400 text-lg sm:text-xl leading-relaxed"
-                                style={{ fontFamily: 'var(--font-barlow)' }}
+                            <h3
+                                className="text-2xl sm:text-3xl text-white font-bold uppercase tracking-tight"
+                                style={{ fontFamily: 'var(--font-russo)' }}
                             >
-                                The evolution of F1 didn&apos;t just happen on the safety side. Over the decades, F1 cars
-                                have become faster, more complex, and more sophisticated. The introduction of{' '}
-                                <span className="text-white font-medium">hybrid power units in 2014</span> marked a shift
-                                toward efficiency and technological innovation, making F1 a proving ground for automotive
-                                advancements.
-                            </p>
+                                Rivalries That <span className="text-purple-400">Defined</span> Eras
+                            </h3>
 
                             <p
                                 className="text-gray-400 text-lg sm:text-xl leading-relaxed"
                                 style={{ fontFamily: 'var(--font-barlow)' }}
                             >
-                                But F1 is still unpredictable — and that&apos;s what makes it thrilling. You never know
-                                when a last-minute strategy gamble, a rain-soaked track, or a dramatic late-race crash will
-                                turn the championship on its head. Remember the{' '}
+                                F1 has always been as much about the people as the cars.{' '}
+                                <span className="text-white font-medium">Senna vs Prost</span> — a psychological war as
+                                much as a racing one. Teammates who couldn&apos;t stand each other, battling for
+                                supremacy across multiple seasons.{' '}
+                                <span className="text-white font-medium">Schumacher vs Hill</span>, then vs Häkkinen —
+                                the Schumacher dominance era redefined what it meant to be a complete racing driver.
+                                And <span className="text-white font-medium">Hamilton vs Verstappen</span> — the 2021
+                                season. Abu Dhabi. The last lap. These aren&apos;t just sports rivalries — they&apos;re
+                                the kind of stories that keep fans up at night, debating decades later.
+                            </p>
+
+                            <h3
+                                className="text-2xl sm:text-3xl text-white font-bold uppercase tracking-tight mt-4"
+                                style={{ fontFamily: 'var(--font-russo)' }}
+                            >
+                                F1 Today: Fast, Smart &amp;{' '}
+                                <span className="text-purple-400">Still Unpredictable</span>
+                            </h3>
+
+                            <p
+                                className="text-gray-400 text-lg sm:text-xl leading-relaxed"
+                                style={{ fontFamily: 'var(--font-barlow)' }}
+                            >
+                                Modern F1 is a different beast.{' '}
+                                <span className="text-white font-medium">Hybrid power units since 2014</span>. Thousands
+                                of sensors per car. Teams of hundreds of engineers analyzing data in real time. And yet —
+                                the sport still delivers the unexpected. Remember the{' '}
                                 <span className="italic text-purple-400">2008 Brazilian Grand Prix</span>? Lewis Hamilton
-                                secured his first championship on the last lap of the last race — passing Timo Glock in the
-                                final corners to win the title by a single point.
+                                needed to finish fifth to win his first championship. On the last lap, in the rain, he
+                                passed Timo Glock in the final corners. Champion by one point. That&apos;s F1.
                             </p>
 
                             <p
                                 className="text-gray-400 text-lg sm:text-xl leading-relaxed"
                                 style={{ fontFamily: 'var(--font-barlow)' }}
                             >
-                                And let&apos;s not forget the human element. Rivalries like{' '}
-                                <span className="text-white font-medium">Senna vs Prost</span>,{' '}
-                                <span className="text-white font-medium">Schumacher vs Hill</span>, and{' '}
-                                <span className="text-white font-medium">Hamilton vs Verstappen</span> have defined eras
-                                and created storylines that keep fans coming back. F1 isn&apos;t just about the cars —
-                                it&apos;s about the personalities, the politics, and the passion behind the scenes.
+                                No matter how sophisticated the technology gets, the human element never disappears. And
+                                that&apos;s exactly what keeps us hooked.
                             </p>
                         </div>
 
