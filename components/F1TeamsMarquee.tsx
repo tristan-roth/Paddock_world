@@ -69,19 +69,19 @@ export default function F1TeamsMarquee() {
                 className="flex w-max will-change-transform"
             >
                 {teamsDouble.map((team, idx) => (
-                    <div
-                        key={idx}
-                        className="flex items-center justify-center min-w-[200px] md:min-w-[250px] px-4"
-                    >
-                        <span
-                            className="text-xl md:text-2xl font-black uppercase tracking-[0.25em] text-white/40 hover:text-white/100 transition-colors duration-300 select-none cursor-default"
-                            style={{ fontFamily: 'var(--font-russo)' }}
-                        >
-                            {team}
-                        </span>
-                        {/* Decorative separator */}
-                        <span className="ml-8 text-purple-700/50 text-sm select-none">✦</span>
-                    </div>
+                    <React.Fragment key={idx}>
+                        <div className="flex items-center justify-center px-6">
+                            <span
+                                className="text-xl md:text-2xl font-black uppercase tracking-[0.25em] text-white/40 hover:text-white/100 transition-colors duration-300 select-none cursor-default whitespace-nowrap"
+                                style={{ fontFamily: 'var(--font-russo)' }}
+                            >
+                                {team}
+                            </span>
+                        </div>
+                        <div className="flex items-center px-4">
+                            <span className="text-purple-700/50 text-sm select-none">✦</span>
+                        </div>
+                    </React.Fragment>
                 ))}
             </div>
         </div>

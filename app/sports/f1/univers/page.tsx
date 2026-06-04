@@ -118,7 +118,7 @@ export default function UniversPage() {
 
     return (
         // Reset to dark theme #0a0000
-        <main className="relative w-full bg-[#0a0000] min-h-[500vh]">
+        <main className="relative w-full bg-[#0a0000] min-h-[500vh]" style={{ overflowX: 'clip' }}>
             <Navbar shouldAnimate disableEntryAnimation />
 
             {/* BIG BACKGROUND TEXT - Placed absolute at the top so it doesn't stay fixed the whole way down */}
