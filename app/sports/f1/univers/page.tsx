@@ -1,5 +1,5 @@
 'use client'
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import Image from 'next/image'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
@@ -32,9 +32,14 @@ export default function UniversPage() {
     const timelineNodeRefs = useRef<(HTMLDivElement | null)[]>([])
     const timelineBlockRefs = useRef<(HTMLDivElement | null)[]>([])
     const timelineImageRefs = useRef<(HTMLDivElement | null)[]>([])
+    const [activeIdx, setActiveIdx] = useState(0)
 
     /* ─── GSAP animations ─── */
     useEffect(() => {
+        // Defined outside ctx so the wheel handler can share the same array
+        const imgElements = imageRefs.current.filter(Boolean) as HTMLDivElement[]
+        const totalImages = imgElements.length
+
         const ctx = gsap.context(() => {
             // Initial reveal for the big background text "UNIVERS"
             // We animate the h1 directly rather than the container so opacity works correctly
@@ -58,22 +63,19 @@ export default function UniversPage() {
             }
 
             /* === SCROLL-DRIVEN IMAGE LAYER === */
-            if (contentSectionRef.current && imgWrapperRef.current && imageRefs.current.length > 0) {
-                const images = imageRefs.current.filter(Boolean) as HTMLDivElement[]
-                const totalImages = images.length
-
-                // Wrap images setup
-                images.forEach((img, i) => {
+            if (contentSectionRef.current && imgWrapperRef.current && imgElements.length > 0) {
+                // Initial opacity state
+                imgElements.forEach((img, i) => {
                     gsap.set(img, { opacity: i === 0 ? 1 : 0 })
                 })
 
-                // Create the master scroll trigger timeline for the image container parallax/scale
+                // Master timeline for container parallax/scale only
                 const imgContainerTl = gsap.timeline({
                     scrollTrigger: {
                         trigger: contentSectionRef.current,
                         start: 'top top',
                         end: 'bottom bottom',
-                        scrub: 1, // Smooth scrub
+                        scrub: 1,
                     },
                 })
 
@@ -89,32 +91,14 @@ export default function UniversPage() {
                     },
                 })
 
-                // Image animation:
-                // Start: un peu plus petit que l'écran (ex: 85% width) positionné à droite
-                // Fin: Beaucoup plus petit (ex: 45% width) et centré sur l'écran.
                 imgContainerTl.to(imgWrapperRef.current, {
-                    scale: 0.45,       // Se réduit de plus en plus
-                    xPercent: -45,     // Se déplace fortement vers la gauche (jusqu'au centre)
+                    scale: 0.45,
+                    xPercent: -45,
                     y: window.innerHeight * 0.15,
                     ease: 'none'
                 }, 0)
 
-                // The crossfade animations happening inside the wrapper over the scroll distance
-                for (let i = 0; i < totalImages - 1; i++) {
-                    const segmentStart = i / (totalImages - 1)
-                    const transitionDuration = 1 / (totalImages - 1)
-
-                    imgContainerTl.to(
-                        images[i],
-                        { opacity: 0, duration: transitionDuration * 0.5, ease: 'power1.inOut' },
-                        segmentStart
-                    )
-                    imgContainerTl.to(
-                        images[i + 1],
-                        { opacity: 1, duration: transitionDuration * 0.5, ease: 'power1.inOut' },
-                        segmentStart
-                    )
-                }
+                // Image transitions are handled by the wheel listener below (outside ctx)
             }
             // === VERTICAL TIMELINE ANIMATIONS ===
             if (timelineSectionRef.current && timelineLineRef.current) {
@@ -179,7 +163,45 @@ export default function UniversPage() {
             }
         })
 
-        return () => ctx.revert()
+        // Wheel-based discrete image transitions:
+        // Accumulate deltaY; each 100px of accumulated delta = one image change.
+        // A lock (500ms) prevents rapid-fire changes during a fast gesture.
+        let currentIdx = 0
+        let wheelAccum = 0
+        let changeLock = false
+
+        const onWheel = (e: WheelEvent) => {
+            if (imgElements.length === 0 || !contentSectionRef.current) return
+            const rect = contentSectionRef.current.getBoundingClientRect()
+            // Only active while the sticky image panel is in its pinned phase
+            if (rect.top > 0 || rect.bottom < window.innerHeight) return
+
+            if (changeLock) { wheelAccum = 0; return }
+
+            wheelAccum += e.deltaY
+            if (Math.abs(wheelAccum) < 100) return
+
+            const dir = (wheelAccum > 0 ? 1 : -1) as 1 | -1
+            wheelAccum = 0
+
+            const newIdx = Math.max(0, Math.min(totalImages - 1, currentIdx + dir))
+            if (newIdx === currentIdx) return
+
+            changeLock = true
+            gsap.to(imgElements[currentIdx], { opacity: 0, duration: 0.4, ease: 'power1.inOut' })
+            gsap.to(imgElements[newIdx], { opacity: 1, duration: 0.4, ease: 'power1.inOut' })
+            currentIdx = newIdx
+            setActiveIdx(newIdx)
+
+            setTimeout(() => { changeLock = false }, 500)
+        }
+
+        window.addEventListener('wheel', onWheel, { passive: true })
+
+        return () => {
+            ctx.revert()
+            window.removeEventListener('wheel', onWheel)
+        }
     }, [])
 
     return (
@@ -213,7 +235,7 @@ export default function UniversPage() {
             {/* Reduced from pt-[20vw] to pt-[12vw] to force overlap */}
             <section
                 ref={contentSectionRef as React.RefObject<HTMLElement>}
-                className="relative z-10 w-full pt-[12vw]"
+                className="relative z-10 w-full pt-[12vw] scroll-gallery-section"
             >
                 {/* 
                   Extra tall container to allow plenty of scrolling.
@@ -336,8 +358,8 @@ export default function UniversPage() {
                                             key={i}
                                             className="w-[2px] h-6 rounded-full transition-all duration-500 shadow-sm"
                                             style={{
-                                                background: i === 0
-                                                    ? 'rgba(168, 85, 247, 0.9)' // purple-500
+                                                background: i === activeIdx
+                                                    ? 'rgba(168, 85, 247, 0.9)'
                                                     : 'rgba(255, 255, 255, 0.2)',
                                             }}
                                         />
@@ -390,125 +412,159 @@ export default function UniversPage() {
 
                         <div className="flex flex-col gap-20 lg:gap-28">
 
-                            {/* ── Item 1: The Legends Era (right on desktop) ── */}
+                            {/* ── Item 1: The Legends Era (text RIGHT, image LEFT on desktop) ── */}
                             <div className="relative pl-12 lg:pl-0">
                                 {/* Node */}
                                 <div
                                     ref={(el) => { timelineNodeRefs.current[0] = el }}
                                     className="absolute left-4 lg:left-1/2 top-7 w-3 h-3 z-10 rounded-full bg-purple-600 border-2 border-purple-400 shadow-[0_0_12px_rgba(168,85,247,0.6)]"
                                 />
-                                {/* Content block */}
-                                <div
-                                    ref={(el) => { timelineBlockRefs.current[0] = el }}
-                                    className="lg:ml-[calc(50%+2rem)] lg:w-[calc(50%-2rem)] bg-[#0f0008] border border-white/5 rounded-sm p-6 lg:p-8"
-                                >
-                                    <span
-                                        className="text-purple-500 text-xs tracking-[0.2em] uppercase block mb-3"
-                                        style={{ fontFamily: 'var(--font-barlow)' }}
-                                    >
-                                        1950 — 1994
-                                    </span>
-                                    <h3
-                                        className="text-2xl sm:text-3xl text-white font-bold uppercase tracking-tight mb-6"
-                                        style={{ fontFamily: 'var(--font-russo)' }}
-                                    >
-                                        The <span className="text-purple-400">Legends</span> Era
-                                    </h3>
-                                    <div className="flex flex-col gap-5">
-                                        <p className="text-gray-400 text-lg leading-relaxed" style={{ fontFamily: 'var(--font-barlow)' }}>
-                                            The early decades of F1 were defined by two things: breathtaking skill and terrifying
-                                            danger. Drivers like{' '}
-                                            <span className="italic text-purple-400">Juan Manuel Fangio</span> and{' '}
-                                            <span className="italic text-purple-400">Jim Clark</span> became icons — not just for
-                                            their speed, but for their bravery in an era where fatal crashes were a real and regular
-                                            part of the sport. Safety was almost an afterthought. Cars were fast, fragile, and
-                                            unforgiving.
-                                        </p>
-                                        <p className="text-gray-400 text-lg leading-relaxed" style={{ fontFamily: 'var(--font-barlow)' }}>
-                                            Then came <span className="text-white font-medium">Ayrton Senna</span>.
-                                            His death at Imola in <span className="text-white font-medium">1994</span> shook F1 to
-                                            its core — and changed it forever. The FIA responded with sweeping safety reforms:
-                                            redesigned cockpits, stronger barriers, mandatory crash tests.
-                                        </p>
-                                        <p className="text-gray-400 text-lg leading-relaxed" style={{ fontFamily: 'var(--font-barlow)' }}>
-                                            That titanium frame arching over the driver&apos;s head today? That&apos;s the{' '}
-                                            <span className="italic text-purple-400">halo</span> — and it has literally saved lives.
-                                            Senna&apos;s legacy isn&apos;t just his three world titles. It&apos;s the sport he
-                                            helped make safer for everyone who came after.
-                                        </p>
+                                <div className="lg:grid lg:grid-cols-2 lg:gap-8 lg:items-start">
+                                    {/* Image — LEFT on desktop, hidden on mobile (shown inside text block) */}
+                                    <div className="hidden lg:block">
+                                        <div className="relative w-full aspect-[16/10] rounded-sm overflow-hidden">
+                                            <div
+                                                ref={(el) => { timelineImageRefs.current[0] = el }}
+                                                className="absolute left-0 right-0"
+                                                style={{ top: '-12%', bottom: '-12%' }}
+                                            >
+                                                <Image
+                                                    src="/img/f1-univers-pitstop.png"
+                                                    alt="F1 pit stop action"
+                                                    fill
+                                                    quality={90}
+                                                    sizes="45vw"
+                                                    className="object-cover object-center"
+                                                />
+                                                <div className="absolute inset-0 bg-black/20" />
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div className="relative w-full aspect-[16/10] rounded-sm overflow-hidden mt-6">
-                                        <div
-                                            ref={(el) => { timelineImageRefs.current[0] = el }}
-                                            className="absolute left-0 right-0"
-                                            style={{ top: '-12%', bottom: '-12%' }}
-                                        >
+                                    {/* Text block — RIGHT on desktop */}
+                                    <div
+                                        ref={(el) => { timelineBlockRefs.current[0] = el }}
+                                        className="bg-[#0f0008] border border-white/5 rounded-sm p-6 lg:p-8"
+                                    >
+                                        {/* Image on mobile */}
+                                        <div className="lg:hidden relative w-full aspect-[16/10] rounded-sm overflow-hidden mb-6">
                                             <Image
                                                 src="/img/f1-univers-pitstop.png"
                                                 alt="F1 pit stop action"
                                                 fill
                                                 quality={90}
-                                                sizes="(max-width: 1024px) 100vw, 45vw"
+                                                sizes="100vw"
                                                 className="object-cover object-center"
                                             />
                                             <div className="absolute inset-0 bg-black/20" />
+                                        </div>
+                                        <span
+                                            className="text-purple-500 text-xs tracking-[0.2em] uppercase block mb-3"
+                                            style={{ fontFamily: 'var(--font-barlow)' }}
+                                        >
+                                            1950 — 1994
+                                        </span>
+                                        <h3
+                                            className="text-2xl sm:text-3xl text-white font-bold uppercase tracking-tight mb-6"
+                                            style={{ fontFamily: 'var(--font-russo)' }}
+                                        >
+                                            The <span className="text-purple-400">Legends</span> Era
+                                        </h3>
+                                        <div className="flex flex-col gap-5">
+                                            <p className="text-gray-400 text-lg leading-relaxed" style={{ fontFamily: 'var(--font-barlow)' }}>
+                                                The early decades of F1 were defined by two things: breathtaking skill and terrifying
+                                                danger. Drivers like{' '}
+                                                <span className="italic text-purple-400">Juan Manuel Fangio</span> and{' '}
+                                                <span className="italic text-purple-400">Jim Clark</span> became icons — not just for
+                                                their speed, but for their bravery in an era where fatal crashes were a real and regular
+                                                part of the sport. Safety was almost an afterthought. Cars were fast, fragile, and
+                                                unforgiving.
+                                            </p>
+                                            <p className="text-gray-400 text-lg leading-relaxed" style={{ fontFamily: 'var(--font-barlow)' }}>
+                                                Then came <span className="text-white font-medium">Ayrton Senna</span>.
+                                                His death at Imola in <span className="text-white font-medium">1994</span> shook F1 to
+                                                its core — and changed it forever. The FIA responded with sweeping safety reforms:
+                                                redesigned cockpits, stronger barriers, mandatory crash tests.
+                                            </p>
+                                            <p className="text-gray-400 text-lg leading-relaxed" style={{ fontFamily: 'var(--font-barlow)' }}>
+                                                That titanium frame arching over the driver&apos;s head today? That&apos;s the{' '}
+                                                <span className="italic text-purple-400">halo</span> — and it has literally saved lives.
+                                                Senna&apos;s legacy isn&apos;t just his three world titles. It&apos;s the sport he
+                                                helped make safer for everyone who came after.
+                                            </p>
                                         </div>
                                     </div>
                                 </div>
                             </div>
 
-                            {/* ── Item 2: Rivalries (left on desktop) ── */}
+                            {/* ── Item 2: Rivalries (text LEFT, image RIGHT on desktop) ── */}
                             <div className="relative pl-12 lg:pl-0">
                                 {/* Node */}
                                 <div
                                     ref={(el) => { timelineNodeRefs.current[1] = el }}
                                     className="absolute left-4 lg:left-1/2 top-7 w-3 h-3 z-10 rounded-full bg-purple-600 border-2 border-purple-400 shadow-[0_0_12px_rgba(168,85,247,0.6)]"
                                 />
-                                {/* Content block */}
-                                <div
-                                    ref={(el) => { timelineBlockRefs.current[1] = el }}
-                                    className="lg:w-[calc(50%-2rem)] bg-[#0f0008] border border-white/5 rounded-sm p-6 lg:p-8"
-                                >
-                                    <span
-                                        className="text-purple-500 text-xs tracking-[0.2em] uppercase block mb-3"
-                                        style={{ fontFamily: 'var(--font-barlow)' }}
+                                <div className="lg:grid lg:grid-cols-2 lg:gap-8 lg:items-start">
+                                    {/* Text block — LEFT on desktop */}
+                                    <div
+                                        ref={(el) => { timelineBlockRefs.current[1] = el }}
+                                        className="bg-[#0f0008] border border-white/5 rounded-sm p-6 lg:p-8"
                                     >
-                                        1984 — 2021
-                                    </span>
-                                    <h3
-                                        className="text-2xl sm:text-3xl text-white font-bold uppercase tracking-tight mb-6"
-                                        style={{ fontFamily: 'var(--font-russo)' }}
-                                    >
-                                        Rivalries That <span className="text-purple-400">Defined</span> Eras
-                                    </h3>
-                                    <div className="relative w-full aspect-[16/10] rounded-sm overflow-hidden mb-6">
-                                        <div
-                                            ref={(el) => { timelineImageRefs.current[1] = el }}
-                                            className="absolute left-0 right-0"
-                                            style={{ top: '-12%', bottom: '-12%' }}
-                                        >
+                                        {/* Image on mobile */}
+                                        <div className="lg:hidden relative w-full aspect-[16/10] rounded-sm overflow-hidden mb-6">
                                             <Image
                                                 src="/img/f1-univers-monaco.png"
                                                 alt="Monaco Grand Prix circuit"
                                                 fill
                                                 quality={90}
-                                                sizes="(max-width: 1024px) 100vw, 45vw"
+                                                sizes="100vw"
                                                 className="object-cover object-center"
                                             />
                                             <div className="absolute inset-0 bg-black/20" />
                                         </div>
+                                        <span
+                                            className="text-purple-500 text-xs tracking-[0.2em] uppercase block mb-3"
+                                            style={{ fontFamily: 'var(--font-barlow)' }}
+                                        >
+                                            1984 — 2021
+                                        </span>
+                                        <h3
+                                            className="text-2xl sm:text-3xl text-white font-bold uppercase tracking-tight mb-6"
+                                            style={{ fontFamily: 'var(--font-russo)' }}
+                                        >
+                                            Rivalries That <span className="text-purple-400">Defined</span> Eras
+                                        </h3>
+                                        <p className="text-gray-400 text-lg leading-relaxed" style={{ fontFamily: 'var(--font-barlow)' }}>
+                                            F1 has always been as much about the people as the cars.{' '}
+                                            <span className="text-white font-medium">Senna vs Prost</span> — a psychological war as
+                                            much as a racing one. Teammates who couldn&apos;t stand each other, battling for
+                                            supremacy across multiple seasons.{' '}
+                                            <span className="text-white font-medium">Schumacher vs Hill</span>, then vs Häkkinen —
+                                            the Schumacher dominance era redefined what it meant to be a complete racing driver.
+                                            And <span className="text-white font-medium">Hamilton vs Verstappen</span> — the 2021
+                                            season. Abu Dhabi. The last lap. These aren&apos;t just sports rivalries — they&apos;re
+                                            the kind of stories that keep fans up at night, debating decades later.
+                                        </p>
                                     </div>
-                                    <p className="text-gray-400 text-lg leading-relaxed" style={{ fontFamily: 'var(--font-barlow)' }}>
-                                        F1 has always been as much about the people as the cars.{' '}
-                                        <span className="text-white font-medium">Senna vs Prost</span> — a psychological war as
-                                        much as a racing one. Teammates who couldn&apos;t stand each other, battling for
-                                        supremacy across multiple seasons.{' '}
-                                        <span className="text-white font-medium">Schumacher vs Hill</span>, then vs Häkkinen —
-                                        the Schumacher dominance era redefined what it meant to be a complete racing driver.
-                                        And <span className="text-white font-medium">Hamilton vs Verstappen</span> — the 2021
-                                        season. Abu Dhabi. The last lap. These aren&apos;t just sports rivalries — they&apos;re
-                                        the kind of stories that keep fans up at night, debating decades later.
-                                    </p>
+                                    {/* Image — RIGHT on desktop, hidden on mobile (shown inside text block) */}
+                                    <div className="hidden lg:block">
+                                        <div className="relative w-full aspect-[16/10] rounded-sm overflow-hidden">
+                                            <div
+                                                ref={(el) => { timelineImageRefs.current[1] = el }}
+                                                className="absolute left-0 right-0"
+                                                style={{ top: '-12%', bottom: '-12%' }}
+                                            >
+                                                <Image
+                                                    src="/img/f1-univers-monaco.png"
+                                                    alt="Monaco Grand Prix circuit"
+                                                    fill
+                                                    quality={90}
+                                                    sizes="45vw"
+                                                    className="object-cover object-center"
+                                                />
+                                                <div className="absolute inset-0 bg-black/20" />
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
 
@@ -522,7 +578,7 @@ export default function UniversPage() {
                                 {/* Content block */}
                                 <div
                                     ref={(el) => { timelineBlockRefs.current[2] = el }}
-                                    className="lg:ml-[calc(50%+2rem)] lg:w-[calc(50%-2rem)] bg-[#0f0008] border border-white/5 rounded-sm p-6 lg:p-8"
+                                    className="timeline-block-right bg-[#0f0008] border border-white/5 rounded-sm p-6 lg:p-8"
                                 >
                                     <span
                                         className="text-purple-500 text-xs tracking-[0.2em] uppercase block mb-3"

@@ -47,3 +47,16 @@ html.lenis body {
 .lenis.lenis-scrolling iframe {
   pointer-events: none;
 }
+
+/* Timeline layout — calc-based responsive classes that Tailwind v4 JIT can miss in dev mode */
+@media (min-width: 1024px) {
+  .timeline-block-right {
+    margin-left: calc(50% + 2rem);
+    width: calc(50% - 2rem);
+  }
+
+  /* Ensures enough scroll distance for the sticky image gallery (6 discrete transitions) */
+  .scroll-gallery-section {
+    min-height: 200vh;
+  }
+}
