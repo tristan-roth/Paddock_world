@@ -55,8 +55,5 @@ html.lenis body {
     width: calc(50% - 2rem);
   }
 
-  /* Ensures enough scroll distance for the sticky image gallery (6 discrete transitions) */
-  .scroll-gallery-section {
-    min-height: 200vh;
-  }
+  /* No extra min-height — section height is determined by content */
 }
