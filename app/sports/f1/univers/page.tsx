@@ -17,6 +17,102 @@ const heroImages = [
     { src: '/img/f1-univers-pitstop.png', alt: 'F1 pit stop action' },
 ]
 
+const AUTOPLAY_SECONDS = 6
+
+const circuitCards = [
+    {
+        city: 'MONACO',
+        circuit: 'Circuit de Monaco',
+        country: 'Monaco',
+        tagline: 'Glamour in its purest form.',
+        desc: "Yachts in the harbor, celebrities in the paddock, champagne at every corner. The streets are so narrow that overtaking is nearly impossible — and somehow, that makes it more iconic, not less.",
+        img: '/img/f1-univers-monaco.png',
+    },
+    {
+        city: 'MONZA',
+        circuit: 'Autodromo Nazionale Monza',
+        country: 'Italy',
+        tagline: 'The Temple of Speed.',
+        desc: "Walk into the grandstands and you're surrounded by a sea of red. The Tifosi — Ferrari's fanatical Italian supporters — bring a passion that no other sport can replicate. The atmosphere is electric even before the lights go out.",
+        img: '/img/f1-univers-fans.png',
+    },
+    {
+        city: 'SINGAPORE',
+        circuit: 'Marina Bay Street Circuit',
+        country: 'Singapore',
+        tagline: 'A night race under a glittering skyline.',
+        desc: "Half sporting event, half music festival. The city literally lights up for F1 — neon reflections on the asphalt, the skyline as a backdrop, and a buzz that lasts long after the chequered flag.",
+        img: '/img/f1-univers-night.png',
+    },
+    {
+        city: 'SUZUKA',
+        circuit: 'Suzuka International Racing Course',
+        country: 'Japan',
+        tagline: 'The fans here are something else.',
+        desc: "Handmade helmets, driver-themed outfits, hours of queuing just to get the best spot. Japanese F1 fans are widely considered the most dedicated in the world — and watching them in person is an experience in itself.",
+        img: '/img/f1-univers-cockpit.png',
+    },
+    {
+        city: 'MIAMI & VEGAS',
+        circuit: 'The American Frontier',
+        country: 'United States',
+        tagline: 'The new frontier.',
+        desc: "F1's American expansion brought celebrities, chaos, and even a US President trackside. Love it or hate it — it shows just how far F1's cultural reach now extends.",
+        img: '/img/f1-univers-hero.png',
+    },
+]
+
+const trackCards = [
+    {
+        num: '01',
+        tag: 'Power',
+        title: 'Hybrid Engines',
+        desc: "F1 introduced hybrid power units in 2014, combining combustion engines with electric motors. That technology now powers the Ferrari SF90, the McLaren Artura, and increasingly, standard road cars.",
+        accent: 'from-purple-700/50',
+        icon: (
+            <svg className="w-full h-full" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M13 2L4.5 13.5H11l-1 8.5L19.5 10H13l0-8z" />
+            </svg>
+        ),
+    },
+    {
+        num: '02',
+        tag: 'Materials',
+        title: 'Carbon Fiber',
+        desc: "First used in F1 in the early 1980s by McLaren, carbon fiber is now standard in supercars and high-performance road cars everywhere.",
+        accent: 'from-purple-600/50',
+        icon: (
+            <svg className="w-full h-full" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M3 8l9-5 9 5-9 5-9-5z" /><path d="M3 12l9 5 9-5" /><path d="M3 16l9 5 9-5" />
+            </svg>
+        ),
+    },
+    {
+        num: '03',
+        tag: 'Aerodynamics',
+        title: 'Aerodynamics',
+        desc: "The drag-reducing shapes perfected in F1 wind tunnels now influence everything from hypercars like the Bugatti Chiron to fuel-efficient hatchbacks.",
+        accent: 'from-purple-500/50',
+        icon: (
+            <svg className="w-full h-full" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M3 8h11a3 3 0 1 0-3-3" /><path d="M3 12h15a3 3 0 1 1-3 3" /><path d="M3 16h9a2.5 2.5 0 1 1-2.5 2.5" />
+            </svg>
+        ),
+    },
+    {
+        num: '04',
+        tag: 'Safety',
+        title: 'Safety Systems',
+        desc: "Crumple zones, side-impact protection, advanced braking tech — all tested and refined in F1 before reaching your driveway.",
+        accent: 'from-purple-800/50',
+        icon: (
+            <svg className="w-full h-full" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M12 3l7 3v5c0 4.5-3 8.5-7 10-4-1.5-7-5.5-7-10V6l7-3z" /><path d="M9 12l2 2 4-4" />
+            </svg>
+        ),
+    },
+]
+
 export default function UniversPage() {
     const contentSectionRef = useRef<HTMLElement>(null)
     const imgWrapperRef = useRef<HTMLDivElement>(null)
@@ -41,6 +137,35 @@ export default function UniversPage() {
     const timelineImgOuterRefs = useRef<(HTMLDivElement | null)[]>([])
     const timelineImgInnerRefs = useRef<(HTMLDivElement | null)[]>([])
     const [activeIdx, setActiveIdx] = useState(0)
+    const impactTitleContainerRef = useRef<HTMLDivElement>(null)
+    const impactTitleRef = useRef<HTMLHeadingElement>(null)
+    const impactTitleOverlayRef = useRef<HTMLDivElement>(null)
+    const impactSubtitleContainerRef = useRef<HTMLDivElement>(null)
+    const impactSubtitleRef = useRef<HTMLHeadingElement>(null)
+    const impactSubtitleOverlayRef = useRef<HTMLDivElement>(null)
+    const impactIntroRef = useRef<HTMLDivElement>(null)
+    const impactQuoteRef = useRef<HTMLDivElement>(null)
+    const impactStatsRef = useRef<HTMLDivElement>(null)
+    const carouselHeadContainerRef = useRef<HTMLDivElement>(null)
+    const carouselHeadRef = useRef<HTMLHeadingElement>(null)
+    const carouselHeadOverlayRef = useRef<HTMLDivElement>(null)
+    const carouselSubRef = useRef<HTMLParagraphElement>(null)
+    const carouselClosingRef = useRef<HTMLDivElement>(null)
+    const trackHeadContainerRef = useRef<HTMLDivElement>(null)
+    const trackHeadRef = useRef<HTMLHeadingElement>(null)
+    const trackHeadOverlayRef = useRef<HTMLDivElement>(null)
+    const trackIntroRef = useRef<HTMLDivElement>(null)
+    const trackIconRefs = useRef<(HTMLDivElement | null)[]>([])
+    const trackClosingRef = useRef<HTMLParagraphElement>(null)
+    const carouselContainerRef = useRef<HTMLDivElement>(null)
+    const carouselInnerRef = useRef<HTMLDivElement>(null)
+    const isCarouselAnimating = useRef(false)
+    const carouselIdxRef = useRef(0)
+    const slideContentRefs = useRef<(HTMLDivElement | null)[]>([])
+    const slideImageRefs = useRef<(HTMLDivElement | null)[]>([])
+    const dotFillRef = useRef<HTMLDivElement | null>(null)
+    const autoplayTweenRef = useRef<gsap.core.Tween | null>(null)
+    const [carouselIdx, setCarouselIdx] = useState(0)
 
     useEffect(() => {
         const imgElements = imageRefs.current.filter(Boolean) as HTMLDivElement[]
@@ -236,6 +361,161 @@ export default function UniversPage() {
                     }
                 })
             }
+
+            // === IMPACT SECTION ANIMATIONS ===
+            if (impactTitleContainerRef.current && impactTitleRef.current && impactTitleOverlayRef.current) {
+                gsap.set(impactTitleRef.current, { opacity: 0 })
+                const tl = gsap.timeline({
+                    scrollTrigger: { trigger: impactTitleContainerRef.current, start: 'top 80%', toggleActions: 'play reverse play reverse' }
+                })
+                tl
+                    .fromTo(impactTitleOverlayRef.current, { x: '-100%' }, { x: '0%', duration: 0.6, ease: 'power2.in' })
+                    .to(impactTitleRef.current, { opacity: 1, duration: 0.001 }, 0.6)
+                    .to(impactTitleOverlayRef.current, { x: '100%', duration: 0.6, ease: 'power2.out' }, 0.6)
+            }
+
+            if (impactSubtitleContainerRef.current && impactSubtitleRef.current && impactSubtitleOverlayRef.current) {
+                gsap.set(impactSubtitleRef.current, { opacity: 0 })
+                const tl = gsap.timeline({
+                    scrollTrigger: { trigger: impactSubtitleContainerRef.current, start: 'top 80%', toggleActions: 'play reverse play reverse' }
+                })
+                tl
+                    .fromTo(impactSubtitleOverlayRef.current, { x: '-100%' }, { x: '0%', duration: 0.6, ease: 'power2.in' })
+                    .to(impactSubtitleRef.current, { opacity: 1, duration: 0.001 }, 0.6)
+                    .to(impactSubtitleOverlayRef.current, { x: '100%', duration: 0.6, ease: 'power2.out' }, 0.6)
+            }
+
+            if (impactIntroRef.current) {
+                const paras = impactIntroRef.current.querySelectorAll('p')
+                gsap.set(paras, { opacity: 0, y: 28 })
+                gsap.to(paras, {
+                    opacity: 1, y: 0,
+                    stagger: 0.2, duration: 0.9, ease: 'power2.out',
+                    scrollTrigger: {
+                        trigger: impactIntroRef.current,
+                        start: 'top 75%',
+                        toggleActions: 'play reverse play reverse',
+                    }
+                })
+            }
+
+            if (impactQuoteRef.current) {
+                gsap.fromTo(impactQuoteRef.current,
+                    { opacity: 0, x: -30 },
+                    {
+                        opacity: 1, x: 0, duration: 1, ease: 'power3.out',
+                        scrollTrigger: { trigger: impactQuoteRef.current, start: 'top 80%', toggleActions: 'play reverse play reverse' }
+                    }
+                )
+            }
+
+            if (impactStatsRef.current) {
+                const statItems = impactStatsRef.current.querySelectorAll('.stat-item')
+                gsap.set(statItems, { opacity: 0, y: 30 })
+                gsap.to(statItems, {
+                    opacity: 1, y: 0,
+                    stagger: 0.15, duration: 0.8, ease: 'power2.out',
+                    scrollTrigger: {
+                        trigger: impactStatsRef.current,
+                        start: 'top 80%',
+                        toggleActions: 'play reverse play reverse',
+                    }
+                })
+            }
+
+            // === CAROUSEL HEADER ===
+            if (carouselHeadContainerRef.current && carouselHeadRef.current && carouselHeadOverlayRef.current) {
+                gsap.set(carouselHeadRef.current, { opacity: 0 })
+                const tl = gsap.timeline({
+                    scrollTrigger: { trigger: carouselHeadContainerRef.current, start: 'top 85%', toggleActions: 'play reverse play reverse' }
+                })
+                tl
+                    .fromTo(carouselHeadOverlayRef.current, { x: '-100%' }, { x: '0%', duration: 0.6, ease: 'power2.in' })
+                    .to(carouselHeadRef.current, { opacity: 1, duration: 0.001 }, 0.6)
+                    .to(carouselHeadOverlayRef.current, { x: '100%', duration: 0.6, ease: 'power2.out' }, 0.6)
+            }
+
+            if (carouselSubRef.current) {
+                gsap.fromTo(carouselSubRef.current,
+                    { opacity: 0, y: 24 },
+                    {
+                        opacity: 1, y: 0, duration: 0.9, ease: 'power2.out',
+                        scrollTrigger: { trigger: carouselSubRef.current, start: 'top 85%', toggleActions: 'play reverse play reverse' }
+                    }
+                )
+            }
+
+            // === CAROUSEL CLOSING STATEMENT ===
+            if (carouselClosingRef.current) {
+                const items = carouselClosingRef.current.querySelectorAll('.closing-anim')
+                gsap.set(items, { opacity: 0, y: 30 })
+                gsap.to(items, {
+                    opacity: 1, y: 0,
+                    stagger: 0.18, duration: 0.9, ease: 'power3.out',
+                    scrollTrigger: { trigger: carouselClosingRef.current, start: 'top 80%', toggleActions: 'play reverse play reverse' }
+                })
+            }
+
+            // === FROM THE TRACK TO YOUR CAR — header + intro ===
+            if (trackHeadContainerRef.current && trackHeadRef.current && trackHeadOverlayRef.current) {
+                gsap.set(trackHeadRef.current, { opacity: 0 })
+                const tl = gsap.timeline({
+                    scrollTrigger: { trigger: trackHeadContainerRef.current, start: 'top 85%', toggleActions: 'play reverse play reverse' }
+                })
+                tl
+                    .fromTo(trackHeadOverlayRef.current, { x: '-100%' }, { x: '0%', duration: 0.6, ease: 'power2.in' })
+                    .to(trackHeadRef.current, { opacity: 1, duration: 0.001 }, 0.6)
+                    .to(trackHeadOverlayRef.current, { x: '100%', duration: 0.6, ease: 'power2.out' }, 0.6)
+            }
+
+            if (trackIntroRef.current) {
+                const paras = trackIntroRef.current.querySelectorAll('p')
+                gsap.set(paras, { opacity: 0, y: 28 })
+                gsap.to(paras, {
+                    opacity: 1, y: 0,
+                    stagger: 0.2, duration: 0.9, ease: 'power2.out',
+                    scrollTrigger: { trigger: trackIntroRef.current, start: 'top 80%', toggleActions: 'play reverse play reverse' }
+                })
+            }
+
+            // === ICON DRAW-ON (stroke trace) per card ===
+            trackIconRefs.current.forEach((wrap) => {
+                if (!wrap) return
+                const paths = Array.from(wrap.querySelectorAll('path'))
+                if (paths.length === 0) return
+                paths.forEach((p) => {
+                    const len = p.getTotalLength()
+                    gsap.set(p, { strokeDasharray: len, strokeDashoffset: len })
+                })
+                // Keep the whole icon hidden (visibility) until the trace starts so the round
+                // line-caps never show as static dots beforehand.
+                gsap.set(wrap, { autoAlpha: 0 })
+                const tl = gsap.timeline({
+                    scrollTrigger: {
+                        trigger: wrap,
+                        start: 'top 85%',
+                        toggleActions: 'play none none reverse',
+                    },
+                })
+                tl
+                    .set(wrap, { autoAlpha: 1 }, 0)
+                    .to(paths, {
+                        strokeDashoffset: 0,
+                        duration: 1.2,
+                        ease: 'power2.inOut',
+                        stagger: 0.18,
+                    }, 0)
+            })
+
+            if (trackClosingRef.current) {
+                gsap.fromTo(trackClosingRef.current,
+                    { opacity: 0, y: 30 },
+                    {
+                        opacity: 1, y: 0, duration: 1, ease: 'power3.out',
+                        scrollTrigger: { trigger: trackClosingRef.current, start: 'top 85%', toggleActions: 'play reverse play reverse' }
+                    }
+                )
+            }
         })
 
         let currentIdx = 0
@@ -268,6 +548,92 @@ export default function UniversPage() {
             window.removeEventListener('wheel', onWheel)
         }
     }, [])
+
+    const animateToSlide = (newIdx: number) => {
+        if (isCarouselAnimating.current || !carouselInnerRef.current) return
+        const len = circuitCards.length
+        const target = ((newIdx % len) + len) % len // wrap-around
+        if (target === carouselIdxRef.current) return
+        isCarouselAnimating.current = true
+        const slideWidth = carouselContainerRef.current?.clientWidth ?? window.innerWidth
+        gsap.to(carouselInnerRef.current, {
+            x: -target * slideWidth,
+            duration: 1,
+            ease: 'power3.inOut',
+            onComplete: () => { isCarouselAnimating.current = false },
+        })
+        carouselIdxRef.current = target
+        setCarouselIdx(target)
+    }
+
+    const goToSlide = (newIdx: number) => animateToSlide(newIdx)
+
+    // Per-slide content reveal + autoplay (fills the active dot, then advances)
+    useEffect(() => {
+        const ctx = gsap.context(() => {
+            // clear any parallax offset carried over from another slide
+            slideImageRefs.current.forEach((el) => { if (el) gsap.set(el, { x: 0, y: 0 }) })
+
+            const content = slideContentRefs.current[carouselIdx]
+            if (content) {
+                const items = content.querySelectorAll('.slide-anim')
+                gsap.fromTo(items,
+                    { y: 48, opacity: 0 },
+                    { y: 0, opacity: 1, duration: 0.85, stagger: 0.09, ease: 'power3.out', delay: 0.15 }
+                )
+            }
+        })
+
+        // Autoplay — managed explicitly (outside the context) so it always loops
+        autoplayTweenRef.current?.kill()
+        if (dotFillRef.current) {
+            gsap.set(dotFillRef.current, { width: '0%' })
+            autoplayTweenRef.current = gsap.to(dotFillRef.current, {
+                width: '100%',
+                duration: AUTOPLAY_SECONDS,
+                ease: 'none',
+                onComplete: () => animateToSlide(carouselIdxRef.current + 1),
+            })
+        }
+
+        return () => {
+            ctx.revert()
+            autoplayTweenRef.current?.kill()
+        }
+    }, [carouselIdx])
+
+    // Keep the slide offset correct on resize
+    useEffect(() => {
+        const onResize = () => {
+            if (!carouselInnerRef.current) return
+            const slideWidth = carouselContainerRef.current?.clientWidth ?? window.innerWidth
+            gsap.set(carouselInnerRef.current, { x: -carouselIdxRef.current * slideWidth })
+        }
+        window.addEventListener('resize', onResize)
+        return () => window.removeEventListener('resize', onResize)
+    }, [])
+
+    // Background images drift gently with the mouse (subtle parallax)
+    const PARALLAX_AMOUNT = 26
+    const handleParallax = (e: React.MouseEvent) => {
+        const el = slideImageRefs.current[carouselIdx]
+        const container = carouselContainerRef.current
+        if (!el || !container) return
+        const rect = container.getBoundingClientRect()
+        const nx = ((e.clientX - rect.left) / rect.width - 0.5) * 2  // -1..1
+        const ny = ((e.clientY - rect.top) / rect.height - 0.5) * 2  // -1..1
+        gsap.to(el, {
+            x: nx * -PARALLAX_AMOUNT,
+            y: ny * -PARALLAX_AMOUNT,
+            duration: 0.8,
+            ease: 'power2.out',
+            overwrite: 'auto',
+        })
+    }
+    const resetParallax = () => {
+        const el = slideImageRefs.current[carouselIdx]
+        if (el) gsap.to(el, { x: 0, y: 0, duration: 0.8, ease: 'power2.out' })
+    }
 
     return (
         <main className="relative w-full bg-[#0a0a0a] min-h-0" style={{ overflowX: 'clip' }}>
@@ -504,6 +870,301 @@ export default function UniversPage() {
 
                         </div>
                     </div>
+                </div>
+            </section>
+
+            {/* ═══ THE IMPACT ═══ */}
+            <section className="relative z-10 w-full bg-[#0a0a0a] pt-24 lg:pt-40">
+                {/* Intro two-column */}
+                <div className="relative w-full max-w-[1920px] mx-auto flex flex-col lg:flex-row pb-24 lg:pb-32">
+                    {/* Left: title + text */}
+                    <div className="w-full lg:w-[50%] px-6 sm:px-12 md:px-20 xl:px-32 relative z-20 flex flex-col justify-start">
+                        <div ref={impactTitleContainerRef} className="relative overflow-hidden inline-block mb-10 mt-10 lg:mt-[5vw]">
+                            <h2
+                                ref={impactTitleRef}
+                                className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-white uppercase tracking-tight leading-none drop-shadow-2xl"
+                                style={{ fontFamily: 'var(--font-russo)', opacity: 0 }}
+                            >
+                                THE{' '}
+                                <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-500 to-purple-700" style={{ fontFamily: 'var(--font-playfair)' }}>
+                                    IMPACT
+                                </span>
+                            </h2>
+                            <div ref={impactTitleOverlayRef} className="absolute inset-0 bg-purple-600 z-30" style={{ transform: 'translateX(-100%)' }} />
+                        </div>
+
+                        <div ref={impactSubtitleContainerRef} className="relative overflow-hidden mb-10">
+                            <h3
+                                ref={impactSubtitleRef}
+                                className="text-3xl sm:text-4xl md:text-5xl text-white font-normal leading-tight"
+                                style={{ fontFamily: 'var(--font-playfair)', opacity: 0 }}
+                            >
+                                The <span className="font-semibold text-gray-300 italic">Global Impact</span> of F1
+                            </h3>
+                            <div ref={impactSubtitleOverlayRef} className="absolute inset-0 bg-purple-600 z-10" style={{ transform: 'translateX(-100%)' }} />
+                        </div>
+
+                        <div ref={impactIntroRef} className="flex flex-col gap-6">
+                            <p className="text-white text-2xl sm:text-3xl font-bold leading-snug pr-4" style={{ fontFamily: 'var(--font-russo)' }}>
+                                F1 doesn&apos;t just visit cities.{' '}
+                                <span className="text-purple-400">It transforms them.</span>
+                            </p>
+                            <p className="text-gray-400 text-lg sm:text-xl leading-relaxed pr-4" style={{ fontFamily: 'var(--font-barlow)' }}>
+                                Twenty-four weekends a year, a travelling circus of engineers, drivers, and millions of fans descends on a new corner of the world. From the narrow streets of <span className="text-white font-medium">Monaco</span> to the neon skyline of <span className="text-white font-medium">Singapore</span>, each race is its own world — its own culture, its own energy.
+                            </p>
+                        </div>
+
+                        <div ref={impactQuoteRef} className="mt-10 border-l-2 border-purple-600 pl-6">
+                            <p className="text-white text-2xl sm:text-3xl font-semibold italic leading-snug" style={{ fontFamily: 'var(--font-playfair)' }}>
+                                This isn&apos;t just sport.<br />
+                                <span className="text-purple-400">It&apos;s spectacle.</span>
+                            </p>
+                        </div>
+
+                        <div className="flex items-center gap-3 mt-8 mb-4">
+                            <div className="w-8 h-[1px] bg-purple-700" />
+                            <span className="text-purple-500 text-xs tracking-[0.2em] uppercase" style={{ fontFamily: 'var(--font-outfit)' }}>24 Races · 20 Nations</span>
+                        </div>
+                    </div>
+
+                    {/* Right: stats grid */}
+                    <div className="w-full lg:w-[50%] px-6 sm:px-12 md:px-20 xl:px-16 relative z-20 flex flex-col justify-center mt-16 lg:mt-[5vw]">
+                        <div ref={impactStatsRef} className="grid grid-cols-2 gap-4 lg:gap-6">
+                            {[
+                                { number: '24', label: 'Races per Season', sub: 'across 5 continents' },
+                                { number: '20+', label: 'Nations on the Grid', sub: 'drivers from every corner' },
+                                { number: '500M+', label: 'Global Fans', sub: 'tuning in each year' },
+                                { number: '75', label: 'Years of History', sub: 'since Silverstone 1950' },
+                            ].map((stat) => (
+                                <div key={stat.label} className="stat-item bg-[#0f0f0f] border border-white/5 rounded-sm p-6 lg:p-8 flex flex-col gap-2">
+                                    <span className="text-purple-400 text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight leading-none" style={{ fontFamily: 'var(--font-russo)' }}>
+                                        {stat.number}
+                                    </span>
+                                    <span className="text-white text-sm font-semibold uppercase tracking-wide" style={{ fontFamily: 'var(--font-barlow)' }}>
+                                        {stat.label}
+                                    </span>
+                                    <span className="text-gray-500 text-xs tracking-wide" style={{ fontFamily: 'var(--font-barlow)' }}>
+                                        {stat.sub}
+                                    </span>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+
+                {/* ═══ CAROUSEL HEADER ═══ */}
+                <div className="w-full max-w-[1920px] mx-auto px-6 sm:px-12 md:px-20 xl:px-32 mb-12 lg:mb-16">
+                    <div ref={carouselHeadContainerRef} className="relative overflow-hidden inline-block mb-6">
+                        <h2
+                            className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl text-white font-bold uppercase tracking-tight leading-none"
+                            style={{ fontFamily: 'var(--font-russo)' }}
+                            ref={carouselHeadRef}
+                        >
+                            Every Race, Its Own <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-purple-700">Universe</span>
+                        </h2>
+                        <div ref={carouselHeadOverlayRef} className="absolute inset-0 bg-purple-600 z-10" style={{ transform: 'translateX(-100%)' }} />
+                    </div>
+                    <p ref={carouselSubRef} className="text-gray-400 text-lg sm:text-xl max-w-2xl" style={{ fontFamily: 'var(--font-barlow)' }}>
+                        Each Grand Prix reflects the soul of its host city. These five are F1&apos;s most iconic stages — use the arrows to explore them.
+                    </p>
+                </div>
+
+                {/* ═══ FULL-PAGE CAROUSEL ═══ */}
+                <div
+                    ref={carouselContainerRef}
+                    className="relative w-full overflow-hidden select-none"
+                    style={{ height: '100vh' }}
+                    onMouseMove={handleParallax}
+                    onMouseLeave={resetParallax}
+                >
+                    <div ref={carouselInnerRef} className="flex h-full" style={{ willChange: 'transform' }}>
+                        {circuitCards.map((card, i) => (
+                            <div
+                                key={card.city}
+                                className="relative h-full flex-shrink-0 overflow-hidden"
+                                style={{ width: '100vw' }}
+                            >
+                                {/* Parallax image wrapper (overscan so movement never reveals edges) */}
+                                <div
+                                    ref={(el) => { slideImageRefs.current[i] = el }}
+                                    className="absolute will-change-transform"
+                                    style={{ top: '-5%', left: '-5%', right: '-5%', bottom: '-5%' }}
+                                >
+                                    <Image src={card.img} alt={card.circuit} fill quality={100} sizes="110vw" className="object-cover object-center" priority={i === 0} />
+                                </div>
+                                <div className="absolute inset-0 bg-gradient-to-t from-black via-black/55 to-black/10" />
+                                <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/25 to-transparent" />
+
+                                <div
+                                    ref={(el) => { slideContentRefs.current[i] = el }}
+                                    className="absolute inset-0 flex flex-col justify-end px-8 sm:px-16 md:px-24 lg:px-32 pb-24 sm:pb-28 lg:pb-32 max-w-5xl"
+                                >
+                                    <div className="slide-anim flex items-center gap-3 mb-5">
+                                        <span className="w-8 h-[1px] bg-purple-500" />
+                                        <span className="text-purple-400 text-xs sm:text-sm tracking-[0.3em] uppercase" style={{ fontFamily: 'var(--font-barlow)' }}>
+                                            {card.country}
+                                        </span>
+                                    </div>
+                                    <h2
+                                        className="slide-anim text-white font-black tracking-tighter leading-[0.9] uppercase mb-3"
+                                        style={{ fontFamily: 'var(--font-russo)', fontSize: 'clamp(2.5rem, 9vw, 8rem)' }}
+                                    >
+                                        {card.city}
+                                    </h2>
+                                    <p className="slide-anim text-gray-300 text-sm sm:text-base mb-3 uppercase tracking-[0.2em]" style={{ fontFamily: 'var(--font-barlow)' }}>
+                                        {card.circuit}
+                                    </p>
+                                    <p className="slide-anim text-white text-xl sm:text-2xl md:text-3xl italic mb-6 font-semibold" style={{ fontFamily: 'var(--font-playfair)' }}>
+                                        &ldquo;{card.tagline}&rdquo;
+                                    </p>
+                                    <p className="slide-anim text-gray-300/90 text-base sm:text-lg leading-relaxed max-w-2xl" style={{ fontFamily: 'var(--font-barlow)' }}>
+                                        {card.desc}
+                                    </p>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+
+                    {/* Arrow left */}
+                    <button
+                        onClick={() => goToSlide(carouselIdx - 1)}
+                        className="absolute left-4 sm:left-8 top-1/2 -translate-y-1/2 z-20 w-12 h-12 sm:w-14 sm:h-14 rounded-full border border-white/20 bg-black/40 backdrop-blur-sm flex items-center justify-center text-white transition-all duration-300 hover:bg-purple-600/60 hover:border-purple-500 hover:scale-110"
+                        aria-label="Previous circuit"
+                    >
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M15.75 19.5L8.25 12l7.5-7.5" />
+                        </svg>
+                    </button>
+
+                    {/* Arrow right */}
+                    <button
+                        onClick={() => goToSlide(carouselIdx + 1)}
+                        className="absolute right-4 sm:right-8 top-1/2 -translate-y-1/2 z-20 w-12 h-12 sm:w-14 sm:h-14 rounded-full border border-white/20 bg-black/40 backdrop-blur-sm flex items-center justify-center text-white transition-all duration-300 hover:bg-purple-600/60 hover:border-purple-500 hover:scale-110"
+                        aria-label="Next circuit"
+                    >
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+                        </svg>
+                    </button>
+
+                    {/* Navigation dots — active one is a pill that fills over the autoplay duration */}
+                    <div className="absolute bottom-12 left-1/2 -translate-x-1/2 z-20 flex gap-3 items-center">
+                        {circuitCards.map((_, i) => (
+                            <button
+                                key={i}
+                                onClick={() => goToSlide(i)}
+                                aria-label={`Go to slide ${i + 1}`}
+                                className="flex items-center justify-center p-1"
+                            >
+                                {i === carouselIdx ? (
+                                    <div className="relative h-[8px] w-[44px] rounded-full bg-white/25 overflow-hidden">
+                                        <div ref={dotFillRef} className="absolute inset-y-0 left-0 rounded-full bg-purple-500" style={{ width: '0%' }} />
+                                    </div>
+                                ) : (
+                                    <div className="h-[8px] w-[8px] rounded-full bg-white/30 transition-all duration-300 hover:bg-white/60" />
+                                )}
+                            </button>
+                        ))}
+                    </div>
+
+                    {/* Counter top-right */}
+                    <div className="absolute top-8 right-8 sm:right-16 z-20 text-right pointer-events-none select-none">
+                        <span className="text-white font-black" style={{ fontFamily: 'var(--font-russo)', fontSize: 'clamp(2rem, 4vw, 4rem)' }}>
+                            {String(carouselIdx + 1).padStart(2, '0')}
+                        </span>
+                        <span className="text-gray-500 text-xl">/{String(circuitCards.length).padStart(2, '0')}</span>
+                    </div>
+                </div>
+
+                {/* ═══ CLOSING: impact is everywhere ═══ */}
+                <div ref={carouselClosingRef} className="w-full max-w-[1100px] mx-auto px-6 sm:px-12 md:px-20 py-24 lg:py-32 text-center">
+                    <div className="closing-anim flex items-center justify-center gap-3 mb-8">
+                        <div className="w-8 h-[1px] bg-purple-700" />
+                        <span className="text-purple-500 text-xs tracking-[0.3em] uppercase" style={{ fontFamily: 'var(--font-outfit)' }}>And everywhere else</span>
+                        <div className="w-8 h-[1px] bg-purple-700" />
+                    </div>
+                    <p className="closing-anim text-white text-2xl sm:text-3xl md:text-4xl font-bold leading-snug mb-6" style={{ fontFamily: 'var(--font-russo)' }}>
+                        These five are F1&apos;s most iconic stages.
+                    </p>
+                    <p className="closing-anim text-gray-400 text-lg sm:text-xl leading-relaxed" style={{ fontFamily: 'var(--font-barlow)' }}>
+                        But make no mistake — wherever the grid lands, from <span className="text-white font-medium">Melbourne</span> to <span className="text-white font-medium">Mexico City</span>, from <span className="text-white font-medium">São Paulo</span> to <span className="text-white font-medium">Bahrain</span>, a city is never quite the same again. Streets close, economies surge, and for one weekend, the whole world looks its way.{' '}
+                        {/* <span className="text-purple-400 italic" style={{ fontFamily: 'var(--font-playfair)' }}>Every host city gets its own piece of the spectacle.</span> */}
+                    </p>
+                </div>
+
+                {/* ═══ FROM THE TRACK TO YOUR CAR — sticky stacking cards ═══ */}
+                <div className="w-full max-w-[1400px] mx-auto px-6 sm:px-12 md:px-20 xl:px-32 pb-28 lg:pb-40">
+                    {/* Intro */}
+                    <div className="max-w-3xl mb-14 lg:mb-20">
+                        <div ref={trackHeadContainerRef} className="relative overflow-hidden inline-block mb-8">
+                            <h2
+                                ref={trackHeadRef}
+                                className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl text-white font-bold uppercase tracking-tight leading-none"
+                                style={{ fontFamily: 'var(--font-russo)', opacity: 0 }}
+                            >
+                                From the Track to{' '}
+                                <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-purple-700">Your Car</span>
+                            </h2>
+                            <div ref={trackHeadOverlayRef} className="absolute inset-0 bg-purple-600 z-10" style={{ transform: 'translateX(-100%)' }} />
+                        </div>
+
+                        <div ref={trackIntroRef} className="flex flex-col gap-6">
+                            <p className="text-white text-xl sm:text-2xl font-semibold leading-snug" style={{ fontFamily: 'var(--font-playfair)' }}>
+                                Here&apos;s something most people don&apos;t realize: <span className="text-purple-400 italic">F1 has shaped the car you drive.</span>
+                            </p>
+                            <p className="text-gray-400 text-lg sm:text-xl leading-relaxed" style={{ fontFamily: 'var(--font-barlow)' }}>
+                                The sport isn&apos;t just entertainment — it&apos;s a technology lab running at <span className="text-white font-medium">300 km/h</span>. Innovations born on the track have quietly made their way into everyday vehicles.
+                            </p>
+                        </div>
+                    </div>
+
+                    {/* Sticky stacking cards */}
+                    <div className="relative">
+                        {trackCards.map((card, i) => (
+                            <div
+                                key={card.num}
+                                className="sticky pb-6"
+                                style={{ top: `calc(6rem + ${i * 3.5}rem)` }}
+                            >
+                                <div className="relative h-[44vh] min-h-[320px] rounded-2xl overflow-hidden bg-[#0f0f0f] border border-white/10 shadow-[0_-12px_50px_rgba(0,0,0,0.6)]">
+                                    <div className={`absolute inset-0 bg-gradient-to-br ${card.accent} via-[#0f0f0f] to-[#0a0a0a]`} />
+                                    <div className="relative flex flex-col md:flex-row h-full">
+                                        {/* Left visual */}
+                                        <div className="md:w-[38%] flex items-center justify-center relative px-8 py-10 md:py-0 overflow-hidden">
+                                            <div
+                                                ref={(el) => { trackIconRefs.current[i] = el }}
+                                                className="relative w-24 h-24 sm:w-28 sm:h-28 text-purple-300"
+                                                style={{ visibility: 'hidden' }}
+                                            >
+                                                {card.icon}
+                                            </div>
+                                        </div>
+
+                                        {/* Right text */}
+                                        <div className="md:w-[62%] flex flex-col justify-center px-8 sm:px-12 lg:px-16 pb-10 md:py-0">
+                                            <span className="block w-8 h-[1px] bg-purple-700 mb-5" />
+                                            <h3 className="text-3xl sm:text-4xl lg:text-5xl text-white font-bold uppercase tracking-tight mb-5" style={{ fontFamily: 'var(--font-russo)' }}>
+                                                {card.title}
+                                            </h3>
+                                            <p className="text-gray-300/90 text-base sm:text-lg lg:text-xl leading-relaxed max-w-xl" style={{ fontFamily: 'var(--font-barlow)' }}>
+                                                {card.desc}
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+
+                    {/* Closing line */}
+                    <p
+                        ref={trackClosingRef}
+                        className="text-center text-white text-2xl sm:text-3xl md:text-4xl font-bold leading-snug mt-20 lg:mt-28"
+                        style={{ fontFamily: 'var(--font-playfair)' }}
+                    >
+                        So yes — even your everyday car carries a little{' '}
+                        <span className="text-purple-400 italic">F1 DNA.</span>
+                    </p>
                 </div>
             </section>
         </main>
