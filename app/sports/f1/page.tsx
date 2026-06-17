@@ -68,18 +68,18 @@ export default function F1Page() {
             tl.fromTo(
                 overlayRef.current,
                 { x: '-100%' },
-                { x: '100%', duration: 1.8, ease: 'power2.inOut' },
-                0.4
+                { x: '100%', duration: 1.3, ease: 'power2.inOut' },
+                0.2
             )
                 // Text appears instantly at midpoint
-                .set(titleRef.current, { opacity: 1 }, 0.4 + 0.9)
+                .set(titleRef.current, { opacity: 1 }, 0.2 + 0.65)
 
             // Red decorative line
             tl.fromTo(
                 redLineRef.current,
                 { scaleX: 0 },
-                { scaleX: 1, duration: 0.9, ease: 'power3.inOut' },
-                1.5
+                { scaleX: 1, duration: 0.65, ease: 'power3.inOut' },
+                1.1
             )
 
             // Tab cards – stagger
@@ -87,9 +87,9 @@ export default function F1Page() {
             if (tabCards) {
                 tl.fromTo(
                     tabCards,
-                    { opacity: 0, y: 50 },
-                    { opacity: 1, y: 0, duration: 0.7, stagger: 0.15, ease: 'power3.out' },
-                    1.7
+                    { opacity: 0, y: 40 },
+                    { opacity: 1, y: 0, duration: 0.55, stagger: 0.12, ease: 'power3.out' },
+                    1.3
                 )
             }
 
@@ -97,8 +97,8 @@ export default function F1Page() {
             tl.fromTo(
                 scrollArrowRef.current,
                 { opacity: 0, y: -15 },
-                { opacity: 1, y: 0, duration: 0.6 },
-                2.2
+                { opacity: 1, y: 0, duration: 0.5 },
+                1.75
             )
 
             // ── Parallax on hero background ──

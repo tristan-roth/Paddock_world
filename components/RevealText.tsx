@@ -182,16 +182,16 @@ export default function RevealText({
 
         overlays.forEach((overlay, i) => {
             const text = texts[i]
-            const startTime = i * 0.4
+            const startTime = i * 0.28
 
             tl.fromTo(
                 overlay,
                 { x: '-100%' },
-                { x: '0%', duration: 0.5, ease: 'power2.in' },
+                { x: '0%', duration: 0.35, ease: 'power2.in' },
                 startTime
             )
-                .set(text, { opacity: 1 }, startTime + 0.5)
-                .to(overlay, { x: '100%', duration: 0.5, ease: 'power2.out' }, startTime + 0.5)
+                .set(text, { opacity: 1 }, startTime + 0.35)
+                .to(overlay, { x: '100%', duration: 0.35, ease: 'power2.out' }, startTime + 0.35)
         })
 
         return () => {

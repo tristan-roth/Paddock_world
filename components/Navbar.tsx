@@ -29,6 +29,16 @@ export default function Navbar({ shouldAnimate = false, disableEntryAnimation = 
     const headerRef = useRef<HTMLElement>(null);
     const hasAnimatedRef = useRef(false);
     const lastScrollYRef = useRef(0);
+    const sportsCloseTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+    const openSports = () => {
+        if (sportsCloseTimerRef.current) clearTimeout(sportsCloseTimerRef.current);
+        setIsSportsOpen(true);
+    };
+
+    const closeSports = () => {
+        sportsCloseTimerRef.current = setTimeout(() => setIsSportsOpen(false), 150);
+    };
 
     useEffect(() => {
         const handleScroll = () => {
@@ -56,7 +66,10 @@ export default function Navbar({ shouldAnimate = false, disableEntryAnimation = 
             }
         };
         window.addEventListener('scroll', handleScroll, { passive: true });
-        return () => window.removeEventListener('scroll', handleScroll);
+        return () => {
+            window.removeEventListener('scroll', handleScroll);
+            if (sportsCloseTimerRef.current) clearTimeout(sportsCloseTimerRef.current);
+        };
     }, [isMobileMenuOpen]);
 
     useEffect(() => {
@@ -134,8 +147,8 @@ export default function Navbar({ shouldAnimate = false, disableEntryAnimation = 
                                     <div
                                         key={item.name}
                                         className="relative"
-                                        onMouseEnter={() => setIsSportsOpen(true)}
-                                        onMouseLeave={() => setIsSportsOpen(false)}
+                                        onMouseEnter={openSports}
+                                        onMouseLeave={closeSports}
                     >
                                         <button className="group relative py-2 flex items-center gap-1">
                                             <span className={`text-[13px] font-medium tracking-[0.15em] uppercase transition-colors duration-300
@@ -258,8 +271,8 @@ export default function Navbar({ shouldAnimate = false, disableEntryAnimation = 
                     transitionTimingFunction: 'cubic-bezier(0.19, 1, 0.22, 1)',
                     overflow: isSportsOpen ? 'visible' : 'hidden'
                 }}
-                onMouseEnter={() => setIsSportsOpen(true)}
-                onMouseLeave={() => setIsSportsOpen(false)}
+                onMouseEnter={openSports}
+                onMouseLeave={closeSports}
             >
                 <div className="h-full bg-[#060918] border-t border-white/5 flex">
 
