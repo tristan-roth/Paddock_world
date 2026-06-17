@@ -172,6 +172,8 @@ export default function UniversPage() {
     const hamiltonTextRef = useRef<HTMLDivElement>(null)
     const softStatementRef = useRef<HTMLDivElement>(null)
     const softClosingRef = useRef<HTMLDivElement>(null)
+    const softBgSectionRef = useRef<HTMLDivElement>(null)
+    const softBlobRefs = useRef<(HTMLDivElement | null)[]>([])
     const carouselContainerRef = useRef<HTMLDivElement>(null)
     const carouselInnerRef = useRef<HTMLDivElement>(null)
     const isCarouselAnimating = useRef(false)
@@ -609,6 +611,19 @@ export default function UniversPage() {
                 })
             }
 
+            // === PART 2 — Soft Power background blobs (scroll parallax) ===
+            softBlobRefs.current.forEach((blob, i) => {
+                if (!blob || !softBgSectionRef.current) return
+                const dir = i % 2 === 0 ? 1 : -1
+                gsap.fromTo(blob,
+                    { yPercent: -18 * dir },
+                    {
+                        yPercent: 18 * dir, ease: 'none',
+                        scrollTrigger: { trigger: softBgSectionRef.current, start: 'top bottom', end: 'bottom top', scrub: true }
+                    }
+                )
+            })
+
             // === PART 2 — Soft Power ===
             if (softStatementRef.current) {
                 const lines = softStatementRef.current.querySelectorAll('.statement-line')
@@ -744,6 +759,32 @@ export default function UniversPage() {
     const resetParallax = () => {
         const el = slideImageRefs.current[carouselIdx]
         if (el) gsap.to(el, { x: 0, y: 0, duration: 0.8, ease: 'power2.out' })
+    }
+
+    // Soft Power background blobs drift gently with the mouse
+    const SOFT_BG_PARALLAX_AMOUNT = 36
+    const handleSoftBgParallax = (e: React.MouseEvent) => {
+        const container = softBgSectionRef.current
+        if (!container) return
+        const rect = container.getBoundingClientRect()
+        const nx = ((e.clientX - rect.left) / rect.width - 0.5) * 2
+        const ny = ((e.clientY - rect.top) / rect.height - 0.5) * 2
+        softBlobRefs.current.forEach((blob, i) => {
+            if (!blob) return
+            const amount = SOFT_BG_PARALLAX_AMOUNT * (i % 2 === 0 ? 1 : -1)
+            gsap.to(blob, {
+                x: nx * amount,
+                y: ny * amount,
+                duration: 1.2,
+                ease: 'power2.out',
+                overwrite: 'auto',
+            })
+        })
+    }
+    const resetSoftBgParallax = () => {
+        softBlobRefs.current.forEach((blob) => {
+            if (blob) gsap.to(blob, { x: 0, y: 0, duration: 1, ease: 'power2.out' })
+        })
     }
 
     return (
@@ -1290,9 +1331,6 @@ export default function UniversPage() {
                     <div className="relative z-10 w-full max-w-[1400px] mx-auto px-6 sm:px-12 md:px-20 xl:px-32">
                         <div ref={beyondLabelRef} className="flex items-center gap-3 mb-8" style={{ opacity: 0 }}>
                             <span className="w-10 h-[1px] bg-purple-600" />
-                            <span className="text-purple-500 text-xs tracking-[0.3em] uppercase" style={{ fontFamily: 'var(--font-outfit)' }}>
-                                Culture · Power · Influence
-                            </span>
                         </div>
                         <div ref={beyondHeadContainerRef} className="relative overflow-hidden inline-block mb-6">
                             <h2
@@ -1338,9 +1376,7 @@ export default function UniversPage() {
                                 <div className="absolute inset-0 bg-gradient-to-t from-black via-black/35 to-black/40" />
                                 <div className="absolute inset-0 bg-gradient-to-br from-purple-900/30 to-transparent mix-blend-overlay" />
                                 <div className="absolute inset-0 flex flex-col justify-between p-6 sm:p-8">
-                                    <span className="inline-flex items-center gap-2 text-purple-300 text-xs tracking-[0.25em] uppercase" style={{ fontFamily: 'var(--font-outfit)' }}>
-                                        <span className="w-6 h-[1px] bg-purple-500" /> The Modern F1 Driver
-                                    </span>
+                                    <span className="w-6 h-[1px] bg-purple-500" />
                                     <div>
                                         <span
                                             className="block text-white font-black uppercase leading-[0.82] tracking-tighter"
@@ -1357,9 +1393,7 @@ export default function UniversPage() {
 
                             {/* Text */}
                             <div className="relative min-w-0">
-                                <span className="block text-purple-500 text-xs tracking-[0.3em] uppercase mb-6" style={{ fontFamily: 'var(--font-outfit)' }}>
-                                    The Cultural Icon
-                                </span>
+                                <span className="block w-10 h-[2px] bg-purple-600 mb-6" />
 
                                 <div ref={hamiltonHeadContainerRef} className="relative overflow-hidden inline-block mb-7">
                                     <h3 ref={hamiltonHeadRef} className="text-3xl sm:text-4xl md:text-5xl text-white font-normal leading-tight" style={{ fontFamily: 'var(--font-playfair)', opacity: 0 }}>
@@ -1380,28 +1414,75 @@ export default function UniversPage() {
                         </div>
                     </div>
 
-                    {/* ── PART 2 — Soft Power (sober) ── */}
-                    <div className="relative z-10 w-full max-w-3xl mx-auto px-6 sm:px-12 text-center mt-24 lg:mt-36">
-                        <div ref={softStatementRef}>
-                            <span className="statement-line inline-flex items-center gap-3 text-purple-500 text-xs tracking-[0.3em] uppercase mb-7" style={{ fontFamily: 'var(--font-outfit)' }}>
-                                <span className="w-8 h-[1px] bg-purple-700" /> Soft Power <span className="w-8 h-[1px] bg-purple-700" />
-                            </span>
-                            <p className="statement-line text-white text-2xl sm:text-3xl md:text-4xl font-bold leading-[1.15] tracking-tight mb-6" style={{ fontFamily: 'var(--font-russo)' }}>
-                                And the sport itself? It&apos;s become a stage for{' '}
-                                <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-purple-700">soft power.</span>
-                            </p>
-                            <p className="statement-line text-gray-400 text-base sm:text-lg leading-relaxed" style={{ fontFamily: 'var(--font-barlow)' }}>
-                                Governments compete to host races. Billionaires invest in teams. New circuits in <span className="text-white font-medium">Saudi Arabia</span>, <span className="text-white font-medium">Las Vegas</span> and <span className="text-white font-medium">Miami</span> aren&apos;t just business decisions — <span className="text-white font-medium">they&apos;re statements.</span>
-                            </p>
+                    {/* ── PART 2 — Soft Power (sober, cinematic bg) ── */}
+                    <div
+                        ref={softBgSectionRef}
+                        onMouseMove={handleSoftBgParallax}
+                        onMouseLeave={resetSoftBgParallax}
+                        className="relative w-full overflow-hidden py-24 lg:py-32 mt-24 lg:mt-36"
+                    >
+                        {/* cinematic glow blobs */}
+                        <div className="pointer-events-none absolute inset-0 overflow-hidden">
+                            <div
+                                ref={(el) => { softBlobRefs.current[0] = el }}
+                                className="absolute will-change-transform rounded-full"
+                                style={{
+                                    width: '46vw', height: '46vw', left: '6%', top: '8%',
+                                    background: 'radial-gradient(circle, rgba(168,85,247,0.22), transparent 70%)',
+                                    filter: 'blur(60px)',
+                                }}
+                            />
+                            <div
+                                ref={(el) => { softBlobRefs.current[1] = el }}
+                                className="absolute will-change-transform rounded-full"
+                                style={{
+                                    width: '38vw', height: '38vw', right: '4%', top: '30%',
+                                    background: 'radial-gradient(circle, rgba(126,34,206,0.20), transparent 70%)',
+                                    filter: 'blur(70px)',
+                                }}
+                            />
+                            <div
+                                ref={(el) => { softBlobRefs.current[2] = el }}
+                                className="absolute will-change-transform rounded-full"
+                                style={{
+                                    width: '30vw', height: '30vw', left: '32%', bottom: '0%',
+                                    background: 'radial-gradient(circle, rgba(192,132,252,0.16), transparent 70%)',
+                                    filter: 'blur(60px)',
+                                }}
+                            />
+                            {/* film grain */}
+                            <div
+                                className="absolute inset-0 opacity-[0.05] mix-blend-overlay"
+                                style={{
+                                    backgroundImage: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E\")",
+                                }}
+                            />
+                            {/* vignette */}
+                            <div className="absolute inset-0" style={{ background: 'radial-gradient(ellipse 70% 60% at 50% 50%, transparent 40%, rgba(0,0,0,0.55) 100%)' }} />
                         </div>
 
-                        <div ref={softClosingRef} className="mt-12 pt-10 border-t border-white/10">
-                            <p className="soft-closing-anim text-gray-400 text-base sm:text-lg leading-relaxed mb-4" style={{ fontFamily: 'var(--font-barlow)' }}>
-                                F1 is now one of the most watched sports on the planet.
-                            </p>
-                            <p className="soft-closing-anim text-white text-3xl sm:text-4xl md:text-5xl font-semibold italic leading-tight" style={{ fontFamily: 'var(--font-playfair)' }}>
-                                And <span className="text-purple-400">everyone</span> wants a piece of it.
-                            </p>
+                        <div className="relative z-10 w-full max-w-3xl mx-auto px-6 sm:px-12 text-center">
+                            <div ref={softStatementRef}>
+                                <span className="statement-line inline-flex items-center gap-3 text-purple-500 text-xs tracking-[0.3em] uppercase mb-7" style={{ fontFamily: 'var(--font-outfit)' }}>
+                                    <span className="w-8 h-[1px] bg-purple-700" /> Soft Power <span className="w-8 h-[1px] bg-purple-700" />
+                                </span>
+                                <p className="statement-line text-white text-2xl sm:text-3xl md:text-4xl font-bold leading-[1.15] tracking-tight mb-6" style={{ fontFamily: 'var(--font-russo)' }}>
+                                    And the sport itself? It&apos;s become a stage for{' '}
+                                    <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-purple-700">soft power.</span>
+                                </p>
+                                <p className="statement-line text-gray-400 text-base sm:text-lg leading-relaxed" style={{ fontFamily: 'var(--font-barlow)' }}>
+                                    Governments compete to host races. Billionaires invest in teams. New circuits in <span className="text-white font-medium">Saudi Arabia</span>, <span className="text-white font-medium">Las Vegas</span> and <span className="text-white font-medium">Miami</span> aren&apos;t just business decisions — <span className="text-white font-medium">they&apos;re statements.</span>
+                                </p>
+                            </div>
+
+                            <div ref={softClosingRef} className="mt-12 pt-10 border-t border-white/10">
+                                <p className="soft-closing-anim text-gray-400 text-base sm:text-lg leading-relaxed mb-4" style={{ fontFamily: 'var(--font-barlow)' }}>
+                                    F1 is now one of the most watched sports on the planet.
+                                </p>
+                                <p className="soft-closing-anim text-white text-3xl sm:text-4xl md:text-5xl font-semibold italic leading-tight" style={{ fontFamily: 'var(--font-playfair)' }}>
+                                    And <span className="text-purple-400">everyone</span> wants a piece of it.
+                                </p>
+                            </div>
                         </div>
                     </div>
                 </div>
