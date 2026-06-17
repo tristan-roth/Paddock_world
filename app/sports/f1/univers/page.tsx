@@ -157,6 +157,21 @@ export default function UniversPage() {
     const trackIntroRef = useRef<HTMLDivElement>(null)
     const trackIconRefs = useRef<(HTMLDivElement | null)[]>([])
     const trackClosingRef = useRef<HTMLParagraphElement>(null)
+    // Beyond Racing — Culture & Soft Power
+    const beyondLabelRef = useRef<HTMLDivElement>(null)
+    const beyondHeadContainerRef = useRef<HTMLDivElement>(null)
+    const beyondHeadRef = useRef<HTMLHeadingElement>(null)
+    const beyondHeadOverlayRef = useRef<HTMLDivElement>(null)
+    const beyondSubRef = useRef<HTMLHeadingElement>(null)
+    const iconWordRef = useRef<HTMLDivElement>(null)
+    const coverOuterRef = useRef<HTMLDivElement>(null)
+    const coverInnerRef = useRef<HTMLDivElement>(null)
+    const hamiltonHeadContainerRef = useRef<HTMLDivElement>(null)
+    const hamiltonHeadRef = useRef<HTMLHeadingElement>(null)
+    const hamiltonHeadOverlayRef = useRef<HTMLDivElement>(null)
+    const hamiltonTextRef = useRef<HTMLDivElement>(null)
+    const softStatementRef = useRef<HTMLDivElement>(null)
+    const softClosingRef = useRef<HTMLDivElement>(null)
     const carouselContainerRef = useRef<HTMLDivElement>(null)
     const carouselInnerRef = useRef<HTMLDivElement>(null)
     const isCarouselAnimating = useRef(false)
@@ -515,6 +530,102 @@ export default function UniversPage() {
                         scrollTrigger: { trigger: trackClosingRef.current, start: 'top 85%', toggleActions: 'play reverse play reverse' }
                     }
                 )
+            }
+
+            // === BEYOND RACING — header ===
+            if (beyondLabelRef.current) {
+                gsap.fromTo(beyondLabelRef.current,
+                    { opacity: 0, y: 20 },
+                    {
+                        opacity: 1, y: 0, duration: 0.8, ease: 'power2.out',
+                        scrollTrigger: { trigger: beyondLabelRef.current, start: 'top 88%', toggleActions: 'play reverse play reverse' }
+                    }
+                )
+            }
+
+            if (beyondHeadContainerRef.current && beyondHeadRef.current && beyondHeadOverlayRef.current) {
+                gsap.set(beyondHeadRef.current, { opacity: 0 })
+                const tl = gsap.timeline({
+                    scrollTrigger: { trigger: beyondHeadContainerRef.current, start: 'top 82%', toggleActions: 'play reverse play reverse' }
+                })
+                tl
+                    .fromTo(beyondHeadOverlayRef.current, { x: '-100%' }, { x: '0%', duration: 0.6, ease: 'power2.in' })
+                    .to(beyondHeadRef.current, { opacity: 1, duration: 0.001 }, 0.6)
+                    .to(beyondHeadOverlayRef.current, { x: '100%', duration: 0.6, ease: 'power2.out' }, 0.6)
+            }
+
+            if (beyondSubRef.current) {
+                gsap.fromTo(beyondSubRef.current,
+                    { opacity: 0, y: 24 },
+                    {
+                        opacity: 1, y: 0, duration: 0.9, ease: 'power2.out',
+                        scrollTrigger: { trigger: beyondSubRef.current, start: 'top 85%', toggleActions: 'play reverse play reverse' }
+                    }
+                )
+            }
+
+            // === PART 1 — The Cultural Icon ===
+            if (iconWordRef.current) {
+                gsap.fromTo(iconWordRef.current,
+                    { yPercent: 14 },
+                    {
+                        yPercent: -14, ease: 'none',
+                        scrollTrigger: { trigger: iconWordRef.current, start: 'top bottom', end: 'bottom top', scrub: true }
+                    }
+                )
+            }
+
+            if (coverOuterRef.current) {
+                const st = { trigger: coverOuterRef.current, start: 'top 85%', end: 'top 25%', scrub: 1.5 }
+                gsap.fromTo(coverOuterRef.current,
+                    { clipPath: 'inset(100% 0% 0% 0%)' },
+                    { clipPath: 'inset(0% 0% 0% 0%)', ease: 'power2.inOut', scrollTrigger: st }
+                )
+                if (coverInnerRef.current) {
+                    gsap.fromTo(coverInnerRef.current,
+                        { scale: 1.3, filter: 'brightness(0.3) saturate(0)' },
+                        { scale: 1, filter: 'brightness(1) saturate(1)', ease: 'none', scrollTrigger: st }
+                    )
+                }
+            }
+
+            if (hamiltonHeadContainerRef.current && hamiltonHeadRef.current && hamiltonHeadOverlayRef.current) {
+                gsap.set(hamiltonHeadRef.current, { opacity: 0 })
+                const tl = gsap.timeline({
+                    scrollTrigger: { trigger: hamiltonHeadContainerRef.current, start: 'top 82%', toggleActions: 'play reverse play reverse' }
+                })
+                tl
+                    .fromTo(hamiltonHeadOverlayRef.current, { x: '-100%' }, { x: '0%', duration: 0.55, ease: 'power2.in' })
+                    .to(hamiltonHeadRef.current, { opacity: 1, duration: 0.001 }, 0.55)
+                    .to(hamiltonHeadOverlayRef.current, { x: '100%', duration: 0.55, ease: 'power2.out' }, 0.55)
+            }
+
+            if (hamiltonTextRef.current) {
+                const paras = hamiltonTextRef.current.querySelectorAll('p')
+                gsap.set(paras, { opacity: 0, y: 28 })
+                gsap.to(paras, {
+                    opacity: 1, y: 0, stagger: 0.2, duration: 0.9, ease: 'power2.out',
+                    scrollTrigger: { trigger: hamiltonTextRef.current, start: 'top 80%', toggleActions: 'play reverse play reverse' }
+                })
+            }
+
+            // === PART 2 — Soft Power ===
+            if (softStatementRef.current) {
+                const lines = softStatementRef.current.querySelectorAll('.statement-line')
+                gsap.set(lines, { opacity: 0, y: 40 })
+                gsap.to(lines, {
+                    opacity: 1, y: 0, stagger: 0.15, duration: 1, ease: 'power3.out',
+                    scrollTrigger: { trigger: softStatementRef.current, start: 'top 80%', toggleActions: 'play reverse play reverse' }
+                })
+            }
+
+            if (softClosingRef.current) {
+                const items = softClosingRef.current.querySelectorAll('.soft-closing-anim')
+                gsap.set(items, { opacity: 0, y: 30 })
+                gsap.to(items, {
+                    opacity: 1, y: 0, stagger: 0.18, duration: 0.9, ease: 'power3.out',
+                    scrollTrigger: { trigger: softClosingRef.current, start: 'top 82%', toggleActions: 'play reverse play reverse' }
+                })
             }
         })
 
@@ -1165,6 +1276,134 @@ export default function UniversPage() {
                         So yes — even your everyday car carries a little{' '}
                         <span className="text-purple-400 italic">F1 DNA.</span>
                     </p>
+                </div>
+
+                {/* ═══ BEYOND RACING — CULTURE, POWER & SOFT POWER ═══ */}
+                <div className="relative w-full overflow-hidden pt-4 pb-28 lg:pb-40">
+                    {/* radial glow backdrop */}
+                    <div
+                        className="pointer-events-none absolute inset-0"
+                        style={{ background: 'radial-gradient(ellipse 55% 45% at 82% 4%, rgba(126,34,206,0.13), transparent 70%)' }}
+                    />
+
+                    {/* Header */}
+                    <div className="relative z-10 w-full max-w-[1400px] mx-auto px-6 sm:px-12 md:px-20 xl:px-32">
+                        <div ref={beyondLabelRef} className="flex items-center gap-3 mb-8" style={{ opacity: 0 }}>
+                            <span className="w-10 h-[1px] bg-purple-600" />
+                            <span className="text-purple-500 text-xs tracking-[0.3em] uppercase" style={{ fontFamily: 'var(--font-outfit)' }}>
+                                Culture · Power · Influence
+                            </span>
+                        </div>
+                        <div ref={beyondHeadContainerRef} className="relative overflow-hidden inline-block mb-6">
+                            <h2
+                                ref={beyondHeadRef}
+                                className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl text-white font-bold uppercase tracking-tight leading-none drop-shadow-2xl"
+                                style={{ fontFamily: 'var(--font-russo)', opacity: 0 }}
+                            >
+                                Beyond{' '}
+                                <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-purple-700">Racing</span>
+                            </h2>
+                            <div ref={beyondHeadOverlayRef} className="absolute inset-0 bg-purple-600 z-10" style={{ transform: 'translateX(-100%)' }} />
+                        </div>
+                        <h3
+                            ref={beyondSubRef}
+                            className="text-2xl sm:text-3xl md:text-4xl text-gray-300 font-normal italic leading-tight max-w-3xl"
+                            style={{ fontFamily: 'var(--font-playfair)', opacity: 0 }}
+                        >
+                            Culture, Power &amp; Soft Power
+                        </h3>
+                    </div>
+
+                    {/* ── PART 1 — The Cultural Icon ── */}
+                    <div className="relative w-full max-w-[1400px] mx-auto px-6 sm:px-12 md:px-20 xl:px-32 mt-20 lg:mt-32">
+                        {/* ghost word */}
+                        <div ref={iconWordRef} aria-hidden className="pointer-events-none absolute -top-16 right-0 z-0 select-none leading-none">
+                            <span
+                                className="font-black tracking-tighter text-transparent"
+                                style={{ fontFamily: 'var(--font-russo)', fontSize: 'clamp(7rem, 21vw, 21rem)', WebkitTextStroke: '1px rgba(168,85,247,0.10)' }}
+                            >
+                                ICON
+                            </span>
+                        </div>
+
+                        <div className="relative z-10 grid lg:grid-cols-[420px_minmax(0,1fr)] gap-12 lg:gap-16 items-center">
+                            {/* Magazine cover */}
+                            <div
+                                ref={coverOuterRef}
+                                className="relative w-full aspect-[3/4] mx-auto lg:mx-0 rounded-sm overflow-hidden border border-white/10 shadow-[0_25px_70px_rgba(0,0,0,0.75)]"
+                            >
+                                <div ref={coverInnerRef} className="absolute inset-0">
+                                    <Image src="/img/hamilton.png" alt="Lewis Hamilton" fill quality={95} sizes="420px" className="object-cover object-center" />
+                                </div>
+                                <div className="absolute inset-0 bg-gradient-to-t from-black via-black/35 to-black/40" />
+                                <div className="absolute inset-0 bg-gradient-to-br from-purple-900/30 to-transparent mix-blend-overlay" />
+                                <div className="absolute inset-0 flex flex-col justify-between p-6 sm:p-8">
+                                    <span className="inline-flex items-center gap-2 text-purple-300 text-xs tracking-[0.25em] uppercase" style={{ fontFamily: 'var(--font-outfit)' }}>
+                                        <span className="w-6 h-[1px] bg-purple-500" /> The Modern F1 Driver
+                                    </span>
+                                    <div>
+                                        <span
+                                            className="block text-white font-black uppercase leading-[0.82] tracking-tighter"
+                                            style={{ fontFamily: 'var(--font-russo)', fontSize: 'clamp(2.4rem, 4.5vw, 3.4rem)' }}
+                                        >
+                                            Lewis<br />Hamilton
+                                        </span>
+                                        <span className="mt-3 block text-purple-200/80 text-xs tracking-[0.15em] uppercase" style={{ fontFamily: 'var(--font-barlow)' }}>
+                                            One face of a whole generation
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Text */}
+                            <div className="relative min-w-0">
+                                <span className="block text-purple-500 text-xs tracking-[0.3em] uppercase mb-6" style={{ fontFamily: 'var(--font-outfit)' }}>
+                                    The Cultural Icon
+                                </span>
+
+                                <div ref={hamiltonHeadContainerRef} className="relative overflow-hidden inline-block mb-7">
+                                    <h3 ref={hamiltonHeadRef} className="text-3xl sm:text-4xl md:text-5xl text-white font-normal leading-tight" style={{ fontFamily: 'var(--font-playfair)', opacity: 0 }}>
+                                        More Than a <span className="italic font-semibold text-gray-300">Driver</span>
+                                    </h3>
+                                    <div ref={hamiltonHeadOverlayRef} className="absolute inset-0 bg-purple-600 z-10" style={{ transform: 'translateX(-100%)' }} />
+                                </div>
+
+                                <div ref={hamiltonTextRef} className="flex flex-col gap-6 max-w-xl">
+                                    <p className="text-gray-400 text-lg sm:text-xl leading-relaxed" style={{ fontFamily: 'var(--font-barlow)' }}>
+                                        Lewis Hamilton doesn&apos;t just win races. He walks the <span className="text-white font-medium">Met Gala</span> red carpet, collaborates with <span className="text-white font-medium">luxury fashion houses</span>, and uses his platform to speak on issues bigger than motorsport.
+                                    </p>
+                                    <p className="text-gray-400 text-lg sm:text-xl leading-relaxed" style={{ fontFamily: 'var(--font-barlow)' }}>
+                                        He&apos;s become a <span className="text-purple-400 italic" style={{ fontFamily: 'var(--font-playfair)' }}>global icon</span> — and he&apos;s far from alone. From <span className="text-white font-medium">Max Verstappen</span> to <span className="text-white font-medium">Charles Leclerc</span>, today&apos;s drivers exist in a cultural space far beyond the paddock.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* ── PART 2 — Soft Power (sober) ── */}
+                    <div className="relative z-10 w-full max-w-3xl mx-auto px-6 sm:px-12 text-center mt-24 lg:mt-36">
+                        <div ref={softStatementRef}>
+                            <span className="statement-line inline-flex items-center gap-3 text-purple-500 text-xs tracking-[0.3em] uppercase mb-7" style={{ fontFamily: 'var(--font-outfit)' }}>
+                                <span className="w-8 h-[1px] bg-purple-700" /> Soft Power <span className="w-8 h-[1px] bg-purple-700" />
+                            </span>
+                            <p className="statement-line text-white text-2xl sm:text-3xl md:text-4xl font-bold leading-[1.15] tracking-tight mb-6" style={{ fontFamily: 'var(--font-russo)' }}>
+                                And the sport itself? It&apos;s become a stage for{' '}
+                                <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-purple-700">soft power.</span>
+                            </p>
+                            <p className="statement-line text-gray-400 text-base sm:text-lg leading-relaxed" style={{ fontFamily: 'var(--font-barlow)' }}>
+                                Governments compete to host races. Billionaires invest in teams. New circuits in <span className="text-white font-medium">Saudi Arabia</span>, <span className="text-white font-medium">Las Vegas</span> and <span className="text-white font-medium">Miami</span> aren&apos;t just business decisions — <span className="text-white font-medium">they&apos;re statements.</span>
+                            </p>
+                        </div>
+
+                        <div ref={softClosingRef} className="mt-12 pt-10 border-t border-white/10">
+                            <p className="soft-closing-anim text-gray-400 text-base sm:text-lg leading-relaxed mb-4" style={{ fontFamily: 'var(--font-barlow)' }}>
+                                F1 is now one of the most watched sports on the planet.
+                            </p>
+                            <p className="soft-closing-anim text-white text-3xl sm:text-4xl md:text-5xl font-semibold italic leading-tight" style={{ fontFamily: 'var(--font-playfair)' }}>
+                                And <span className="text-purple-400">everyone</span> wants a piece of it.
+                            </p>
+                        </div>
+                    </div>
                 </div>
             </section>
         </main>
