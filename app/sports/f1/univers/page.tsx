@@ -70,7 +70,7 @@ const trackCards = [
         desc: "F1 introduced hybrid power units in 2014, combining combustion engines with electric motors. That technology now powers the Ferrari SF90, the McLaren Artura, and increasingly, standard road cars.",
         accent: 'from-purple-700/50',
         icon: (
-            <svg className="w-full h-full" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">
+            <svg className="w-full h-full" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="butt" strokeLinejoin="round">
                 <path d="M13 2L4.5 13.5H11l-1 8.5L19.5 10H13l0-8z" />
             </svg>
         ),
@@ -82,7 +82,7 @@ const trackCards = [
         desc: "First used in F1 in the early 1980s by McLaren, carbon fiber is now standard in supercars and high-performance road cars everywhere.",
         accent: 'from-purple-600/50',
         icon: (
-            <svg className="w-full h-full" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">
+            <svg className="w-full h-full" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="butt" strokeLinejoin="round">
                 <path d="M3 8l9-5 9 5-9 5-9-5z" /><path d="M3 12l9 5 9-5" /><path d="M3 16l9 5 9-5" />
             </svg>
         ),
@@ -94,7 +94,7 @@ const trackCards = [
         desc: "The drag-reducing shapes perfected in F1 wind tunnels now influence everything from hypercars like the Bugatti Chiron to fuel-efficient hatchbacks.",
         accent: 'from-purple-500/50',
         icon: (
-            <svg className="w-full h-full" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">
+            <svg className="w-full h-full" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="butt" strokeLinejoin="round">
                 <path d="M3 8h11a3 3 0 1 0-3-3" /><path d="M3 12h15a3 3 0 1 1-3 3" /><path d="M3 16h9a2.5 2.5 0 1 1-2.5 2.5" />
             </svg>
         ),
@@ -106,11 +106,46 @@ const trackCards = [
         desc: "Crumple zones, side-impact protection, advanced braking tech — all tested and refined in F1 before reaching your driveway.",
         accent: 'from-purple-800/50',
         icon: (
-            <svg className="w-full h-full" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">
+            <svg className="w-full h-full" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="butt" strokeLinejoin="round">
                 <path d="M12 3l7 3v5c0 4.5-3 8.5-7 10-4-1.5-7-5.5-7-10V6l7-3z" /><path d="M9 12l2 2 4-4" />
             </svg>
         ),
     },
+]
+
+const fanImages = [
+    { src: '/img/f1-univers-fans.png', alt: 'Ferrari Tifosi crowd with red flares', pos: '50% 30%', filter: 'saturate(1.15) contrast(1.05)' },
+    { src: '/img/f1-univers-fans.png', alt: 'Grandstand crowd with yellow flags', pos: '30% 60%', filter: 'saturate(0.9) hue-rotate(40deg) brightness(1.05)' },
+    { src: '/img/f1-univers-fans.png', alt: 'Trackside crowd at the scoreboard', pos: '70% 45%', filter: 'saturate(1) sepia(0.15) brightness(0.95)' },
+]
+
+const fan0Text = (
+    <>
+        If you&apos;re wondering why <span className="text-white font-medium">F1 fans</span> are so… intense, it&apos;s because the sport has this magical way of getting under your skin. One minute you&apos;re just &quot;checking in&quot; to see who&apos;s winning, and the next you&apos;re arguing with strangers online about whether <span className="italic text-purple-400">Ferrari&apos;s pit wall</span> made another strategy blunder (spoiler: they probably did – just kidding we love Ferrari here).
+    </>
+)
+
+const fan1LeftParas = [
+    <>
+        But that&apos;s what makes <span className="text-white font-medium">F1</span> special — it&apos;s not just a sport; it&apos;s a community. Fans build connections through online spaces like <span className="italic text-purple-400">social media</span>, <span className="italic text-purple-400">Formula1</span>, podcasts and YouTube creators.
+    </>,
+    <>
+        And it&apos;s not just about stats and race results — it&apos;s about the shared highs and lows, the <span className="text-white font-medium">pre-race debates</span>, and the post-race memes.
+    </>,
+]
+const fan1RightText = (
+    <>
+        The <span className="text-white font-medium">F1 fanbase</span> is incredibly diverse and global, which means that no matter where you are in the world, you&apos;ll always find someone ready to dissect the latest race strategy or laugh about <span className="italic text-purple-400">McLaren&apos;s latest pit stop disaster</span> (2025 was... messy... thankfully they won&apos;t this year... please...).
+    </>
+)
+
+const fan2Paras = [
+    <>
+        There&apos;s a special bond between fans and drivers too — these moments create an <span className="text-white font-medium">emotional connection</span> that no other sport quite matches.
+    </>,
+    <>
+        Whether you&apos;re here to geek out over <span className="italic text-purple-400">car setups</span>, fall in love with a driver&apos;s personality, or just enjoy the chaos — there&apos;s room for <span className="text-white font-medium">everyone</span>.
+    </>,
 ]
 
 export default function UniversPage() {
@@ -174,6 +209,12 @@ export default function UniversPage() {
     const softClosingRef = useRef<HTMLDivElement>(null)
     const softBgSectionRef = useRef<HTMLDivElement>(null)
     const softBlobRefs = useRef<(HTMLDivElement | null)[]>([])
+    // The Fans — hover-driven reveal
+    const fansPinRef = useRef<HTMLDivElement>(null)
+    const fansImgRefs = useRef<(HTMLDivElement | null)[]>([])
+    const fansTitleRef = useRef<HTMLHeadingElement>(null)
+    const fansTitleOverlayRef = useRef<HTMLDivElement>(null)
+    const [hoveredFan, setHoveredFan] = useState<number | null>(null)
     const carouselContainerRef = useRef<HTMLDivElement>(null)
     const carouselInnerRef = useRef<HTMLDivElement>(null)
     const isCarouselAnimating = useRef(false)
@@ -502,7 +543,10 @@ export default function UniversPage() {
                 if (paths.length === 0) return
                 paths.forEach((p) => {
                     const len = p.getTotalLength()
-                    gsap.set(p, { strokeDasharray: len, strokeDashoffset: len })
+                    // Pad the dash/offset slightly past the path length: at len===len the
+                    // dash/gap seam sits exactly at the start point and subpixel rounding
+                    // can render a stray sliver there before the trace begins.
+                    gsap.set(p, { strokeDasharray: `${len} ${len + 2}`, strokeDashoffset: len + 1 })
                 })
                 // Keep the whole icon hidden (visibility) until the trace starts so the round
                 // line-caps never show as static dots beforehand.
@@ -640,6 +684,37 @@ export default function UniversPage() {
                 gsap.to(items, {
                     opacity: 1, y: 0, stagger: 0.18, duration: 0.9, ease: 'power3.out',
                     scrollTrigger: { trigger: softClosingRef.current, start: 'top 82%', toggleActions: 'play reverse play reverse' }
+                })
+            }
+
+            // === THE FANS — title reveal on scroll-into-view (content itself is hover-driven) ===
+            if (fansTitleRef.current && fansTitleOverlayRef.current) {
+                gsap.set(fansTitleRef.current, { opacity: 0 })
+                const titleTl = gsap.timeline({
+                    scrollTrigger: { trigger: fansPinRef.current, start: 'top 80%' },
+                })
+                titleTl
+                    .fromTo(fansTitleOverlayRef.current, { x: '-100%' }, { x: '0%', duration: 0.6, ease: 'power2.in' })
+                    .to(fansTitleRef.current, { opacity: 1, duration: 0.001 }, 0.6)
+                    .to(fansTitleOverlayRef.current, { x: '100%', duration: 0.6, ease: 'power2.out' }, 0.6)
+            }
+
+            // === THE FANS — image entrance (staggered diagonal cascade) ===
+            const fanImgEls = fansImgRefs.current.filter(Boolean) as HTMLDivElement[]
+            if (fanImgEls.length > 0 && fansPinRef.current) {
+                gsap.set(fanImgEls, { opacity: 0, y: 60, scale: 0.92 })
+                gsap.to(fanImgEls, {
+                    opacity: 1,
+                    y: 0,
+                    scale: 1,
+                    duration: 0.9,
+                    ease: 'power3.out',
+                    stagger: 0.18,
+                    scrollTrigger: {
+                        trigger: fansPinRef.current,
+                        start: 'top 75%',
+                        toggleActions: 'play none none reverse',
+                    },
                 })
             }
         })
@@ -1464,7 +1539,7 @@ export default function UniversPage() {
                         <div className="relative z-10 w-full max-w-3xl mx-auto px-6 sm:px-12 text-center">
                             <div ref={softStatementRef}>
                                 <span className="statement-line inline-flex items-center gap-3 text-purple-500 text-xs tracking-[0.3em] uppercase mb-7" style={{ fontFamily: 'var(--font-outfit)' }}>
-                                    <span className="w-8 h-[1px] bg-purple-700" /> Soft Power <span className="w-8 h-[1px] bg-purple-700" />
+                                    <span className="w-16 h-[1px] bg-purple-700" />
                                 </span>
                                 <p className="statement-line text-white text-2xl sm:text-3xl md:text-4xl font-bold leading-[1.15] tracking-tight mb-6" style={{ fontFamily: 'var(--font-russo)' }}>
                                     And the sport itself? It&apos;s become a stage for{' '}
@@ -1484,6 +1559,137 @@ export default function UniversPage() {
                                 </p>
                             </div>
                         </div>
+                    </div>
+                </div>
+            </section>
+
+            {/* ═══ THE FANS — hover to reveal ═══ */}
+            <section className="relative z-10 w-full bg-[#0a0a0a]">
+                <div ref={fansPinRef} className="relative h-screen w-full overflow-hidden">
+                    {/* Ambient glow */}
+                    <div
+                        className="pointer-events-none absolute inset-0 z-0"
+                        style={{ background: 'radial-gradient(ellipse 60% 50% at 50% 0%, rgba(168,85,247,0.10), transparent 70%)' }}
+                    />
+
+                    {/* Overlapping fan-crowd image cluster */}
+                    <div className="absolute inset-0 z-[1]">
+                        <div
+                            ref={(el) => { fansImgRefs.current[0] = el }}
+                            onMouseEnter={() => setHoveredFan(0)}
+                            onMouseLeave={() => setHoveredFan(null)}
+                            className="absolute top-[4%] left-[2%] w-[55%] sm:w-[36%] aspect-[16/10] rounded-sm overflow-hidden border border-white/10 shadow-[0_25px_70px_rgba(0,0,0,0.75)] cursor-pointer transition-all duration-500"
+                            style={{
+                                transform: hoveredFan === 0 ? 'scale(1.04)' : 'scale(1)',
+                                borderColor: hoveredFan === 0 ? 'rgba(168,85,247,0.6)' : undefined,
+                                zIndex: hoveredFan === 0 ? 10 : undefined,
+                            }}
+                        >
+                            <Image
+                                src={fanImages[0].src} alt={fanImages[0].alt} fill quality={95} sizes="50vw"
+                                className="object-cover transition-[filter] duration-500"
+                                style={{ objectPosition: fanImages[0].pos, filter: hoveredFan !== null && hoveredFan !== 0 ? 'grayscale(1) brightness(0.45)' : fanImages[0].filter }}
+                            />
+                            <div className="absolute inset-0 bg-black/20 transition-opacity duration-500" style={{ opacity: hoveredFan === 0 ? 0 : 1 }} />
+                        </div>
+                        <div
+                            ref={(el) => { fansImgRefs.current[1] = el }}
+                            onMouseEnter={() => setHoveredFan(1)}
+                            onMouseLeave={() => setHoveredFan(null)}
+                            className="absolute top-[28%] left-[22%] sm:top-[24%] sm:left-[32%] w-[55%] sm:w-[36%] aspect-[16/10] rounded-sm overflow-hidden border border-white/10 shadow-[0_25px_70px_rgba(0,0,0,0.75)] cursor-pointer transition-all duration-500"
+                            style={{
+                                transform: hoveredFan === 1 ? 'scale(1.04)' : 'scale(1)',
+                                borderColor: hoveredFan === 1 ? 'rgba(168,85,247,0.6)' : undefined,
+                                zIndex: hoveredFan === 1 ? 10 : undefined,
+                            }}
+                        >
+                            <Image
+                                src={fanImages[1].src} alt={fanImages[1].alt} fill quality={95} sizes="45vw"
+                                className="object-cover transition-[filter] duration-500"
+                                style={{ objectPosition: fanImages[1].pos, filter: hoveredFan !== null && hoveredFan !== 1 ? 'grayscale(1) brightness(0.45)' : fanImages[1].filter }}
+                            />
+                            <div className="absolute inset-0 bg-black/20 transition-opacity duration-500" style={{ opacity: hoveredFan === 1 ? 0 : 1 }} />
+                        </div>
+                        <div
+                            ref={(el) => { fansImgRefs.current[2] = el }}
+                            onMouseEnter={() => setHoveredFan(2)}
+                            onMouseLeave={() => setHoveredFan(null)}
+                            className="absolute top-[44%] right-[2%] w-[40%] sm:w-[36%] aspect-[16/10] rounded-sm overflow-hidden border border-white/10 shadow-[0_25px_70px_rgba(0,0,0,0.75)] hidden sm:block cursor-pointer transition-all duration-500"
+                            style={{
+                                transform: hoveredFan === 2 ? 'scale(1.04)' : 'scale(1)',
+                                borderColor: hoveredFan === 2 ? 'rgba(168,85,247,0.6)' : undefined,
+                                zIndex: hoveredFan === 2 ? 10 : undefined,
+                            }}
+                        >
+                            <Image
+                                src={fanImages[2].src} alt={fanImages[2].alt} fill quality={95} sizes="30vw"
+                                className="object-cover transition-[filter] duration-500"
+                                style={{ objectPosition: fanImages[2].pos, filter: hoveredFan !== null && hoveredFan !== 2 ? 'grayscale(1) brightness(0.45)' : fanImages[2].filter }}
+                            />
+                            <div className="absolute inset-0 bg-black/20 transition-opacity duration-500" style={{ opacity: hoveredFan === 2 ? 0 : 1 }} />
+                        </div>
+                    </div>
+
+                    {/* Title — visible while no image is hovered */}
+                    <div
+                        className="absolute inset-0 z-[5] flex items-center justify-center px-6 pointer-events-none transition-opacity duration-400"
+                        style={{ opacity: hoveredFan === null ? 1 : 0 }}
+                    >
+                        <div className="relative overflow-hidden inline-block">
+                            <h2
+                                ref={fansTitleRef}
+                                className="text-5xl sm:text-6xl md:text-8xl lg:text-9xl font-bold text-white uppercase tracking-tight leading-none text-center drop-shadow-2xl"
+                                style={{ fontFamily: 'var(--font-russo)', opacity: 0 }}
+                            >
+                                THE{' '}
+                                <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-purple-700" style={{ fontFamily: 'var(--font-playfair)' }}>
+                                    FANS
+                                </span>
+                            </h2>
+                            <div ref={fansTitleOverlayRef} className="absolute inset-0 bg-purple-600 z-30" style={{ transform: 'translateX(-100%)' }} />
+                        </div>
+                    </div>
+
+                    {/* Text for image 0 — to the right of the top-left image */}
+                    <div
+                        className="absolute top-[4%] left-[54%] sm:left-[40%] right-[4%] z-[6] flex items-center pointer-events-none transition-opacity duration-400"
+                        style={{ height: '34%', opacity: hoveredFan === 0 ? 1 : 0 }}
+                    >
+                        <p className="text-gray-400 text-lg sm:text-xl leading-relaxed" style={{ fontFamily: 'var(--font-barlow)' }}>
+                            {fan0Text}
+                        </p>
+                    </div>
+
+                    {/* Text for image 1 — split left / right around the middle image */}
+                    <div
+                        className="absolute top-[20%] left-[2%] w-[38%] sm:w-[28%] z-[6] flex flex-col gap-6 pointer-events-none transition-opacity duration-400"
+                        style={{ opacity: hoveredFan === 1 ? 1 : 0 }}
+                    >
+                        {fan1LeftParas.map((p, i) => (
+                            <p key={i} className="text-gray-400 text-lg leading-relaxed" style={{ fontFamily: 'var(--font-barlow)' }}>
+                                {p}
+                            </p>
+                        ))}
+                    </div>
+                    <div
+                        className="absolute top-[20%] right-[4%] w-[36%] sm:w-[28%] z-[6] flex items-start text-right pointer-events-none transition-opacity duration-400"
+                        style={{ opacity: hoveredFan === 1 ? 1 : 0 }}
+                    >
+                        <p className="text-gray-400 text-lg leading-relaxed" style={{ fontFamily: 'var(--font-barlow)' }}>
+                            {fan1RightText}
+                        </p>
+                    </div>
+
+                    {/* Text for image 2 — to the left of the bottom-right image */}
+                    <div
+                        className="absolute top-[32%] left-[4%] w-[46%] sm:w-[40%] z-[6] flex flex-col gap-6 pointer-events-none transition-opacity duration-400"
+                        style={{ opacity: hoveredFan === 2 ? 1 : 0 }}
+                    >
+                        {fan2Paras.map((p, i) => (
+                            <p key={i} className="text-gray-400 text-lg leading-relaxed" style={{ fontFamily: 'var(--font-barlow)' }}>
+                                {p}
+                            </p>
+                        ))}
                     </div>
                 </div>
             </section>
