@@ -43,7 +43,9 @@ export const drivers = pgTable('drivers', {
   number: integer('number'),
   firstName: text('first_name').notNull(),
   lastName: text('last_name').notNull(),
-  nationality: text('nationality').notNull(),
+  // Nullable : Jolpica ne renseigne pas la nationalité des pilotes de
+  // réserve/essais libres qui apparaissent dans une saison.
+  nationality: text('nationality'),
   dateOfBirth: date('date_of_birth'),
   placeOfBirth: text('place_of_birth'),
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),

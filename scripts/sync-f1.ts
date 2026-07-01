@@ -198,7 +198,7 @@ async function syncDrivers(season: number): Promise<ResourceOutcome> {
       number: driver.permanentNumber ? Number(driver.permanentNumber) : null,
       firstName: driver.givenName,
       lastName: driver.familyName,
-      nationality: driver.nationality,
+      nationality: driver.nationality ?? null,
       dateOfBirth: driver.dateOfBirth ?? null,
     })),
     existing: await db.select().from(drivers),

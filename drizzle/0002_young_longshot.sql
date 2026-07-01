@@ -1,0 +1,1 @@
+ALTER TABLE "drivers" ALTER COLUMN "nationality" DROP NOT NULL;

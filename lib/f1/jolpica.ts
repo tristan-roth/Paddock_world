@@ -38,7 +38,8 @@ export interface JolpicaDriver {
   givenName: string;
   familyName: string;
   dateOfBirth?: string;
-  nationality: string;
+  // Absente pour certains pilotes de réserve/essais libres.
+  nationality?: string;
 }
 
 export interface JolpicaConstructor {

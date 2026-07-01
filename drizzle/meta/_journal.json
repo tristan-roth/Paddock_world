@@ -15,6 +15,13 @@
       "when": 1782943364557,
       "tag": "0001_demonic_electro",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1782944344253,
+      "tag": "0002_young_longshot",
+      "breakpoints": true
     }
   ]
 }
