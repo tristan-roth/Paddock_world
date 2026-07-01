@@ -1,0 +1,67 @@
+# Ingestion F1 : alimente la BD Neon depuis l'API Jolpica-F1 (issue #7).
+# Le site ne dépend jamais de l'API externe : en cas de panne de la source,
+# ce job échoue (exit != 0) mais la BD continue de servir les dernières
+# données valides.
+name: Sync F1 data
+
+on:
+  schedule:
+    # Quotidien 04h30 UTC : calendrier, pilotes, écuries (scope core).
+    - cron: '30 4 * * *'
+    # Lundi 06h00 UTC : résultats, qualifs, classements (scope results),
+    # aligné sur la cadence de mise à jour post-week-end de course de Jolpica.
+    - cron: '0 6 * * 1'
+  workflow_dispatch:
+    inputs:
+      scope:
+        description: 'Périmètre de la synchronisation'
+        type: choice
+        options:
+          - all
+          - core
+          - results
+        default: all
+      season:
+        description: 'Saison à synchroniser (défaut: année courante)'
+        type: string
+        required: false
+
+concurrency:
+  group: sync-f1
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Installer les dépendances
+        run: npm ci
+
+      - name: Déterminer le scope
+        id: scope
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "value=${{ inputs.scope }}" >> "$GITHUB_OUTPUT"
+          elif [ "${{ github.event.schedule }}" = "0 6 * * 1" ]; then
+            echo "value=results" >> "$GITHUB_OUTPUT"
+          else
+            echo "value=core" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Synchroniser les données F1
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: |
+          ARGS="--scope ${{ steps.scope.outputs.value }}"
+          if [ -n "${{ inputs.season }}" ]; then
+            ARGS="$ARGS --season ${{ inputs.season }}"
+          fi
+          npx tsx scripts/sync-f1.ts $ARGS
