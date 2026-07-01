@@ -43,7 +43,9 @@ export const drivers = pgTable('drivers', {
   number: integer('number'),
   firstName: text('first_name').notNull(),
   lastName: text('last_name').notNull(),
-  nationality: text('nationality').notNull(),
+  // Nullable : Jolpica ne renseigne pas la nationalité des pilotes de
+  // réserve/essais libres qui apparaissent dans une saison.
+  nationality: text('nationality'),
   dateOfBirth: date('date_of_birth'),
   placeOfBirth: text('place_of_birth'),
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
@@ -130,6 +132,36 @@ export const raceResults = pgTable(
   (table) => [unique('race_results_race_driver_unique').on(table.raceId, table.driverId)],
 );
 
+export const qualifyingResults = pgTable(
+  'qualifying_results',
+  {
+    id: text('id').primaryKey(), // `${raceId}-${driverId}`
+    raceId: text('race_id')
+      .notNull()
+      .references(() => races.id),
+    driverId: text('driver_id')
+      .notNull()
+      .references(() => drivers.id),
+    constructorId: text('constructor_id')
+      .notNull()
+      .references(() => constructors.id),
+    position: integer('position').notNull(),
+    q1: text('q1'), // temps au format "1:23.456"
+    q2: text('q2'),
+    q3: text('q3'),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [unique('qualifying_results_race_driver_unique').on(table.raceId, table.driverId)],
+);
+
+// Hash du dernier payload ingéré par ressource (ex: "results:2026") pour
+// permettre au script de sync de sauter les écritures quand rien n'a changé.
+export const syncState = pgTable('sync_state', {
+  resource: text('resource').primaryKey(),
+  payloadHash: text('payload_hash').notNull(),
+  syncedAt: timestamp('synced_at', { withTimezone: true }).notNull().defaultNow(),
+});
+
 export type Circuit = typeof circuits.$inferSelect;
 export type Race = typeof races.$inferSelect;
 export type Driver = typeof drivers.$inferSelect;
@@ -137,3 +169,5 @@ export type Constructor = typeof constructors.$inferSelect;
 export type DriverStanding = typeof driverStandings.$inferSelect;
 export type ConstructorStanding = typeof constructorStandings.$inferSelect;
 export type RaceResult = typeof raceResults.$inferSelect;
+export type QualifyingResult = typeof qualifyingResults.$inferSelect;
+export type SyncState = typeof syncState.$inferSelect;
