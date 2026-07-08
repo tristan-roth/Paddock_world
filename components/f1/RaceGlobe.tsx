@@ -1,5 +1,5 @@
 'use client'
-import { useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Canvas, useFrame, type ThreeEvent } from '@react-three/fiber'
 import { Html, OrbitControls } from '@react-three/drei'
 import * as THREE from 'three'
@@ -206,11 +206,12 @@ interface SceneProps {
   races: RaceWithCircuit[]
   nextRaceId: string | null
   activeId: string | null
+  zoomEnabled: boolean
   onHover: (race: RaceWithCircuit | null) => void
   onSelect: (race: RaceWithCircuit) => void
 }
 
-function GlobeScene({ races, nextRaceId, activeId, onHover, onSelect }: SceneProps) {
+function GlobeScene({ races, nextRaceId, activeId, zoomEnabled, onHover, onSelect }: SceneProps) {
   const globeRef = useRef<THREE.Mesh>(null)
   const coastlines = useCoastlineGeometry()
   const graticule = useGraticuleGeometry()
@@ -281,7 +282,10 @@ function GlobeScene({ races, nextRaceId, activeId, onHover, onSelect }: ScenePro
 
       <OrbitControls
         enablePan={false}
-        enableZoom
+        // Le zoom molette n'est actif que Ctrl enfoncé : sinon la molette
+        // laisse défiler la page normalement (au lieu de dézoomer le globe).
+        enableZoom={zoomEnabled}
+        zoomSpeed={0.5}
         minDistance={1.7}
         maxDistance={4}
         autoRotate={!hovered}
@@ -297,16 +301,46 @@ function GlobeScene({ races, nextRaceId, activeId, onHover, onSelect }: ScenePro
 interface RaceGlobeProps {
   races: RaceWithCircuit[]
   nextRaceId?: string | null
+  /** Circuit sélectionné (piloté par le parent, qui affiche la fiche détail). */
+  selectedId?: string | null
+  /** Notifie le parent d'un clic circuit (ou `null` sur clic dans le vide). */
+  onSelectRace?: (race: RaceWithCircuit | null) => void
   className?: string
 }
 
-export default function RaceGlobe({ races, nextRaceId = null, className }: RaceGlobeProps) {
+export default function RaceGlobe({
+  races,
+  nextRaceId = null,
+  selectedId = null,
+  onSelectRace,
+  className,
+}: RaceGlobeProps) {
   const [hovered, setHovered] = useState<RaceWithCircuit | null>(null)
-  const [selected, setSelected] = useState<RaceWithCircuit | null>(null)
+  const [zoomEnabled, setZoomEnabled] = useState(false)
 
   // Le circuit "actif" (étiquette + emphase) est celui survolé, sinon le
-  // dernier cliqué. Le panneau de détails complet viendra plus tard.
-  const activeId = hovered?.id ?? selected?.id ?? null
+  // sélectionné (fiche détail ouverte côté parent).
+  const activeId = hovered?.id ?? selectedId
+
+  // Ctrl active le zoom molette ; le relâchement (ou la perte de focus fenêtre)
+  // le désactive pour rendre le défilement de page à la molette.
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Control') setZoomEnabled(true)
+    }
+    const onKeyUp = (e: KeyboardEvent) => {
+      if (e.key === 'Control') setZoomEnabled(false)
+    }
+    const onBlur = () => setZoomEnabled(false)
+    window.addEventListener('keydown', onKeyDown)
+    window.addEventListener('keyup', onKeyUp)
+    window.addEventListener('blur', onBlur)
+    return () => {
+      window.removeEventListener('keydown', onKeyDown)
+      window.removeEventListener('keyup', onKeyUp)
+      window.removeEventListener('blur', onBlur)
+    }
+  }, [])
 
   return (
     <div className={`relative ${className ?? ''}`}>
@@ -315,8 +349,9 @@ export default function RaceGlobe({ races, nextRaceId = null, className }: RaceG
           races={races}
           nextRaceId={nextRaceId}
           activeId={activeId}
+          zoomEnabled={zoomEnabled}
           onHover={setHovered}
-          onSelect={setSelected}
+          onSelect={(race) => onSelectRace?.(race)}
         />
       </Canvas>
 
@@ -325,7 +360,7 @@ export default function RaceGlobe({ races, nextRaceId = null, className }: RaceG
         <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
           <path strokeLinecap="round" strokeLinejoin="round" d="M12 21a9 9 0 100-18 9 9 0 000 18zM3.6 9h16.8M3.6 15h16.8M12 3a15 15 0 010 18M12 3a15 15 0 000 18" />
         </svg>
-        Drag to rotate · click a circuit
+        Drag to rotate · Ctrl + scroll to zoom
       </div>
     </div>
   )

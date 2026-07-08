@@ -4,6 +4,7 @@ import dynamic from 'next/dynamic'
 import Link from 'next/link'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
+import CircuitDetailPanel from '@/components/f1/CircuitDetailPanel'
 import OutlineText from '@/components/f1/OutlineText'
 import Navbar from '@/components/Navbar'
 import { todayISO } from '@/lib/f1/date'
@@ -56,6 +57,7 @@ export default function ChampionshipPage() {
     const [races, setRaces] = useState<RaceWithCircuit[]>([])
     const [seasons, setSeasons] = useState<number[]>([])
     const [season, setSeason] = useState<number | null>(null)
+    const [selectedRace, setSelectedRace] = useState<RaceWithCircuit | null>(null)
     const [reloadKey, setReloadKey] = useState(0)
 
     const titleRef = useRef<HTMLHeadingElement>(null)
@@ -94,6 +96,7 @@ export default function ChampionshipPage() {
             .then((data) => {
                 if (cancelled) return
                 setRaces(data)
+                setSelectedRace(null)
                 setStatus('ready')
             })
             .catch(() => {
@@ -116,6 +119,7 @@ export default function ChampionshipPage() {
 
     const handleSeason = (value: number) => {
         if (value === activeSeason || status === 'loading') return
+        setSelectedRace(null)
         setStatus('loading')
         setSeason(value)
     }
@@ -274,28 +278,33 @@ export default function ChampionshipPage() {
                                 key={section.id}
                                 href={`#${section.id}`}
                                 onClick={(event) => handleAnchor(event, section.id)}
-                                className="champ-plate group relative"
+                                className="champ-plate group relative block"
                                 style={{ opacity: 0 }}
                             >
                                 <div
-                                    className={`relative -skew-x-12 border px-5 py-4 overflow-hidden cursor-pointer
+                                    className={`relative overflow-hidden rounded-sm border bg-black/30 backdrop-blur-md
+                                               px-6 py-5 text-center cursor-pointer
                                                transition-all duration-500 ease-[cubic-bezier(0.19,1,0.22,1)]
-                                               ${section.ready
-                                            ? 'border-purple-500/50 bg-purple-700/10 group-hover:bg-purple-700/25 group-hover:shadow-[0_0_35px_rgba(126,34,206,0.25)]'
-                                            : 'border-white/15 bg-black/30 group-hover:border-white/40 group-hover:bg-white/[0.06]'}`}
+                                               group-hover:bg-white/10 group-hover:scale-[1.03]
+                                               group-hover:shadow-[0_0_40px_rgba(126,34,206,0.15)]
+                                               ${section.ready ? 'border-white/30' : 'border-white/15'}`}
                                 >
-                                    <div className="skew-x-12 flex flex-col items-start gap-1">
-                                        <span className={`text-[10px] font-mono tracking-[0.3em] ${section.ready ? 'text-purple-400' : 'text-white/25'}`}>
+                                    <div
+                                        className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none"
+                                        style={{ background: 'radial-gradient(ellipse at center, rgba(126,34,206,0.08) 0%, transparent 70%)' }}
+                                    />
+                                    <div className="relative z-10 flex flex-col items-center gap-1">
+                                        <span className={`text-[10px] font-mono tracking-[0.3em] ${section.ready ? 'text-purple-400/70' : 'text-white/25'}`}>
                                             {section.num}
                                         </span>
                                         <span
-                                            className="text-white text-sm font-bold tracking-[0.15em] uppercase"
+                                            className="text-white text-sm md:text-base font-bold tracking-[0.2em] uppercase transition-colors duration-300 group-hover:text-purple-500"
                                             style={{ fontFamily: 'var(--font-outfit)' }}
                                         >
                                             {section.name}
                                         </span>
-                                        <span className={`text-[9px] font-mono tracking-[0.25em] uppercase ${section.ready ? 'text-purple-400/80' : 'text-gray-600'}`}>
-                                            {section.ready ? '● Available' : 'Soon'}
+                                        <span className={`text-[9px] font-mono tracking-[0.25em] uppercase ${section.ready ? 'text-purple-400/70' : 'text-gray-600'}`}>
+                                            {section.ready ? 'Available' : 'Soon'}
                                         </span>
                                     </div>
                                     <div className="absolute bottom-0 left-0 w-0 h-[2px] bg-purple-700 group-hover:w-full transition-all duration-500 ease-[cubic-bezier(0.19,1,0.22,1)]" />
@@ -357,13 +366,13 @@ export default function ChampionshipPage() {
                                                 <button
                                                     key={value}
                                                     onClick={() => handleSeason(value)}
-                                                    className={`relative -skew-x-12 px-5 py-2 border cursor-pointer transition-all duration-500 ease-[cubic-bezier(0.19,1,0.22,1)]
+                                                    className={`relative rounded-sm border px-5 py-2 cursor-pointer transition-all duration-500 ease-[cubic-bezier(0.19,1,0.22,1)]
                                                         ${isActive
-                                                            ? 'border-purple-500 bg-purple-700 shadow-[0_0_30px_rgba(126,34,206,0.35)]'
-                                                            : 'border-white/15 bg-black/30 hover:border-white/50 hover:bg-white/[0.06]'}`}
+                                                            ? 'border-purple-500 bg-purple-700/20 shadow-[0_0_30px_rgba(126,34,206,0.25)]'
+                                                            : 'border-white/20 bg-black/30 hover:border-white/50 hover:bg-white/[0.06]'}`}
                                                 >
                                                     <span
-                                                        className={`inline-block skew-x-12 text-sm tracking-[0.1em] ${isActive ? 'text-white' : 'text-gray-400'}`}
+                                                        className={`text-sm tracking-[0.1em] ${isActive ? 'text-white' : 'text-gray-400'}`}
                                                         style={{ fontFamily: 'var(--font-russo)' }}
                                                     >
                                                         {value}
@@ -392,10 +401,10 @@ export default function ChampionshipPage() {
                                     setStatus('loading')
                                     setReloadKey((key) => key + 1)
                                 }}
-                                className="px-8 py-3 border border-white/20 -skew-x-12 text-white text-sm font-semibold tracking-wider uppercase cursor-pointer
+                                className="px-8 py-3 border border-white/20 rounded-sm text-white text-sm font-semibold tracking-wider uppercase cursor-pointer
                                            transition-all duration-500 hover:border-purple-700 hover:bg-purple-700/10"
                             >
-                                <span className="inline-block skew-x-12">Try again</span>
+                                Try again
                             </button>
                         </div>
                     )}
@@ -424,7 +433,25 @@ export default function ChampionshipPage() {
                                         'radial-gradient(circle at 50% 45%, rgba(126,34,206,0.12) 0%, transparent 55%)',
                                 }}
                             />
-                            <RaceGlobe races={races} nextRaceId={nextRace?.id ?? null} className="h-full w-full" />
+                            <RaceGlobe
+                                races={races}
+                                nextRaceId={nextRace?.id ?? null}
+                                selectedId={selectedRace?.id ?? null}
+                                onSelectRace={setSelectedRace}
+                                className="h-full w-full"
+                            />
+
+                            {/* Fiche détail du circuit sélectionné */}
+                            {selectedRace && (
+                                <div className="pointer-events-none absolute z-20 inset-x-4 bottom-4 flex justify-center sm:inset-x-auto sm:right-6 sm:top-6 sm:bottom-auto sm:block">
+                                    <CircuitDetailPanel
+                                        key={selectedRace.id}
+                                        race={selectedRace}
+                                        totalRounds={races.length}
+                                        onClose={() => setSelectedRace(null)}
+                                    />
+                                </div>
+                            )}
                         </div>
                     )}
                 </div>
