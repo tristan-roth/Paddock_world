@@ -68,18 +68,18 @@ export default function F1Page() {
             tl.fromTo(
                 overlayRef.current,
                 { x: '-100%' },
-                { x: '100%', duration: 1.3, ease: 'power2.inOut' },
-                0.2
+                { x: '100%', duration: 0.85, ease: 'power2.inOut' },
+                0.1
             )
                 // Text appears instantly at midpoint
-                .set(titleRef.current, { opacity: 1 }, 0.2 + 0.65)
+                .set(titleRef.current, { opacity: 1 }, 0.1 + 0.42)
 
             // Red decorative line
             tl.fromTo(
                 redLineRef.current,
                 { scaleX: 0 },
-                { scaleX: 1, duration: 0.65, ease: 'power3.inOut' },
-                1.1
+                { scaleX: 1, duration: 0.45, ease: 'power3.inOut' },
+                0.7
             )
 
             // Tab cards – stagger
@@ -88,8 +88,8 @@ export default function F1Page() {
                 tl.fromTo(
                     tabCards,
                     { opacity: 0, y: 40 },
-                    { opacity: 1, y: 0, duration: 0.55, stagger: 0.12, ease: 'power3.out' },
-                    1.3
+                    { opacity: 1, y: 0, duration: 0.4, stagger: 0.08, ease: 'power3.out' },
+                    0.85
                 )
             }
 
@@ -97,8 +97,8 @@ export default function F1Page() {
             tl.fromTo(
                 scrollArrowRef.current,
                 { opacity: 0, y: -15 },
-                { opacity: 1, y: 0, duration: 0.5 },
-                1.75
+                { opacity: 1, y: 0, duration: 0.4 },
+                1.2
             )
 
             // ── Parallax on hero background ──
@@ -174,7 +174,7 @@ export default function F1Page() {
                 </div>
 
                 {/* ── Content ── */}
-                <div className="relative z-10 flex flex-col items-center justify-center px-6 pt-32 pb-24 w-full max-w-7xl mx-auto">
+                <div className="relative z-20 flex flex-col items-center justify-center px-6 pt-32 pb-24 w-full max-w-7xl mx-auto">
                     {/* Title with red block reveal */}
                     <div className="relative overflow-hidden mb-4">
                         <h1

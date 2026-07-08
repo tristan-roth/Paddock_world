@@ -4,6 +4,7 @@ import Image from 'next/image'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import RevealText, { Token } from './RevealText'
+import BackgroundShapes from './BackgroundShapes'
 
 gsap.registerPlugin(ScrollTrigger)
 
@@ -135,6 +136,9 @@ export default function About() {
 
     return (
         <section ref={sectionRef} className="min-h-screen flex flex-col items-center justify-center p-8 md:p-20 relative z-10 gap-24" id="about">
+            {/* Trajectoires dessinées en arrière-plan (scroll + souris) */}
+            <BackgroundShapes variant="about" />
+
             {/* Titre principal — animation ligne par ligne */}
             <RevealText
                 as="h2"
@@ -150,7 +154,7 @@ export default function About() {
                 }}
             />
 
-            <div className="max-w-6xl w-full">
+            <div className="relative z-10 max-w-6xl w-full">
                 {/* Premier bloc : Titre à gauche, texte à droite */}
                 <div ref={bloc1Ref} className="flex flex-col md:flex-row gap-16 items-start">
                     <div className="md:w-1/3 flex flex-col gap-6">
@@ -178,7 +182,7 @@ export default function About() {
                 </div>
             </div>
 
-            <div className="max-w-6xl w-full mt-16">
+            <div className="relative z-10 max-w-6xl w-full mt-16">
                 {/* Deuxième bloc : Texte à gauche, titre à droite */}
                 <div ref={bloc2Ref} className="flex flex-col md:flex-row-reverse gap-16 items-start">
                     <div className="md:w-1/3">

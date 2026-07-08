@@ -39,6 +39,7 @@ const f1Tabs = [
 
 export default function F1SubNav() {
     const pathname = usePathname()
+    const isOnSubPage = pathname !== '/sports/f1'
     const [visible, setVisible] = useState(false)
     const [hoveredTab, setHoveredTab] = useState<number | null>(null)
     const lastScrollY = useRef(0)
@@ -81,7 +82,7 @@ export default function F1SubNav() {
         <div
             className={`fixed left-0 w-full z-40 transition-all duration-500
                 top-14 md:top-20
-                ${visible ? 'translate-y-0 opacity-100' : '-translate-y-full opacity-0 pointer-events-none'}`}
+                ${visible && isOnSubPage ? 'translate-y-0 opacity-100' : '-translate-y-full opacity-0 pointer-events-none'}`}
             style={{ transitionTimingFunction: 'cubic-bezier(0.19, 1, 0.22, 1)' }}
         >
             {/* Bar principale */}

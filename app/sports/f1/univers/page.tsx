@@ -880,6 +880,7 @@ export default function UniversPage() {
             </div>
 
             <section
+                id="history"
                 ref={contentSectionRef as React.RefObject<HTMLElement>}
                 className="relative z-10 w-full pt-[12vw] scroll-gallery-section"
             >
@@ -1101,7 +1102,7 @@ export default function UniversPage() {
             </section>
 
             {/* ═══ THE IMPACT ═══ */}
-            <section className="relative z-10 w-full bg-[#0a0a0a] pt-24 lg:pt-40">
+            <section id="impact" className="relative z-10 w-full bg-[#0a0a0a] pt-24 lg:pt-40">
                 {/* Intro two-column */}
                 <div className="relative w-full max-w-[1920px] mx-auto flex flex-col lg:flex-row pb-24 lg:pb-32">
                     {/* Left: title + text */}
@@ -1564,7 +1565,7 @@ export default function UniversPage() {
             </section>
 
             {/* ═══ THE FANS — hover to reveal ═══ */}
-            <section className="relative z-10 w-full bg-[#0a0a0a]">
+            <section id="fans" className="relative z-10 w-full bg-[#0a0a0a]">
                 <div ref={fansPinRef} className="relative h-screen w-full overflow-hidden">
                     {/* Ambient glow */}
                     <div
