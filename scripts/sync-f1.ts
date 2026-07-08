@@ -150,6 +150,8 @@ async function syncCalendar(season: number): Promise<ResourceOutcome[]> {
     ...new Map(
       calendar.map((race) => {
         const details = CIRCUIT_DETAILS[race.Circuit.circuitId];
+        const lat = Number(race.Circuit.Location.lat);
+        const long = Number(race.Circuit.Location.long);
         return [
           race.Circuit.circuitId,
           {
@@ -157,6 +159,11 @@ async function syncCalendar(season: number): Promise<ResourceOutcome[]> {
             name: race.Circuit.circuitName,
             locality: race.Circuit.Location.locality,
             country: race.Circuit.Location.country,
+            // Coordonnées géographiques pour le globe 3D (positionnement des
+            // circuits). Jolpica les fournit en chaîne ; on n'écrit que si elles
+            // sont finies pour ne pas insérer de NaN.
+            ...(Number.isFinite(lat) ? { latitude: lat } : {}),
+            ...(Number.isFinite(long) ? { longitude: long } : {}),
             ...(details ? { continent: details.continent } : {}),
           },
         ];
