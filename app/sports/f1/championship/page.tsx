@@ -382,7 +382,7 @@ export default function ChampionshipPage() {
                                     setStatus('loading')
                                     setReloadKey((key) => key + 1)
                                 }}
-                                className="px-8 py-3 border border-white/20 -skew-x-12 text-white text-sm font-semibold tracking-wider uppercase
+                                className="px-8 py-3 border border-white/20 -skew-x-12 text-white text-sm font-semibold tracking-wider uppercase cursor-pointer
                                            transition-all duration-500 hover:border-purple-700 hover:bg-purple-700/10"
                             >
                                 <span className="inline-block skew-x-12">Try again</span>
@@ -420,7 +420,7 @@ export default function ChampionshipPage() {
                                                 <button
                                                     key={value}
                                                     onClick={() => handleSeason(value)}
-                                                    className={`relative -skew-x-12 px-5 py-2 border transition-all duration-500 ease-[cubic-bezier(0.19,1,0.22,1)]
+                                                    className={`relative -skew-x-12 px-5 py-2 border cursor-pointer transition-all duration-500 ease-[cubic-bezier(0.19,1,0.22,1)]
                                                         ${isActive
                                                             ? 'border-purple-500 bg-purple-700 shadow-[0_0_30px_rgba(126,34,206,0.35)]'
                                                             : 'border-white/15 bg-black/30 hover:border-white/50 hover:bg-white/[0.06]'}`}
@@ -451,7 +451,7 @@ export default function ChampionshipPage() {
                                                 <button
                                                     key={value ?? 'all'}
                                                     onClick={() => setContinent(value)}
-                                                    className={`-skew-x-12 px-4 py-1.5 border text-[11px] font-semibold tracking-[0.2em] uppercase
+                                                    className={`-skew-x-12 px-4 py-1.5 border text-[11px] font-semibold tracking-[0.2em] uppercase cursor-pointer
                                                                transition-all duration-500 ease-[cubic-bezier(0.19,1,0.22,1)]
                                                                ${isActive
                                                             ? 'border-purple-500 bg-purple-700/30 text-white'
@@ -502,28 +502,33 @@ export default function ChampionshipPage() {
                                             return (
                                                 <div
                                                     key={race.id}
-                                                    className={`board-row relative border-b border-white/[0.06]
+                                                    className={`board-row border-b border-white/[0.06]
                                                         ${state === 'next' ? 'bg-purple-700/[0.08]' : ''}`}
                                                     style={{ opacity: 0 }}
                                                 >
-                                                    {/* Accent gauche incliné */}
-                                                    <div
-                                                        className={`absolute left-0 top-2 bottom-2 w-[3px] -skew-x-12
-                                                            ${state === 'next'
-                                                                ? 'bg-gradient-to-b from-purple-500 to-purple-700'
-                                                                : state === 'past'
-                                                                    ? 'bg-white/10'
-                                                                    : 'bg-white/25'}`}
-                                                    />
+                                                    {/* Wrapper dédié à l'en-tête : la barre d'accent doit rester
+                                                        cadrée sur cette ligne, jamais sur la fiche dépliée en dessous
+                                                        (sinon, skewée sur toute la hauteur dépliée, elle dérive et
+                                                        traverse le numéro de manche — bug constaté à l'usage). */}
+                                                    <div className="relative">
+                                                        {/* Accent gauche incliné */}
+                                                        <div
+                                                            className={`absolute left-0 top-2 bottom-2 w-[3px] -skew-x-12 pointer-events-none
+                                                                ${state === 'next'
+                                                                    ? 'bg-gradient-to-b from-purple-500 to-purple-700'
+                                                                    : state === 'past'
+                                                                        ? 'bg-white/10'
+                                                                        : 'bg-white/25'}`}
+                                                        />
 
-                                                    <button
-                                                        onClick={() => setExpandedId(isExpanded ? null : race.id)}
-                                                        aria-expanded={isExpanded}
-                                                        className={`w-full grid grid-cols-[52px_1fr_auto] md:grid-cols-[86px_1fr_120px_130px_40px] items-center gap-3 md:gap-4 px-4 py-4 text-left
-                                                                   transition-all duration-500 ease-[cubic-bezier(0.19,1,0.22,1)]
-                                                                   hover:bg-white/[0.04] hover:pl-6
-                                                                   ${state === 'past' && !isExpanded ? 'opacity-50 hover:opacity-90' : ''}`}
-                                                    >
+                                                        <button
+                                                            onClick={() => setExpandedId(isExpanded ? null : race.id)}
+                                                            aria-expanded={isExpanded}
+                                                            className={`w-full grid grid-cols-[52px_1fr_auto] md:grid-cols-[86px_1fr_120px_130px_40px] items-center gap-3 md:gap-4 px-4 py-4 text-left cursor-pointer
+                                                                       transition-all duration-500 ease-[cubic-bezier(0.19,1,0.22,1)]
+                                                                       hover:bg-white/[0.04] hover:pl-6
+                                                                       ${state === 'past' && !isExpanded ? 'opacity-50 hover:opacity-90' : ''}`}
+                                                        >
                                                         {/* Round */}
                                                         <span
                                                             className={`text-xl md:text-2xl font-black tabular-nums leading-none
@@ -595,7 +600,8 @@ export default function ChampionshipPage() {
                                                         >
                                                             <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
                                                         </svg>
-                                                    </button>
+                                                        </button>
+                                                    </div>
 
                                                     {/* Fiche circuit dépliable */}
                                                     <div
