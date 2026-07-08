@@ -14,7 +14,7 @@ export const circuits = pgTable('circuits', {
   name: text('name').notNull(),
   locality: text('locality').notNull(),
   country: text('country').notNull(),
-  continent: text('continent'), // Europe / Asie / Amériques / Moyen-Orient
+  continent: text('continent'), // Europe / Asie / Amériques / Moyen-Orient / Océanie (source: lib/f1/circuit-details.ts)
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
 });
 

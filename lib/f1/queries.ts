@@ -1,4 +1,4 @@
-import { and, eq, inArray, sql } from 'drizzle-orm';
+import { and, desc, eq, inArray, sql } from 'drizzle-orm';
 import { unstable_cache } from 'next/cache';
 
 import { db } from '@/lib/db/client';
@@ -39,6 +39,19 @@ async function getLatestSeasonUncached(): Promise<number | null> {
 }
 
 const getLatestSeason = unstable_cache(getLatestSeasonUncached, ['f1-latest-season'], {
+  revalidate: REVALIDATE_SECONDS,
+});
+
+/** Saisons disponibles en base (calendrier synchronisé), la plus récente en premier. */
+async function getSeasonsUncached(): Promise<number[]> {
+  const rows = await db
+    .selectDistinct({ season: races.season })
+    .from(races)
+    .orderBy(desc(races.season));
+  return rows.map((row) => row.season);
+}
+
+export const getSeasons = unstable_cache(getSeasonsUncached, ['f1-seasons'], {
   revalidate: REVALIDATE_SECONDS,
 });
 

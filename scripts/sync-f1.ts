@@ -8,8 +8,10 @@
  *
  * Idempotent : upsert par clé naturelle, avec détection de changement par
  * hash de payload (table sync_state) puis diff ligne à ligne — les champs
- * renseignés manuellement (constructors.color, circuits.continent...) ne
- * sont jamais écrasés. Sort avec un code ≠ 0 si la source est indisponible.
+ * renseignés manuellement en BD (constructors.color...) ne sont jamais
+ * écrasés. Les données circuit absentes de Jolpica (continent, longueur,
+ * tours) proviennent du référentiel curaté lib/f1/circuit-details.ts.
+ * Sort avec un code ≠ 0 si la source est indisponible.
  */
 
 import { config } from 'dotenv';
@@ -35,6 +37,7 @@ import {
   races,
   syncState,
 } from '../lib/db/schema';
+import { CIRCUIT_DETAILS } from '../lib/f1/circuit-details';
 import {
   fetchCalendar,
   fetchConstructors,
@@ -128,7 +131,9 @@ async function syncRows<TRow extends { id: string }>(opts: {
 
 async function syncCalendar(season: number): Promise<ResourceOutcome[]> {
   const calendar = await fetchCalendar(season);
-  const hash = sha256(calendar);
+  // Le référentiel curaté fait partie du hash : modifier une valeur dans
+  // circuit-details.ts invalide le sync même si le payload Jolpica n'a pas bougé.
+  const hash = sha256({ calendar, circuitDetails: CIRCUIT_DETAILS });
   const resource = `calendar:${season}`;
   if (await payloadUnchanged(resource, hash)) {
     return [
@@ -138,17 +143,24 @@ async function syncCalendar(season: number): Promise<ResourceOutcome[]> {
   }
 
   // Un même circuit apparaît une fois par course : dédupliquer par id.
+  // Le continent (absent de Jolpica) n'est inclus que si le circuit est
+  // référencé dans circuit-details.ts — syncRows ne compare/n'écrit que les
+  // champs présents, une valeur posée à la main en BD n'est donc pas écrasée.
   const circuitRows = [
     ...new Map(
-      calendar.map((race) => [
-        race.Circuit.circuitId,
-        {
-          id: race.Circuit.circuitId,
-          name: race.Circuit.circuitName,
-          locality: race.Circuit.Location.locality,
-          country: race.Circuit.Location.country,
-        },
-      ]),
+      calendar.map((race) => {
+        const details = CIRCUIT_DETAILS[race.Circuit.circuitId];
+        return [
+          race.Circuit.circuitId,
+          {
+            id: race.Circuit.circuitId,
+            name: race.Circuit.circuitName,
+            locality: race.Circuit.Location.locality,
+            country: race.Circuit.Location.country,
+            ...(details ? { continent: details.continent } : {}),
+          },
+        ];
+      }),
     ).values(),
   ];
 
@@ -160,15 +172,19 @@ async function syncCalendar(season: number): Promise<ResourceOutcome[]> {
       db.update(circuits).set({ ...rest, updatedAt: new Date() }).where(eq(circuits.id, id)).then(),
   });
 
-  const raceRows = calendar.map((race) => ({
-    id: `${race.season}-${race.round}`,
-    season: Number(race.season),
-    round: Number(race.round),
-    circuitId: race.Circuit.circuitId,
-    name: race.raceName,
-    date: race.date,
-    sprintWeekend: Boolean(race.Sprint),
-  }));
+  const raceRows = calendar.map((race) => {
+    const details = CIRCUIT_DETAILS[race.Circuit.circuitId];
+    return {
+      id: `${race.season}-${race.round}`,
+      season: Number(race.season),
+      round: Number(race.round),
+      circuitId: race.Circuit.circuitId,
+      name: race.raceName,
+      date: race.date,
+      sprintWeekend: Boolean(race.Sprint),
+      ...(details ? { lengthKm: details.lengthKm, laps: details.laps } : {}),
+    };
+  });
 
   const raceStats = await syncRows({
     incoming: raceRows,
