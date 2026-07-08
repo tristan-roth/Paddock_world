@@ -1,19 +1,26 @@
 'use client'
 import { useEffect, useMemo, useRef, useState } from 'react'
+import dynamic from 'next/dynamic'
 import Link from 'next/link'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
-import CheckeredFlag from '@/components/f1/CheckeredFlag'
 import OutlineText from '@/components/f1/OutlineText'
 import Navbar from '@/components/Navbar'
-import NextRace from '@/components/NextRace'
-import { formatFullDate, formatShortDate, todayISO } from '@/lib/f1/date'
+import { todayISO } from '@/lib/f1/date'
 import type { RaceWithCircuit } from '@/lib/f1/types'
 
 gsap.registerPlugin(ScrollTrigger)
 
+// Le globe est purement client (React Three Fiber) : import dynamique sans SSR
+// pour éviter tout rendu serveur de la scène 3D.
+const RaceGlobe = dynamic(() => import('@/components/f1/RaceGlobe'), {
+    ssr: false,
+    loading: () => (
+        <div className="h-full w-full animate-pulse rounded-full bg-white/[0.03]" aria-label="Loading globe" />
+    ),
+})
+
 type LoadStatus = 'loading' | 'ready' | 'error'
-type RaceStatus = 'past' | 'next' | 'future'
 
 const championshipSections = [
     { id: 'drivers', num: '01', name: 'The Drivers', ready: false },
@@ -49,8 +56,6 @@ export default function ChampionshipPage() {
     const [races, setRaces] = useState<RaceWithCircuit[]>([])
     const [seasons, setSeasons] = useState<number[]>([])
     const [season, setSeason] = useState<number | null>(null)
-    const [continent, setContinent] = useState<string | null>(null)
-    const [expandedId, setExpandedId] = useState<string | null>(null)
     const [reloadKey, setReloadKey] = useState(0)
 
     const titleRef = useRef<HTMLHeadingElement>(null)
@@ -59,7 +64,7 @@ export default function ChampionshipPage() {
     const heroNavRef = useRef<HTMLDivElement>(null)
     const giantCalRef = useRef<HTMLDivElement>(null)
     const calHeaderRef = useRef<HTMLDivElement>(null)
-    const boardRef = useRef<HTMLDivElement>(null)
+    const globeWrapRef = useRef<HTMLDivElement>(null)
     const didHashScroll = useRef(false)
 
     // ── Saisons disponibles (échec non bloquant : le sélecteur reste masqué) ──
@@ -103,38 +108,14 @@ export default function ChampionshipPage() {
     // ── Derived ──
     const today = todayISO()
     const activeSeason = season ?? races[0]?.season ?? seasons[0] ?? null
-
-    const nextRace = useMemo(
-        () => races.find((race) => race.date >= today) ?? null,
-        [races, today],
+    const nextRace = useMemo(() => races.find((race) => race.date >= today) ?? null, [races, today])
+    const locatedCount = useMemo(
+        () => races.filter((r) => r.circuit.latitude != null && r.circuit.longitude != null).length,
+        [races],
     )
-
-    const raceStatus = (race: RaceWithCircuit): RaceStatus => {
-        if (race.date < today) return 'past'
-        if (nextRace && race.id === nextRace.id) return 'next'
-        return 'future'
-    }
-
-    const continents = useMemo(() => {
-        const values = new Set<string>()
-        for (const race of races) {
-            if (race.circuit.continent) values.add(race.circuit.continent)
-        }
-        return [...values]
-    }, [races])
-
-    const filteredRaces = useMemo(
-        () => (continent ? races.filter((race) => race.circuit.continent === continent) : races),
-        [races, continent],
-    )
-
-    const pastCount = useMemo(() => races.filter((race) => race.date < today).length, [races, today])
-    const sprintCount = useMemo(() => races.filter((race) => race.sprintWeekend).length, [races])
 
     const handleSeason = (value: number) => {
         if (value === activeSeason || status === 'loading') return
-        setExpandedId(null)
-        setContinent(null)
         setStatus('loading')
         setSeason(value)
     }
@@ -154,7 +135,7 @@ export default function ChampionshipPage() {
         document.getElementById(hash)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
     }, [status])
 
-    // ── Animations d'entrée (indépendantes des données) ──
+    // ── Animations d'entrée + parallax ──
     useEffect(() => {
         const ctx = gsap.context(() => {
             const tl = gsap.timeline({ defaults: { ease: 'power4.out' } })
@@ -206,33 +187,24 @@ export default function ChampionshipPage() {
         return () => ctx.revert()
     }, [])
 
-    // ── Animations dépendantes des données ──
+    // ── Fondu d'apparition du globe quand les données sont prêtes ──
     useEffect(() => {
-        if (status !== 'ready') return
-
+        if (status !== 'ready' || !globeWrapRef.current) return
         const ctx = gsap.context(() => {
-            // Le board s'allume ligne par ligne, comme un écran de chronométrage
-            const rows = boardRef.current?.querySelectorAll<HTMLElement>('.board-row')
-            if (rows && rows.length > 0) {
-                gsap.fromTo(
-                    rows,
-                    { opacity: 0, x: -34 },
-                    {
-                        opacity: 1,
-                        x: 0,
-                        duration: 0.45,
-                        stagger: 0.055,
-                        ease: 'power2.out',
-                        scrollTrigger: { trigger: boardRef.current, start: 'top 82%' },
-                    },
-                )
-            }
-
-            ScrollTrigger.refresh()
+            gsap.fromTo(
+                globeWrapRef.current,
+                { opacity: 0, scale: 0.92 },
+                {
+                    opacity: 1,
+                    scale: 1,
+                    duration: 1.1,
+                    ease: 'power3.out',
+                    scrollTrigger: { trigger: globeWrapRef.current, start: 'top 85%' },
+                },
+            )
         })
-
         return () => ctx.revert()
-    }, [status, continent, races])
+    }, [status])
 
     return (
         <main className="relative w-full overflow-hidden bg-[#0a0000]">
@@ -306,7 +278,7 @@ export default function ChampionshipPage() {
                                 style={{ opacity: 0 }}
                             >
                                 <div
-                                    className={`relative -skew-x-12 border px-5 py-4 overflow-hidden
+                                    className={`relative -skew-x-12 border px-5 py-4 overflow-hidden cursor-pointer
                                                transition-all duration-500 ease-[cubic-bezier(0.19,1,0.22,1)]
                                                ${section.ready
                                             ? 'border-purple-500/50 bg-purple-700/10 group-hover:bg-purple-700/25 group-hover:shadow-[0_0_35px_rgba(126,34,206,0.25)]'
@@ -342,11 +314,11 @@ export default function ChampionshipPage() {
                 <PlaceholderBand id="teams" num="02" title="The Teams" />
             </div>
 
-            {/* ═══════════ THE CALENDAR ═══════════ */}
+            {/* ═══════════ THE CALENDAR (globe 3D) ═══════════ */}
             <section
                 id="calendar"
                 className="scroll-mt-20 relative px-5 sm:px-8 md:px-16 pt-24 pb-28"
-                style={{ background: 'linear-gradient(180deg, #060918 0%, #0a0e27 60%, #060918 100%)' }}
+                style={{ background: 'linear-gradient(180deg, #060918 0%, #0a0e27 55%, #060918 100%)' }}
             >
                 {/* Mot géant en parallax derrière l'en-tête */}
                 <div ref={giantCalRef} className="absolute top-10 left-0 whitespace-nowrap pointer-events-none">
@@ -357,7 +329,7 @@ export default function ChampionshipPage() {
 
                 <div className="relative max-w-6xl mx-auto">
                     {/* ── En-tête de section ── */}
-                    <div ref={calHeaderRef} className="relative pt-14 mb-12">
+                    <div ref={calHeaderRef} className="relative pt-14 mb-10">
                         <div className="flex items-baseline gap-5 mb-2">
                             <span className="text-xs font-mono tracking-[0.3em] text-purple-400">03</span>
                             <h2
@@ -368,51 +340,16 @@ export default function ChampionshipPage() {
                             </h2>
                         </div>
                         <p className="text-gray-500 text-sm md:text-base ml-0 sm:ml-12" style={{ fontFamily: 'var(--font-barlow)' }}>
-                            Every round of the season — served from our own database, never dependent on race-day APIs.
+                            Every circuit of the season, placed on the globe. Spin the Earth and pick a Grand Prix.
                         </p>
                     </div>
 
-                    {status === 'error' && (
-                        <div className="py-16 flex flex-col items-center text-center gap-6">
-                            <p className="text-gray-400 text-lg" style={{ fontFamily: 'var(--font-barlow)' }}>
-                                The calendar could not be loaded right now.
-                            </p>
-                            <button
-                                onClick={() => {
-                                    setStatus('loading')
-                                    setReloadKey((key) => key + 1)
-                                }}
-                                className="px-8 py-3 border border-white/20 -skew-x-12 text-white text-sm font-semibold tracking-wider uppercase cursor-pointer
-                                           transition-all duration-500 hover:border-purple-700 hover:bg-purple-700/10"
-                            >
-                                <span className="inline-block skew-x-12">Try again</span>
-                            </button>
-                        </div>
-                    )}
-
-                    {status === 'loading' && (
-                        <div className="space-y-3" aria-label="Loading calendar">
-                            <div className="h-48 bg-white/[0.04] border border-white/10 animate-pulse" />
-                            {Array.from({ length: 8 }).map((_, i) => (
-                                <div key={i} className="h-16 bg-white/[0.03] border border-white/5 animate-pulse" />
-                            ))}
-                        </div>
-                    )}
-
-                    {status === 'ready' && races.length === 0 && (
-                        <p className="py-16 text-center text-gray-400 text-lg" style={{ fontFamily: 'var(--font-barlow)' }}>
-                            No races in the database yet — the next data sync will populate the calendar.
-                        </p>
-                    )}
-
+                    {/* ── Barre de contrôle : saison + compteur ── */}
                     {status === 'ready' && races.length > 0 && (
-                        <>
-                            {/* ── Sélecteur de saison ── */}
+                        <div className="flex flex-wrap items-center justify-between gap-5 mb-8">
                             {seasons.length > 0 && (
-                                <div className="flex flex-wrap items-center gap-4 mb-10">
-                                    <span className="text-[10px] font-mono tracking-[0.35em] text-gray-500 uppercase">
-                                        Season
-                                    </span>
+                                <div className="flex flex-wrap items-center gap-4">
+                                    <span className="text-[10px] font-mono tracking-[0.35em] text-gray-500 uppercase">Season</span>
                                     <div className="flex flex-wrap gap-2">
                                         {seasons.map((value) => {
                                             const isActive = value === activeSeason
@@ -437,215 +374,58 @@ export default function ChampionshipPage() {
                                     </div>
                                 </div>
                             )}
-
-                            {/* ── Next race spotlight (composant partagé, issue #3) ── */}
-                            <NextRace race={nextRace} totalRounds={races.length} className="mb-14" />
-
-                            {/* ── Barre de contrôle du board ── */}
-                            <div className="flex flex-wrap items-center justify-between gap-5 mb-6">
-                                <div className="flex flex-wrap items-center gap-2">
-                                    {continents.length > 0 &&
-                                        [null, ...continents].map((value) => {
-                                            const isActive = continent === value
-                                            return (
-                                                <button
-                                                    key={value ?? 'all'}
-                                                    onClick={() => setContinent(value)}
-                                                    className={`-skew-x-12 px-4 py-1.5 border text-[11px] font-semibold tracking-[0.2em] uppercase cursor-pointer
-                                                               transition-all duration-500 ease-[cubic-bezier(0.19,1,0.22,1)]
-                                                               ${isActive
-                                                            ? 'border-purple-500 bg-purple-700/30 text-white'
-                                                            : 'border-white/10 text-gray-500 hover:text-white hover:border-white/40'}`}
-                                                    style={{ fontFamily: 'var(--font-outfit)' }}
-                                                >
-                                                    <span className="inline-block skew-x-12">{value ?? 'All'}</span>
-                                                </button>
-                                            )
-                                        })}
-                                </div>
-                                <div className="flex items-center gap-6 text-[10px] font-mono tracking-[0.3em] text-gray-500 uppercase">
-                                    <span>{pastCount} / {races.length} completed</span>
-                                    <span className="hidden sm:inline">{sprintCount} sprints</span>
-                                </div>
+                            <div className="flex items-center gap-2 text-[10px] font-mono tracking-[0.3em] text-gray-500 uppercase">
+                                <span className="h-1.5 w-1.5 rounded-full bg-purple-500" />
+                                {locatedCount} circuits mapped
                             </div>
+                        </div>
+                    )}
 
-                            {/* Barre de progression de saison */}
-                            <div className="relative h-[3px] mb-8 bg-white/5 overflow-hidden">
-                                <div
-                                    className="absolute inset-y-0 left-0 bg-gradient-to-r from-purple-800 via-purple-600 to-purple-400 transition-all duration-1000 ease-out"
-                                    style={{ width: races.length > 0 ? `${(pastCount / races.length) * 100}%` : '0%' }}
-                                />
-                            </div>
+                    {/* ── États ── */}
+                    {status === 'error' && (
+                        <div className="py-16 flex flex-col items-center text-center gap-6">
+                            <p className="text-gray-400 text-lg" style={{ fontFamily: 'var(--font-barlow)' }}>
+                                The calendar could not be loaded right now.
+                            </p>
+                            <button
+                                onClick={() => {
+                                    setStatus('loading')
+                                    setReloadKey((key) => key + 1)
+                                }}
+                                className="px-8 py-3 border border-white/20 -skew-x-12 text-white text-sm font-semibold tracking-wider uppercase cursor-pointer
+                                           transition-all duration-500 hover:border-purple-700 hover:bg-purple-700/10"
+                            >
+                                <span className="inline-block skew-x-12">Try again</span>
+                            </button>
+                        </div>
+                    )}
 
-                            {/* ── Timing board ── */}
-                            {filteredRaces.length === 0 ? (
-                                <p className="text-center text-gray-400 text-lg py-16" style={{ fontFamily: 'var(--font-barlow)' }}>
-                                    No race matches this filter.
-                                </p>
-                            ) : (
-                                <div ref={boardRef}>
-                                    {/* En-têtes de colonnes */}
-                                    <div className="hidden md:grid grid-cols-[86px_1fr_120px_130px_40px] gap-4 px-4 pb-3 border-b border-white/10
-                                                    text-[9px] font-mono tracking-[0.35em] text-gray-600 uppercase">
-                                        <span>Rnd</span>
-                                        <span>Grand Prix</span>
-                                        <span>Date</span>
-                                        <span className="text-right">Status</span>
-                                        <span />
-                                    </div>
+                    {status === 'loading' && (
+                        <div className="mx-auto h-[520px] w-full max-w-[520px] rounded-full bg-white/[0.03] animate-pulse" aria-label="Loading globe" />
+                    )}
 
-                                    <div>
-                                        {filteredRaces.map((race) => {
-                                            const state = raceStatus(race)
-                                            const isExpanded = expandedId === race.id
+                    {status === 'ready' && races.length === 0 && (
+                        <p className="py-16 text-center text-gray-400 text-lg" style={{ fontFamily: 'var(--font-barlow)' }}>
+                            No races in the database yet — the next data sync will populate the calendar.
+                        </p>
+                    )}
 
-                                            return (
-                                                <div
-                                                    key={race.id}
-                                                    className={`board-row border-b border-white/[0.06]
-                                                        ${state === 'next' ? 'bg-purple-700/[0.08]' : ''}`}
-                                                    style={{ opacity: 0 }}
-                                                >
-                                                    {/* Wrapper dédié à l'en-tête : la barre d'accent doit rester
-                                                        cadrée sur cette ligne, jamais sur la fiche dépliée en dessous
-                                                        (sinon, skewée sur toute la hauteur dépliée, elle dérive et
-                                                        traverse le numéro de manche — bug constaté à l'usage). */}
-                                                    <div className="relative">
-                                                        {/* Accent gauche incliné */}
-                                                        <div
-                                                            className={`absolute left-0 top-2 bottom-2 w-[3px] -skew-x-12 pointer-events-none
-                                                                ${state === 'next'
-                                                                    ? 'bg-gradient-to-b from-purple-500 to-purple-700'
-                                                                    : state === 'past'
-                                                                        ? 'bg-white/10'
-                                                                        : 'bg-white/25'}`}
-                                                        />
-
-                                                        <button
-                                                            onClick={() => setExpandedId(isExpanded ? null : race.id)}
-                                                            aria-expanded={isExpanded}
-                                                            className={`w-full grid grid-cols-[52px_1fr_auto] md:grid-cols-[86px_1fr_120px_130px_40px] items-center gap-3 md:gap-4 px-4 py-4 text-left cursor-pointer
-                                                                       transition-all duration-500 ease-[cubic-bezier(0.19,1,0.22,1)]
-                                                                       hover:bg-white/[0.04] hover:pl-6
-                                                                       ${state === 'past' && !isExpanded ? 'opacity-50 hover:opacity-90' : ''}`}
-                                                        >
-                                                        {/* Round */}
-                                                        <span
-                                                            className={`text-xl md:text-2xl font-black tabular-nums leading-none
-                                                                ${state === 'next' ? 'text-purple-400' : state === 'past' ? 'text-gray-600' : 'text-white/80'}`}
-                                                            style={{ fontFamily: 'var(--font-russo)' }}
-                                                        >
-                                                            {String(race.round).padStart(2, '0')}
-                                                        </span>
-
-                                                        {/* GP + circuit */}
-                                                        <span className="min-w-0">
-                                                            <span className="flex items-center gap-2 flex-wrap">
-                                                                <span
-                                                                    className={`text-sm md:text-base font-bold uppercase tracking-[0.08em] truncate
-                                                                        ${state === 'past' ? 'text-gray-400' : 'text-white'}`}
-                                                                    style={{ fontFamily: 'var(--font-outfit)' }}
-                                                                >
-                                                                    {race.name}
-                                                                </span>
-                                                                {race.sprintWeekend && (
-                                                                    <span className="shrink-0 px-2 py-0.5 -skew-x-12 bg-gradient-to-r from-purple-700 to-purple-500 text-white text-[8px] font-bold tracking-[0.2em] uppercase">
-                                                                        <span className="inline-block skew-x-12">Sprint</span>
-                                                                    </span>
-                                                                )}
-                                                            </span>
-                                                            <span className="block text-gray-500 text-xs truncate mt-0.5" style={{ fontFamily: 'var(--font-barlow)' }}>
-                                                                {race.circuit.name} — {race.circuit.locality}, {race.circuit.country}
-                                                            </span>
-                                                        </span>
-
-                                                        {/* Date */}
-                                                        <span
-                                                            className={`hidden md:block text-sm tracking-[0.12em] tabular-nums
-                                                                ${state === 'past' ? 'text-gray-600' : 'text-white/80'}`}
-                                                            style={{ fontFamily: 'var(--font-russo)' }}
-                                                        >
-                                                            {formatShortDate(race.date)}
-                                                        </span>
-
-                                                        {/* Status */}
-                                                        <span className="flex md:justify-end">
-                                                            {state === 'past' && (
-                                                                <span className="inline-flex items-center gap-1.5 text-gray-500 text-[9px] font-mono tracking-[0.25em] uppercase">
-                                                                    <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                                                                        <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
-                                                                    </svg>
-                                                                    <span className="hidden md:inline">Finished</span>
-                                                                </span>
-                                                            )}
-                                                            {state === 'next' && (
-                                                                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 -skew-x-12 bg-purple-700 text-white text-[9px] font-bold tracking-[0.25em] uppercase animate-pulse">
-                                                                    <span className="inline-block skew-x-12">Next</span>
-                                                                </span>
-                                                            )}
-                                                            {state === 'future' && (
-                                                                <span className="hidden md:inline text-gray-600 text-[9px] font-mono tracking-[0.25em] uppercase">
-                                                                    Upcoming
-                                                                </span>
-                                                            )}
-                                                        </span>
-
-                                                        {/* Chevron */}
-                                                        <svg
-                                                            className={`hidden md:block w-4 h-4 justify-self-end text-gray-600 transition-transform duration-500 ${isExpanded ? 'rotate-180 text-purple-400' : ''}`}
-                                                            fill="none"
-                                                            viewBox="0 0 24 24"
-                                                            stroke="currentColor"
-                                                            strokeWidth={2}
-                                                        >
-                                                            <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-                                                        </svg>
-                                                        </button>
-                                                    </div>
-
-                                                    {/* Fiche circuit dépliable */}
-                                                    <div
-                                                        className={`overflow-hidden transition-all duration-500 ease-[cubic-bezier(0.19,1,0.22,1)]
-                                                            ${isExpanded ? 'max-h-72 opacity-100' : 'max-h-0 opacity-0'}`}
-                                                    >
-                                                        <div className="mx-4 mb-5 border-l-2 border-purple-700/60 bg-black/30 px-6 py-5">
-                                                            <div className="grid grid-cols-2 md:grid-cols-4 gap-x-8 gap-y-4">
-                                                                {[
-                                                                    { label: 'Circuit', value: race.circuit.name },
-                                                                    { label: 'Location', value: `${race.circuit.locality}, ${race.circuit.country}` },
-                                                                    { label: 'Race date', value: formatFullDate(race.date) },
-                                                                    { label: 'Continent', value: race.circuit.continent ?? '—' },
-                                                                    { label: 'Length', value: race.lengthKm !== null ? `${race.lengthKm.toFixed(3)} km` : '—' },
-                                                                    { label: 'Laps', value: race.laps !== null ? String(race.laps) : '—' },
-                                                                    { label: 'Format', value: race.sprintWeekend ? '🏎️ Sprint Weekend' : 'Standard' },
-                                                                    { label: 'Round', value: `${race.round} / ${races.length}` },
-                                                                ].map((spec) => (
-                                                                    <div key={spec.label}>
-                                                                        <p className="text-[9px] font-mono tracking-[0.3em] text-gray-600 uppercase mb-1">
-                                                                            {spec.label}
-                                                                        </p>
-                                                                        <p className="text-white/90 text-sm" style={{ fontFamily: 'var(--font-barlow)' }}>
-                                                                            {spec.value}
-                                                                        </p>
-                                                                    </div>
-                                                                ))}
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            )
-                                        })}
-                                    </div>
-
-                                    {/* Drapeau à damier en clôture */}
-                                    <div className="flex items-center justify-center gap-4 pt-12">
-                                        <div className="w-16 h-[1px] bg-gradient-to-r from-transparent to-white/20" />
-                                        <CheckeredFlag className="w-12 h-8" />
-                                        <div className="w-16 h-[1px] bg-gradient-to-l from-transparent to-white/20" />
-                                    </div>
-                                </div>
-                            )}
-                        </>
+                    {status === 'ready' && races.length > 0 && (
+                        <div
+                            ref={globeWrapRef}
+                            className="relative h-[520px] sm:h-[600px] lg:h-[72vh] w-full"
+                            style={{ opacity: 0 }}
+                        >
+                            {/* Lueur radiale derrière le globe */}
+                            <div
+                                className="absolute inset-0 pointer-events-none"
+                                style={{
+                                    background:
+                                        'radial-gradient(circle at 50% 45%, rgba(126,34,206,0.12) 0%, transparent 55%)',
+                                }}
+                            />
+                            <RaceGlobe races={races} nextRaceId={nextRace?.id ?? null} className="h-full w-full" />
+                        </div>
                     )}
                 </div>
             </section>
