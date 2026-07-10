@@ -14,7 +14,11 @@ export const circuits = pgTable('circuits', {
   name: text('name').notNull(),
   locality: text('locality').notNull(),
   country: text('country').notNull(),
-  continent: text('continent'), // Europe / Asie / Amériques / Moyen-Orient
+  continent: text('continent'), // Europe / Asie / Amériques / Moyen-Orient / Océanie (source: lib/f1/circuit-details.ts)
+  // Coordonnées géographiques fournies par Jolpica (Location.lat/long) —
+  // utilisées pour positionner les circuits sur le globe 3D (page calendrier).
+  latitude: real('latitude'),
+  longitude: real('longitude'),
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
 });
 

@@ -6,6 +6,7 @@ import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import RevealText from '@/components/RevealText'
 import Navbar from '@/components/Navbar'
+import NextRace from '@/components/NextRace'
 
 gsap.registerPlugin(ScrollTrigger)
 
@@ -297,6 +298,33 @@ export default function F1Page() {
 
                 {/* Top racing stripe */}
                 <div className="absolute top-0 left-0 w-full h-[3px] bg-gradient-to-r from-transparent via-purple-700 to-transparent" />
+            </section>
+
+            {/* ═══════════ UP NEXT (widget NextRace, issue #3) ═══════════ */}
+            <section
+                className="relative px-5 sm:px-8 md:px-16 py-16 md:py-24"
+                style={{ background: 'linear-gradient(180deg, #0a0000 0%, #0a0e27 100%)' }}
+            >
+                <div className="max-w-6xl mx-auto">
+                    <div className="flex items-center justify-between gap-6 mb-8">
+                        <h2
+                            className="text-white text-2xl sm:text-3xl font-bold uppercase tracking-[0.08em]"
+                            style={{ fontFamily: 'var(--font-outfit)' }}
+                        >
+                            Up Next
+                        </h2>
+                        <Link
+                            href="/sports/f1/championship#calendar"
+                            className="group hidden sm:inline-flex items-center gap-2 text-xs font-mono tracking-[0.25em] uppercase text-purple-400/70 hover:text-purple-300 transition-colors duration-300"
+                        >
+                            Full calendar
+                            <svg className="w-3.5 h-3.5 transition-transform duration-300 group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                            </svg>
+                        </Link>
+                    </div>
+                    <NextRace />
+                </div>
             </section>
 
             {/* ═══════════ ACCROCHE SECTION ═══════════ */}
