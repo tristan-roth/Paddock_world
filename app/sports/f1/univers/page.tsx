@@ -6,6 +6,7 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import Navbar from '@/components/Navbar'
 import F1TeamsMarquee from '@/components/F1TeamsMarquee'
 import UniversBackground from '@/components/UniversBackground'
+import RivalryCards from '@/components/RivalryCards'
 
 gsap.registerPlugin(ScrollTrigger)
 
@@ -1028,45 +1029,29 @@ export default function UniversPage() {
                                 </div>
                             </div>
 
-                            {/* ── Item 2: Rivalries — text LEFT, image RIGHT ── */}
+                            {/* ── Item 2: Rivalries — cartes duel interactives (clic pour ouvrir) ── */}
                             <div className="relative pl-12 lg:pl-0">
                                 <div ref={(el) => { timelineNodeRefs.current[1] = el }} className="absolute left-4 lg:left-1/2 top-7 w-3 h-3 z-10 rounded-full bg-purple-600 border-2 border-purple-400 shadow-[0_0_12px_rgba(168,85,247,0.6)]" />
-                                <div className="lg:grid lg:grid-cols-2 lg:gap-8 lg:items-start">
-                                    {/* Text LEFT */}
-                                    <div ref={(el) => { timelineBlockRefs.current[1] = el }} className="bg-[#0f0f0f] border border-white/5 rounded-sm p-6 lg:p-8">
-                                        <div className="lg:hidden relative w-full aspect-[16/10] rounded-sm overflow-hidden mb-6">
-                                            <Image src="/img/f1-univers-monaco.png" alt="Monaco Grand Prix circuit" fill quality={90} sizes="100vw" className="object-cover object-center" />
-                                            <div className="absolute inset-0 bg-black/20" />
-                                        </div>
-
-                                        <div className="relative overflow-hidden inline-block mb-3">
+                                <div ref={(el) => { timelineBlockRefs.current[1] = el }}>
+                                    <div className="mb-3">
+                                        <div className="relative overflow-hidden inline-block">
                                             <span ref={(el) => { timelineDateRefs.current[1] = el }} className="text-purple-500 text-xs tracking-[0.2em] uppercase block" style={{ fontFamily: 'var(--font-barlow)' }}>
                                                 1984 — 2021
                                             </span>
                                             <div ref={(el) => { timelineDateOverlayRefs.current[1] = el }} className="absolute inset-0 bg-purple-700 z-10" style={{ transform: 'translateX(-100%)' }} />
                                         </div>
+                                    </div>
 
-                                        <div ref={(el) => { timelineHeadingContainerRefs.current[1] = el }} className="relative overflow-hidden mb-6">
+                                    <div className="mb-10">
+                                        <div ref={(el) => { timelineHeadingContainerRefs.current[1] = el }} className="relative overflow-hidden inline-block">
                                             <h3 ref={(el) => { timelineHeadingRefs.current[1] = el }} className="text-2xl sm:text-3xl text-white font-bold uppercase tracking-tight" style={{ fontFamily: 'var(--font-russo)' }}>
                                                 Rivalries That <span className="text-purple-400">Defined</span> Eras
                                             </h3>
                                             <div ref={(el) => { timelineHeadingOverlayRefs.current[1] = el }} className="absolute inset-0 bg-purple-600 z-10" style={{ transform: 'translateX(-100%)' }} />
                                         </div>
-
-                                        <p className="text-gray-400 text-lg leading-relaxed" style={{ fontFamily: 'var(--font-barlow)' }}>
-                                            F1 has always been as much about the people as the cars. <span className="text-white font-medium">Senna vs Prost</span> — a psychological war as much as a racing one. Teammates who couldn&apos;t stand each other, battling for supremacy across multiple seasons. <span className="text-white font-medium">Schumacher vs Hill</span>, then vs Häkkinen — the Schumacher dominance era redefined what it meant to be a complete racing driver. And <span className="text-white font-medium">Hamilton vs Verstappen</span> — the 2021 season. Abu Dhabi. The last lap. These aren&apos;t just sports rivalries — they&apos;re the kind of stories that keep fans up at night, debating decades later.
-                                        </p>
                                     </div>
 
-                                    {/* Image RIGHT desktop */}
-                                    <div className="hidden lg:block">
-                                        <div ref={(el) => { timelineImgOuterRefs.current[1] = el }} className="relative w-full aspect-[16/10] rounded-sm overflow-hidden">
-                                            <div ref={(el) => { timelineImgInnerRefs.current[1] = el }} className="absolute left-0 right-0" style={{ top: '-12%', bottom: '-12%' }}>
-                                                <Image src="/img/f1-univers-monaco.png" alt="Monaco Grand Prix circuit" fill quality={90} sizes="45vw" className="object-cover object-center" />
-                                                <div className="absolute inset-0 bg-black/20" />
-                                            </div>
-                                        </div>
-                                    </div>
+                                    <RivalryCards />
                                 </div>
                             </div>
 
