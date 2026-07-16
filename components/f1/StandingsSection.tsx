@@ -23,12 +23,12 @@ function formatPoints(points: number): string {
     return Number.isInteger(points) ? String(points) : points.toFixed(1)
 }
 
-function Flag({ nationality }: { nationality: string | null }) {
+function Flag({ nationality, className }: { nationality: string | null; className?: string }) {
     const url = flagUrl(nationality)
     if (!url) {
         // Nationalité absente (pilotes de réserve, cf. schema.ts) : pastille
         // neutre, pour ne pas désaligner la colonne.
-        return <span className="inline-block w-5 h-5 rounded-full bg-white/10 shrink-0" aria-hidden />
+        return <span className={`inline-block w-5 h-5 rounded-full bg-white/10 shrink-0 ${className ?? ''}`} aria-hidden />
     }
     return (
         // Drapeau 20px servi par flagcdn.com : next/image imposerait d'ouvrir un
@@ -38,7 +38,7 @@ function Flag({ nationality }: { nationality: string | null }) {
             src={url}
             alt={nationality ?? ''}
             loading="lazy"
-            className="w-5 h-5 rounded-full object-cover shrink-0 ring-1 ring-white/15"
+            className={`w-5 h-5 rounded-full object-cover shrink-0 ring-1 ring-white/15 ${className ?? ''}`}
         />
     )
 }
@@ -63,44 +63,7 @@ function StartLights() {
     )
 }
 
-/** Numéro de position : violet lumineux sur le podium, effacé ailleurs. */
-function PositionCell({ position }: { position: number }) {
-    return (
-        <span
-            className={`text-xl md:text-2xl font-black tabular-nums leading-none
-                ${position === 1 ? 'text-purple-400' : position <= 3 ? 'text-purple-500/80' : 'text-white/30'}`}
-            style={{ fontFamily: 'var(--font-russo)' }}
-        >
-            {String(position).padStart(2, '0')}
-        </span>
-    )
-}
 
-/**
- * Barre d'écart : longueur = points rapportés au leader, teintée à la couleur
- * de l'écurie. Se déploie après l'arrivée de la ligne (scaleX piloté en GSAP).
- */
-function GapBar({ points, leaderPoints, color }: { points: number; leaderPoints: number; color: string }) {
-    const pct = leaderPoints > 0 ? Math.max((points / leaderPoints) * 100, 1.5) : 0
-    return (
-        <div className="relative h-[5px] w-full rounded-full bg-white/[0.06] overflow-hidden">
-            <div
-                className="standing-gap-fill absolute inset-y-0 left-0 rounded-full origin-left"
-                style={{
-                    width: `${pct}%`,
-                    background: `linear-gradient(90deg, ${color}55 0%, ${color} 100%)`,
-                    boxShadow: `0 0 12px ${color}66`,
-                }}
-            />
-        </div>
-    )
-}
-
-/** Colonnes partagées par les deux tableaux (une seule source de vérité). */
-const GRID_DRIVERS =
-    'grid grid-cols-[3.25rem_1fr_4.5rem] sm:grid-cols-[3.25rem_1fr_4rem_5rem] lg:grid-cols-[3.5rem_minmax(210px,1.05fr)_200px_1fr_4rem_5.5rem] items-center gap-x-4'
-const GRID_TEAMS =
-    'grid grid-cols-[3.25rem_1fr_4.5rem] sm:grid-cols-[3.25rem_1fr_4rem_5rem] lg:grid-cols-[3.5rem_minmax(230px,1.05fr)_1fr_4rem_5.5rem] items-center gap-x-4'
 
 interface StandingsSectionProps {
     /**
@@ -200,39 +163,43 @@ export default function StandingsSection({ season, seasons, onSeasonChange }: St
         const root = tableRef.current
         if (!root) return
 
-        // DOM interrogé à l'appel (et non à la construction de la timeline de
-        // révélation) : l'onglet actif a pu changer entre-temps, les lignes ne
-        // sont alors plus les mêmes.
-        const rows = root.querySelectorAll<HTMLElement>('.standing-row')
-        if (rows.length === 0) return
+        const podiumCards = root.querySelectorAll<HTMLElement>('.podium-card')
+        const capsules = root.querySelectorAll<HTMLElement>('.capsule-row')
+        if (podiumCards.length === 0 && capsules.length === 0) return
 
         gridRef.current?.kill()
         const tl = gsap.timeline()
         gridRef.current = tl
 
-        tl.fromTo(
-            rows,
-            { opacity: 0, x: (i: number) => (i % 2 === 0 ? -110 : 110) },
-            {
-                opacity: 1,
-                x: 0,
-                duration: 0.85,
-                // Forte décélération : la ligne "freine" pour se poser dans son
-                // emplacement, au lieu d'un glissement linéaire.
-                ease: 'power4.out',
-                stagger: 0.05,
-                clearProps: 'transform',
-            },
-            0,
-        )
-
-        const bars = root.querySelectorAll<HTMLElement>('.standing-gap-fill')
-        if (bars.length > 0) {
+        if (podiumCards.length > 0) {
             tl.fromTo(
-                bars,
-                { scaleX: 0 },
-                { scaleX: 1, duration: 0.9, ease: 'power3.out', stagger: 0.05 },
-                0.3,
+                podiumCards,
+                { opacity: 0, y: 50 },
+                {
+                    opacity: 1,
+                    y: 0,
+                    duration: 0.85,
+                    ease: 'power4.out',
+                    stagger: 0.08,
+                    clearProps: 'transform',
+                },
+                0,
+            )
+        }
+
+        if (capsules.length > 0) {
+            tl.fromTo(
+                capsules,
+                { opacity: 0, y: 30 },
+                {
+                    opacity: 1,
+                    y: 0,
+                    duration: 0.75,
+                    ease: 'power4.out',
+                    stagger: 0.03,
+                    clearProps: 'transform',
+                },
+                0.25,
             )
         }
 
@@ -245,7 +212,7 @@ export default function StandingsSection({ season, seasons, onSeasonChange }: St
                 counter,
                 {
                     value: target,
-                    duration: 1,
+                    duration: 1.2,
                     ease: 'power2.out',
                     onUpdate: () => {
                         el.textContent = String(Math.round(counter.value))
@@ -254,7 +221,7 @@ export default function StandingsSection({ season, seasons, onSeasonChange }: St
                         el.textContent = formatPoints(target)
                     },
                 },
-                0.3 + i * 0.05,
+                0.25 + i * 0.04,
             )
         })
 
@@ -266,7 +233,7 @@ export default function StandingsSection({ season, seasons, onSeasonChange }: St
     // rejouer la séquence des feux (l'effet ci-dessous s'en charge).
     useEffect(() => {
         if (status !== 'ready' || !standings) return
-        if (!tableRef.current?.querySelector('.standing-row')) return
+        if (!tableRef.current?.querySelector('.podium-card, .capsule-row')) return
 
         const ctx = gsap.context(() => {
             // Parallax du mot géant, comme la section calendrier.
@@ -458,180 +425,338 @@ export default function StandingsSection({ season, seasons, onSeasonChange }: St
                 )}
 
                 {status === 'ready' && standings && rowCount > 0 && (
-                    <div ref={tableRef} className="relative border border-white/[0.08] bg-black/30 backdrop-blur-md overflow-hidden">
-                        {/* En-têtes de colonnes */}
-                        <div
-                            className={`${tab === 'drivers' ? GRID_DRIVERS : GRID_TEAMS} px-4 md:px-6 py-3 border-b border-white/10 text-[9px] font-mono tracking-[0.3em] text-gray-600 uppercase`}
-                        >
-                            <span>Pos</span>
-                            <span>{tab === 'drivers' ? 'Driver' : 'Team'}</span>
-                            {tab === 'drivers' && <span className="hidden lg:block">Team</span>}
-                            <span className="hidden lg:block">Gap to leader</span>
-                            <span className="hidden sm:block text-right">Wins</span>
-                            <span className="text-right">Pts</span>
-                        </div>
+                    <div ref={tableRef} className="relative overflow-visible">
+                        {/* Styles pour Option 2 Podium & Capsules */}
+                        <style>{`
+                            .podium-card {
+                                transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.3s, box-shadow 0.3s, background-color 0.3s !important;
+                            }
+                            .podium-card:hover {
+                                transform: translateY(-10px) scale(1.025) !important;
+                                border-color: var(--team-color) !important;
+                                box-shadow: 0 15px 40px var(--team-color-glow) !important;
+                                background-color: rgba(255, 255, 255, 0.05) !important;
+                                z-index: 10;
+                            }
+                            .capsule-row {
+                                transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.3s, box-shadow 0.3s, background-color 0.3s !important;
+                            }
+                            @media (min-width: 768px) {
+                                .capsule-row {
+                                    transform: skewX(-8deg) !important;
+                                }
+                                .capsule-row:hover {
+                                    transform: translateY(-3px) skewX(-8deg) !important;
+                                    border-color: var(--team-color) !important;
+                                    box-shadow: 0 8px 24px var(--team-color-glow) !important;
+                                    background-color: rgba(255, 255, 255, 0.04) !important;
+                                    z-index: 10;
+                                }
+                                .capsule-inner {
+                                    transform: skewX(8deg) !important;
+                                }
+                            }
+                        `}</style>
 
-                        {tab === 'drivers'
-                            ? standings.drivers.map((entry) => {
-                                const color = entry.constructor.color ?? FALLBACK_TEAM_COLOR
-                                const isLeader = entry.position === 1
-                                return (
-                                    <div
-                                        key={entry.driver.id}
-                                        className={`standing-row group relative ${GRID_DRIVERS} px-4 md:px-6 py-3.5 border-b border-white/5 last:border-b-0
-                                            transition-colors duration-300 hover:bg-white/[0.04]
-                                            ${isLeader ? 'bg-purple-950/20' : ''}`}
-                                        style={{ opacity: 0 }}
-                                    >
-                                        {/* Liseré couleur écurie */}
-                                        <span
-                                            className="absolute left-0 top-0 bottom-0 w-[3px] opacity-70 group-hover:opacity-100 transition-opacity duration-300"
-                                            style={{ background: color }}
-                                        />
-                                        {/* Balayage télémétrie au survol */}
-                                        <span
-                                            className="absolute inset-y-0 -left-full w-1/2 pointer-events-none opacity-0
-                                                       group-hover:opacity-100 group-hover:translate-x-[400%]
-                                                       transition-all duration-[900ms] ease-[cubic-bezier(0.19,1,0.22,1)]"
-                                            style={{ background: `linear-gradient(90deg, transparent, ${color}1f, transparent)` }}
-                                        />
-                                        {isLeader && (
-                                            <span
-                                                className="absolute inset-0 pointer-events-none"
-                                                style={{ background: 'radial-gradient(ellipse at 0% 50%, rgba(126,34,206,0.12) 0%, transparent 55%)' }}
-                                            />
-                                        )}
+                        {/* Section Podium (Top 3) */}
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-end mb-12 max-w-5xl mx-auto px-2">
+                            {(() => {
+                                const top3 = (tab === 'drivers' ? standings.drivers : standings.constructors).slice(0, 3)
+                                if (top3.length === 0) return null
 
-                                        <PositionCell position={entry.position} />
+                                return top3.map((entry) => {
+                                    const color = (tab === 'drivers' 
+                                        ? (entry as typeof standings.drivers[0]).constructor.color 
+                                        : (entry as typeof standings.constructors[0]).constructor.color) ?? FALLBACK_TEAM_COLOR
+                                    const isFirst = entry.position === 1
+                                    const isSecond = entry.position === 2
 
-                                        <div className="relative flex items-center gap-3 min-w-0">
-                                            <Flag nationality={entry.driver.nationality} />
-                                            <div className="min-w-0">
-                                                <p className="flex items-baseline gap-2 truncate">
-                                                    <span className="text-gray-400 text-sm hidden md:inline" style={{ fontFamily: 'var(--font-barlow)' }}>
-                                                        {entry.driver.firstName}
-                                                    </span>
-                                                    <span
-                                                        className="text-white text-sm md:text-base font-bold uppercase tracking-[0.06em]"
-                                                        style={{ fontFamily: 'var(--font-outfit)' }}
-                                                    >
-                                                        {entry.driver.lastName}
-                                                    </span>
-                                                    {entry.driver.code && (
-                                                        <span className="hidden xl:inline text-[10px] font-mono tracking-[0.2em] text-gray-600">
-                                                            {entry.driver.code}
-                                                        </span>
+                                    const heightClass = isFirst
+                                        ? 'h-[22rem] md:h-[26rem] border-purple-500/30 bg-purple-950/5 shadow-[0_0_40px_rgba(168,85,247,0.06)]'
+                                        : isSecond
+                                        ? 'h-[19.5rem] md:h-[23rem] border-white/5 bg-white/[0.02]'
+                                        : 'h-[18rem] md:h-[21.5rem] border-white/5 bg-white/[0.01]'
+
+                                    const orderClass = isFirst
+                                        ? 'order-1 md:order-2'
+                                        : isSecond
+                                        ? 'order-2 md:order-1'
+                                        : 'order-3 md:order-3'
+
+                                    return (
+                                        <div
+                                            key={tab === 'drivers' 
+                                                ? (entry as typeof standings.drivers[0]).driver.id 
+                                                : (entry as typeof standings.constructors[0]).constructor.id}
+                                            className={`podium-card group relative ${heightClass} ${orderClass} flex flex-col justify-between p-6 md:p-8 rounded-2xl border backdrop-blur-md`}
+                                            style={{
+                                                '--team-color': color,
+                                                '--team-color-glow': `${color}44`,
+                                                opacity: 0,
+                                            } as React.CSSProperties}
+                                        >
+                                            {/* Watermark position number */}
+                                            <div 
+                                                className="absolute bottom-2 right-4 font-black select-none pointer-events-none text-white/[0.025] uppercase font-russo text-[7.5rem] leading-none"
+                                            >
+                                                {String(entry.position).padStart(2, '0')}
+                                            </div>
+
+                                            {/* Card Top: Position Badge */}
+                                            <div className="flex items-center justify-between w-full relative z-10">
+                                                <span className="flex items-center gap-1.5 text-[10px] font-mono tracking-[0.2em] text-gray-500 uppercase">
+                                                    {isFirst ? (
+                                                        <>
+                                                            <svg className="w-3.5 h-3.5 text-amber-400 fill-amber-400" viewBox="0 0 24 24">
+                                                                <path d="M5 16h14a1 1 0 001-.8L22 4.5l-4.5 4.5L12 2 6.5 9 2 4.5 4 15.2a1 1 0 001 .8zM4 18h16v2H4z" />
+                                                            </svg>
+                                                            Championship Leader
+                                                        </>
+                                                    ) : isSecond ? (
+                                                        <>
+                                                            <svg className="w-3.5 h-3.5 text-slate-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                                <circle cx="12" cy="8" r="7" />
+                                                                <path d="M8.21 13.89L7 23l5-3 5 3-1.21-9.12" />
+                                                            </svg>
+                                                            2nd Place
+                                                        </>
+                                                    ) : (
+                                                        <>
+                                                            <svg className="w-3.5 h-3.5 text-amber-700" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                                <circle cx="12" cy="8" r="7" />
+                                                                <path d="M8.21 13.89L7 23l5-3 5 3-1.21-9.12" />
+                                                            </svg>
+                                                            3rd Place
+                                                        </>
                                                     )}
-                                                </p>
-                                                {/* Écurie repliée sous le nom en dessous de lg */}
-                                                <p className="lg:hidden text-[11px] text-gray-500 truncate" style={{ fontFamily: 'var(--font-barlow)' }}>
-                                                    {entry.constructor.name}
-                                                </p>
+                                                </span>
+                                                <span className={`flex h-8 w-8 items-center justify-center rounded-full text-sm font-black font-russo
+                                                    ${isFirst ? 'bg-amber-400 text-black shadow-[0_0_15px_rgba(251,191,36,0.5)]' :
+                                                      isSecond ? 'bg-slate-300 text-black' : 'bg-amber-700 text-white'}`}
+                                                >
+                                                    {entry.position}
+                                                </span>
+                                            </div>
+
+                                            {/* Card Middle: Driver or Constructor details */}
+                                            {tab === 'drivers' ? (
+                                                <div className="my-auto flex flex-col items-center text-center gap-3 relative z-10">
+                                                    <div className="flex flex-col items-center">
+                                                        <span className="text-gray-400 text-xs font-semibold uppercase tracking-[0.15em] mb-0.5" style={{ fontFamily: 'var(--font-barlow)' }}>
+                                                            {(entry as typeof standings.drivers[0]).driver.firstName}
+                                                        </span>
+                                                        <h3 className="text-white text-2xl md:text-3xl font-black uppercase tracking-wider font-outfit">
+                                                            {(entry as typeof standings.drivers[0]).driver.lastName}
+                                                        </h3>
+                                                        <div className="flex items-center justify-center gap-2 mt-2">
+                                                            <Flag nationality={(entry as typeof standings.drivers[0]).driver.nationality} />
+                                                            {(entry as typeof standings.drivers[0]).driver.code && (
+                                                                <span className="px-1.5 py-0.5 rounded text-[9px] font-mono tracking-widest bg-white/5 text-gray-500 border border-white/5">
+                                                                    {(entry as typeof standings.drivers[0]).driver.code}
+                                                                </span>
+                                                            )}
+                                                        </div>
+                                                    </div>
+
+                                                    {/* Écurie secondaire sous forme de pillule discrète */}
+                                                    <div className="mt-4 flex items-center gap-3 px-3.5 py-1.5 rounded-full bg-white/[0.03] border border-white/5 hover:border-[var(--team-color)]/30 hover:bg-white/[0.05] transition-all duration-300">
+                                                        <TeamLogo
+                                                            id={(entry as typeof standings.drivers[0]).constructor.id}
+                                                            name={(entry as typeof standings.drivers[0]).constructor.name}
+                                                            color={color}
+                                                            className="h-4 w-8 opacity-70"
+                                                        />
+                                                        <span className="text-gray-400 text-xs font-medium" style={{ fontFamily: 'var(--font-barlow)' }}>
+                                                            {(entry as typeof standings.drivers[0]).constructor.name}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            ) : (
+                                                <div className="my-auto flex flex-col items-center text-center gap-3 relative z-10">
+                                                    <TeamLogo
+                                                        id={(entry as typeof standings.constructors[0]).constructor.id}
+                                                        name={(entry as typeof standings.constructors[0]).constructor.name}
+                                                        color={color}
+                                                        className="h-16 w-24 opacity-90 group-hover:opacity-100 transition-opacity duration-300"
+                                                    />
+                                                    <div className="mt-2">
+                                                        <h3 className="text-white text-lg md:text-2xl font-black uppercase tracking-wider font-outfit mt-0.5">
+                                                            {(entry as typeof standings.constructors[0]).constructor.name}
+                                                        </h3>
+                                                        <Flag nationality={(entry as typeof standings.constructors[0]).constructor.nationality} className="mt-1" />
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            {/* Card Bottom: Stats */}
+                                            <div className="mt-auto w-full pt-4 border-t border-white/5 flex flex-col gap-2 relative z-10">
+                                                <div className="flex items-center justify-between text-xs">
+                                                    <span className="text-gray-500 text-[10px] uppercase font-mono tracking-wider">Wins</span>
+                                                    <span className="text-white font-semibold font-barlow">
+                                                        {entry.wins > 0 ? `${entry.wins} win${entry.wins > 1 ? 's' : ''}` : '—'}
+                                                    </span>
+                                                </div>
+                                                <div className="flex items-center justify-between text-xs">
+                                                    <span className="text-gray-505 text-[10px] uppercase font-mono tracking-wider">Gap</span>
+                                                    <span className="text-gray-400 font-mono text-[11px]">
+                                                        {isFirst ? 'LEADER' : `-${formatPoints(leaderPoints - entry.points)}`}
+                                                    </span>
+                                                </div>
+                                                <div className="flex items-end justify-between mt-2">
+                                                    <span className="text-gray-500 text-[10px] uppercase font-mono tracking-wider">Points</span>
+                                                    <span 
+                                                        className="standing-points text-2xl md:text-3xl font-black font-russo leading-none text-white"
+                                                        data-points={entry.points}
+                                                    >
+                                                        {formatPoints(entry.points)}
+                                                    </span>
+                                                </div>
                                             </div>
                                         </div>
+                                    )
+                                })
+                            })()}
+                        </div>
 
-                                        <div className="relative hidden lg:flex items-center gap-2.5 min-w-0">
-                                            <TeamLogo
-                                                id={entry.constructor.id}
-                                                name={entry.constructor.name}
-                                                color={color}
-                                                className="h-6 w-9"
-                                            />
-                                            <span className="text-gray-400 text-sm truncate" style={{ fontFamily: 'var(--font-barlow)' }}>
-                                                {entry.constructor.name}
-                                            </span>
-                                        </div>
+                        {/* Section Capsules (Rest 4th+) */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-5xl mx-auto px-2">
+                            {tab === 'drivers'
+                                ? standings.drivers.slice(3).map((entry) => {
+                                    const color = entry.constructor.color ?? FALLBACK_TEAM_COLOR
 
-                                        <div className="relative hidden lg:flex items-center gap-3">
-                                            <GapBar points={entry.points} leaderPoints={leaderPoints} color={color} />
-                                            <span className="w-14 shrink-0 text-right text-[11px] font-mono tabular-nums text-gray-600">
-                                                {isLeader ? 'LEADER' : `-${formatPoints(leaderPoints - entry.points)}`}
-                                            </span>
-                                        </div>
-
-                                        <span className="relative hidden sm:block text-right text-sm tabular-nums text-gray-400" style={{ fontFamily: 'var(--font-barlow)' }}>
-                                            {entry.wins > 0 ? entry.wins : '—'}
-                                        </span>
-
-                                        <span
-                                            className={`standing-points relative text-right text-base md:text-lg font-black tabular-nums ${isLeader ? 'text-purple-400' : 'text-white'}`}
-                                            style={{ fontFamily: 'var(--font-russo)' }}
-                                            data-points={entry.points}
+                                    return (
+                                        <div
+                                            key={entry.driver.id}
+                                            className="capsule-row group relative border border-white/[0.08] bg-black/20 backdrop-blur-md px-5 py-4 flex items-center justify-between overflow-hidden rounded-xl md:rounded-none"
+                                            style={{
+                                                '--team-color': color,
+                                                '--team-color-glow': `${color}22`,
+                                                opacity: 0,
+                                            } as React.CSSProperties}
                                         >
-                                            {formatPoints(entry.points)}
-                                        </span>
-                                    </div>
-                                )
-                            })
-                            : standings.constructors.map((entry) => {
-                                const color = entry.constructor.color ?? FALLBACK_TEAM_COLOR
-                                const isLeader = entry.position === 1
-                                return (
-                                    <div
-                                        key={entry.constructor.id}
-                                        className={`standing-row group relative ${GRID_TEAMS} px-4 md:px-6 py-4 border-b border-white/5 last:border-b-0
-                                            transition-colors duration-300 hover:bg-white/[0.04]
-                                            ${isLeader ? 'bg-purple-950/20' : ''}`}
-                                        style={{ opacity: 0 }}
-                                    >
-                                        <span
-                                            className="absolute left-0 top-0 bottom-0 w-[3px] opacity-70 group-hover:opacity-100 transition-opacity duration-300"
-                                            style={{ background: color }}
-                                        />
-                                        <span
-                                            className="absolute inset-y-0 -left-full w-1/2 pointer-events-none opacity-0
-                                                       group-hover:opacity-100 group-hover:translate-x-[400%]
-                                                       transition-all duration-[900ms] ease-[cubic-bezier(0.19,1,0.22,1)]"
-                                            style={{ background: `linear-gradient(90deg, transparent, ${color}1f, transparent)` }}
-                                        />
-                                        {isLeader && (
+                                            {/* Telemetry LED glow sweep */}
                                             <span
-                                                className="absolute inset-0 pointer-events-none"
-                                                style={{ background: 'radial-gradient(ellipse at 0% 50%, rgba(126,34,206,0.12) 0%, transparent 55%)' }}
+                                                className="absolute inset-y-0 -left-full w-1/2 pointer-events-none opacity-0
+                                                           group-hover:opacity-100 group-hover:translate-x-[400%]
+                                                           transition-all duration-[900ms] ease-[cubic-bezier(0.19,1,0.22,1)]"
+                                                style={{ background: `linear-gradient(90deg, transparent, ${color}14, transparent)` }}
                                             />
-                                        )}
-
-                                        <PositionCell position={entry.position} />
-
-                                        <div className="relative flex items-center gap-3 min-w-0">
-                                            <TeamLogo
-                                                id={entry.constructor.id}
-                                                name={entry.constructor.name}
-                                                color={color}
-                                                className="h-7 w-10"
-                                            />
+                                            {/* Liseré écurie sur le côté gauche */}
                                             <span
-                                                className="text-white text-sm md:text-base font-bold uppercase tracking-[0.06em] truncate"
-                                                style={{ fontFamily: 'var(--font-outfit)' }}
-                                            >
-                                                {entry.constructor.name}
-                                            </span>
-                                            <Flag nationality={entry.constructor.nationality} />
+                                                className="absolute left-0 top-0 bottom-0 w-[4px]"
+                                                style={{ background: color }}
+                                            />
+
+                                            <div className="capsule-inner w-full flex items-center justify-between gap-4">
+                                                <div className="flex items-center gap-4 min-w-0">
+                                                    <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white/5 border border-white/10 text-xs font-bold text-gray-500 font-mono">
+                                                        {entry.position}
+                                                    </span>
+                                                    <div className="flex items-center gap-2 min-w-0">
+                                                        <Flag nationality={entry.driver.nationality} />
+                                                        <div className="min-w-0 truncate">
+                                                            <span className="text-gray-400 text-xs hidden sm:inline mr-1" style={{ fontFamily: 'var(--font-barlow)' }}>
+                                                                {entry.driver.firstName}
+                                                            </span>
+                                                            <span className="text-white text-sm font-bold uppercase tracking-wider font-outfit">
+                                                                {entry.driver.lastName}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <div className="flex items-center gap-4 shrink-0">
+                                                    <div className="hidden sm:flex items-center gap-2">
+                                                        <TeamLogo id={entry.constructor.id} name={entry.constructor.name} color={color} className="h-5 w-8 opacity-80" />
+                                                        <span className="text-gray-500 text-xs truncate max-w-[90px]" style={{ fontFamily: 'var(--font-barlow)' }}>
+                                                            {entry.constructor.name}
+                                                        </span>
+                                                    </div>
+
+                                                    <div className="flex items-center gap-3">
+                                                        {entry.wins > 0 && (
+                                                            <span className="hidden lg:inline text-[10px] font-mono bg-white/5 px-2 py-0.5 rounded text-gray-400">
+                                                                {entry.wins} win{entry.wins > 1 ? 's' : ''}
+                                                            </span>
+                                                        )}
+                                                        <span className="hidden md:inline text-[10px] font-mono text-gray-500 w-12 text-right">
+                                                            -{formatPoints(leaderPoints - entry.points)}
+                                                        </span>
+                                                    </div>
+
+                                                    <span 
+                                                        className="standing-points text-white text-base font-black font-russo min-w-[50px] text-right"
+                                                        data-points={entry.points}
+                                                    >
+                                                        {formatPoints(entry.points)}
+                                                    </span>
+                                                </div>
+                                            </div>
                                         </div>
+                                    )
+                                })
+                                : standings.constructors.slice(3).map((entry) => {
+                                    const color = entry.constructor.color ?? FALLBACK_TEAM_COLOR
 
-                                        <div className="relative hidden lg:flex items-center gap-3">
-                                            <GapBar points={entry.points} leaderPoints={leaderPoints} color={color} />
-                                            <span className="w-14 shrink-0 text-right text-[11px] font-mono tabular-nums text-gray-600">
-                                                {isLeader ? 'LEADER' : `-${formatPoints(leaderPoints - entry.points)}`}
-                                            </span>
-                                        </div>
-
-                                        <span className="relative hidden sm:block text-right text-sm tabular-nums text-gray-400" style={{ fontFamily: 'var(--font-barlow)' }}>
-                                            {entry.wins > 0 ? entry.wins : '—'}
-                                        </span>
-
-                                        <span
-                                            className={`standing-points relative text-right text-base md:text-lg font-black tabular-nums ${isLeader ? 'text-purple-400' : 'text-white'}`}
-                                            style={{ fontFamily: 'var(--font-russo)' }}
-                                            data-points={entry.points}
+                                    return (
+                                        <div
+                                            key={entry.constructor.id}
+                                            className="capsule-row group relative border border-white/[0.08] bg-black/20 backdrop-blur-md px-5 py-4 flex items-center justify-between overflow-hidden rounded-xl md:rounded-none"
+                                            style={{
+                                                '--team-color': color,
+                                                '--team-color-glow': `${color}22`,
+                                                opacity: 0,
+                                            } as React.CSSProperties}
                                         >
-                                            {formatPoints(entry.points)}
-                                        </span>
-                                    </div>
-                                )
-                            })}
+                                            <span
+                                                className="absolute inset-y-0 -left-full w-1/2 pointer-events-none opacity-0
+                                                           group-hover:opacity-100 group-hover:translate-x-[400%]
+                                                           transition-all duration-[900ms] ease-[cubic-bezier(0.19,1,0.22,1)]"
+                                                style={{ background: `linear-gradient(90deg, transparent, ${color}14, transparent)` }}
+                                            />
+                                            <span
+                                                className="absolute left-0 top-0 bottom-0 w-[4px]"
+                                                style={{ background: color }}
+                                            />
 
-                        <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-gradient-to-r from-purple-700 via-purple-500/40 to-transparent" />
+                                            <div className="capsule-inner w-full flex items-center justify-between gap-4">
+                                                <div className="flex items-center gap-4 min-w-0">
+                                                    <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white/5 border border-white/10 text-xs font-bold text-gray-500 font-mono">
+                                                        {entry.position}
+                                                    </span>
+                                                    <div className="flex items-center gap-3 min-w-0">
+                                                        <TeamLogo id={entry.constructor.id} name={entry.constructor.name} color={color} className="h-6 w-9 shrink-0" />
+                                                        <span className="text-white text-sm font-bold uppercase tracking-wider font-outfit truncate">
+                                                            {entry.constructor.name}
+                                                        </span>
+                                                        <Flag nationality={entry.constructor.nationality} />
+                                                    </div>
+                                                </div>
+
+                                                <div className="flex items-center gap-4 shrink-0">
+                                                    <div className="flex items-center gap-3">
+                                                        {entry.wins > 0 && (
+                                                            <span className="hidden lg:inline text-[10px] font-mono bg-white/5 px-2 py-0.5 rounded text-gray-400">
+                                                                {entry.wins} win{entry.wins > 1 ? 's' : ''}
+                                                            </span>
+                                                        )}
+                                                        <span className="hidden md:inline text-[10px] font-mono text-gray-505 w-12 text-right">
+                                                            -{formatPoints(leaderPoints - entry.points)}
+                                                        </span>
+                                                    </div>
+
+                                                    <span 
+                                                        className="standing-points text-white text-base font-black font-russo min-w-[50px] text-right"
+                                                        data-points={entry.points}
+                                                    >
+                                                        {formatPoints(entry.points)}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )
+                                })}
+                        </div>
                     </div>
                 )}
             </div>
