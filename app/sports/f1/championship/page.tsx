@@ -1,11 +1,17 @@
 'use client'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import dynamic from 'next/dynamic'
+import Image from 'next/image'
 import Link from 'next/link'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
+import BackgroundShapes from '@/components/BackgroundShapes'
+import ChampionshipBackground from '@/components/f1/ChampionshipBackground'
 import CircuitDetailPanel from '@/components/f1/CircuitDetailPanel'
 import OutlineText from '@/components/f1/OutlineText'
+import SeasonPicker from '@/components/f1/SeasonPicker'
+import SectionDivider from '@/components/f1/SectionDivider'
+import StandingsSection from '@/components/f1/StandingsSection'
 import Navbar from '@/components/Navbar'
 import { todayISO } from '@/lib/f1/date'
 import type { RaceWithCircuit } from '@/lib/f1/types'
@@ -27,10 +33,10 @@ const championshipSections = [
     { id: 'drivers', num: '01', name: 'The Drivers', ready: false },
     { id: 'teams', num: '02', name: 'The Teams', ready: false },
     { id: 'calendar', num: '03', name: 'The Calendar', ready: true },
-    { id: 'standings', num: '04', name: 'The Standings', ready: false },
+    { id: 'standings', num: '04', name: 'The Standings', ready: true },
 ]
 
-/** Bandeau placeholder pour les sections à venir (issues #4, #5, #6). */
+/** Bandeau placeholder pour les sections à venir (issues #4, #5). */
 function PlaceholderBand({ id, num, title }: { id: string; num: string; title: string }) {
     return (
         <section id={id} className="scroll-mt-28 relative border-b border-white/5">
@@ -60,6 +66,11 @@ export default function ChampionshipPage() {
     const [selectedRace, setSelectedRace] = useState<RaceWithCircuit | null>(null)
     const [reloadKey, setReloadKey] = useState(0)
 
+    const heroRef = useRef<HTMLElement>(null)
+    const heroBgRef = useRef<HTMLDivElement>(null)
+    const heroContentRef = useRef<HTMLDivElement>(null)
+    const speedLinesRef = useRef<HTMLDivElement>(null)
+    const scrollCueRef = useRef<HTMLDivElement>(null)
     const titleRef = useRef<HTMLHeadingElement>(null)
     const sweepRef = useRef<HTMLDivElement>(null)
     const purpleLineRef = useRef<HTMLDivElement>(null)
@@ -169,6 +180,50 @@ export default function ChampionshipPage() {
                 )
             }
 
+            tl.fromTo(
+                scrollCueRef.current,
+                { opacity: 0, y: -12 },
+                { opacity: 1, y: 0, duration: 0.5 },
+                1.7,
+            )
+
+            // Lignes de vitesse : un balayage unique à l'arrivée, puis en
+            // boucle lente — le hero continue de vivre après l'entrée.
+            if (speedLinesRef.current) {
+                const lines = speedLinesRef.current.querySelectorAll('.speed-line')
+                tl.fromTo(
+                    lines,
+                    { scaleX: 0, opacity: 0 },
+                    { scaleX: 1, opacity: 1, duration: 0.9, stagger: 0.08, ease: 'power3.out' },
+                    0.9,
+                )
+                gsap.to(lines, {
+                    xPercent: 140,
+                    opacity: 0,
+                    duration: 2.2,
+                    stagger: { each: 0.5, repeat: -1, repeatDelay: 1.6 },
+                    ease: 'power2.in',
+                    delay: 2.4,
+                })
+            }
+
+            // ── Parallax du hero au scroll ──
+            // L'image de piste s'enfonce, le contenu monte et s'efface : la
+            // page « décolle » au lieu de simplement défiler.
+            gsap.to(heroBgRef.current, {
+                yPercent: 22,
+                scale: 1.12,
+                ease: 'none',
+                scrollTrigger: { trigger: heroRef.current, start: 'top top', end: 'bottom top', scrub: true },
+            })
+
+            gsap.to(heroContentRef.current, {
+                yPercent: -18,
+                opacity: 0,
+                ease: 'none',
+                scrollTrigger: { trigger: heroRef.current, start: 'top top', end: 'bottom top', scrub: true },
+            })
+
             // Parallax horizontal du mot géant CALENDAR
             if (giantCalRef.current && calHeaderRef.current) {
                 gsap.fromTo(
@@ -212,31 +267,71 @@ export default function ChampionshipPage() {
 
     return (
         <main className="relative w-full overflow-hidden bg-[#0a0000]">
+            <ChampionshipBackground />
             <Navbar shouldAnimate disableEntryAnimation />
 
             {/* ═══════════ HERO ═══════════ */}
             <section
-                className="relative w-full min-h-[78vh] flex flex-col items-center justify-center overflow-hidden px-6 pt-36 pb-20"
-                style={{ background: 'linear-gradient(180deg, #0a0000 0%, #10031c 55%, #0a0e27 100%)' }}
+                ref={heroRef as React.RefObject<HTMLElement>}
+                className="relative z-10 w-full min-h-[88vh] flex flex-col items-center justify-center overflow-hidden px-6 pt-36 pb-24"
             >
+                {/* Ligne d'arrivée en parallax — la page s'ouvre sur le damier
+                    qui clôt chaque Grand Prix. */}
+                <div ref={heroBgRef} className="absolute inset-0 will-change-transform">
+                    <Image
+                        src="/img/piste.png"
+                        alt=""
+                        fill
+                        priority
+                        quality={90}
+                        sizes="100vw"
+                        // La photo est claire et très contrastée : on l'assombrit
+                        // à la source plutôt qu'en empilant des voiles opaques,
+                        // qui finissaient par effacer le damier.
+                        className="object-cover object-center brightness-[0.32] contrast-[1.15]"
+                    />
+                    {/* Teinte : violet en accent seulement — le fond reste
+                        noir/bleu nuit, conformément au reste du site. */}
+                    <div
+                        className="absolute inset-0"
+                        style={{
+                            background:
+                                'linear-gradient(180deg, rgba(10,0,0,0.55) 0%, rgba(40,10,78,0.42) 45%, rgba(10,14,39,0.92) 100%)',
+                        }}
+                    />
+                    <div
+                        className="absolute inset-0"
+                        style={{ background: 'radial-gradient(ellipse at center, transparent 38%, rgba(4,2,12,0.88) 100%)' }}
+                    />
+                </div>
+
                 {/* Faisceau diagonal violet */}
                 <div
                     className="absolute -top-1/4 left-1/2 w-[140%] h-[150%] -translate-x-1/2 pointer-events-none opacity-60"
                     style={{
                         background:
-                            'linear-gradient(115deg, transparent 42%, rgba(126,34,206,0.13) 50%, transparent 58%)',
-                    }}
-                />
-                <div
-                    className="absolute inset-0 opacity-[0.04] pointer-events-none"
-                    style={{
-                        backgroundImage:
-                            'linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)',
-                        backgroundSize: '60px 60px',
+                            'linear-gradient(115deg, transparent 42%, rgba(126,34,206,0.18) 50%, transparent 58%)',
                     }}
                 />
 
-                <div className="relative z-10 flex flex-col items-center text-center w-full max-w-6xl mx-auto">
+                {/* Lignes de vitesse */}
+                <div ref={speedLinesRef} className="absolute inset-0 pointer-events-none overflow-hidden">
+                    {[18, 34, 62, 78].map((top, i) => (
+                        <div
+                            key={top}
+                            className="speed-line absolute h-px origin-left"
+                            style={{
+                                top: `${top}%`,
+                                left: '-10%',
+                                width: `${34 + i * 12}%`,
+                                opacity: 0,
+                                background: `linear-gradient(90deg, transparent, rgba(192,132,252,${0.5 - i * 0.08}), transparent)`,
+                            }}
+                        />
+                    ))}
+                </div>
+
+                <div ref={heroContentRef} className="relative z-10 flex flex-col items-center text-center w-full max-w-6xl mx-auto">
                     <Link
                         href="/sports/f1"
                         className="group inline-flex items-center gap-2 mb-6 text-xs font-mono tracking-[0.35em] uppercase text-purple-400/70 hover:text-purple-300 transition-colors duration-300"
@@ -278,11 +373,13 @@ export default function ChampionshipPage() {
                                 key={section.id}
                                 href={`#${section.id}`}
                                 onClick={(event) => handleAnchor(event, section.id)}
-                                className="champ-plate group relative block"
+                                className="champ-plate group relative block h-full"
                                 style={{ opacity: 0 }}
                             >
+                                {/* h-full + justify-center : « The Standings » passe sur
+                                    deux lignes et désalignerait les plaques voisines. */}
                                 <div
-                                    className={`relative overflow-hidden rounded-sm border bg-black/30 backdrop-blur-md
+                                    className={`relative flex h-full flex-col justify-center overflow-hidden rounded-sm border bg-black/30 backdrop-blur-md
                                                px-6 py-5 text-center cursor-pointer
                                                transition-all duration-500 ease-[cubic-bezier(0.19,1,0.22,1)]
                                                group-hover:bg-white/10 group-hover:scale-[1.03]
@@ -314,21 +411,36 @@ export default function ChampionshipPage() {
                     </div>
                 </div>
 
+                {/* Indicateur de scroll */}
+                <div ref={scrollCueRef} className="absolute bottom-10 z-10" style={{ opacity: 0 }}>
+                    <div className="flex flex-col items-center gap-2 animate-bounce">
+                        <div className="w-10 h-10 rounded-full border-2 border-white/40 flex items-center justify-center backdrop-blur-sm">
+                            <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 13.5L12 21m0 0l-7.5-7.5M12 21V3" />
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+
                 <div className="absolute top-0 left-0 w-full h-[3px] bg-gradient-to-r from-transparent via-purple-700 to-transparent" />
             </section>
 
             {/* ═══════════ SECTIONS PLACEHOLDER ═══════════ */}
-            <div style={{ background: 'linear-gradient(180deg, #0a0e27 0%, #060918 100%)' }}>
+            <div className="relative z-10">
+                <SectionDivider />
                 <PlaceholderBand id="drivers" num="01" title="The Drivers" />
                 <PlaceholderBand id="teams" num="02" title="The Teams" />
             </div>
 
             {/* ═══════════ THE CALENDAR (globe 3D) ═══════════ */}
+            {/* Fond transparent : c'est ChampionshipBackground, en position
+                fixed, qui porte désormais la couleur et la fait évoluer. */}
             <section
                 id="calendar"
-                className="scroll-mt-20 relative px-5 sm:px-8 md:px-16 pt-24 pb-28"
-                style={{ background: 'linear-gradient(180deg, #060918 0%, #0a0e27 55%, #060918 100%)' }}
+                className="scroll-mt-20 relative z-10 px-5 sm:px-8 md:px-16 pt-16 pb-28"
             >
+                <BackgroundShapes variant="sports" />
+
                 {/* Mot géant en parallax derrière l'en-tête */}
                 <div ref={giantCalRef} className="absolute top-10 left-0 whitespace-nowrap pointer-events-none">
                     <OutlineText className="text-[110px] sm:text-[160px] lg:text-[220px]">
@@ -356,33 +468,12 @@ export default function ChampionshipPage() {
                     {/* ── Barre de contrôle : saison + compteur ── */}
                     {status === 'ready' && races.length > 0 && (
                         <div className="flex flex-wrap items-center justify-between gap-5 mb-8">
-                            {seasons.length > 0 && (
-                                <div className="flex flex-wrap items-center gap-4">
-                                    <span className="text-[10px] font-mono tracking-[0.35em] text-gray-500 uppercase">Season</span>
-                                    <div className="flex flex-wrap gap-2">
-                                        {seasons.map((value) => {
-                                            const isActive = value === activeSeason
-                                            return (
-                                                <button
-                                                    key={value}
-                                                    onClick={() => handleSeason(value)}
-                                                    className={`relative rounded-sm border px-5 py-2 cursor-pointer transition-all duration-500 ease-[cubic-bezier(0.19,1,0.22,1)]
-                                                        ${isActive
-                                                            ? 'border-purple-500 bg-purple-700/20 shadow-[0_0_30px_rgba(126,34,206,0.25)]'
-                                                            : 'border-white/20 bg-black/30 hover:border-white/50 hover:bg-white/[0.06]'}`}
-                                                >
-                                                    <span
-                                                        className={`text-sm tracking-[0.1em] ${isActive ? 'text-white' : 'text-gray-400'}`}
-                                                        style={{ fontFamily: 'var(--font-russo)' }}
-                                                    >
-                                                        {value}
-                                                    </span>
-                                                </button>
-                                            )
-                                        })}
-                                    </div>
-                                </div>
-                            )}
+                            <SeasonPicker
+                                seasons={seasons}
+                                activeSeason={activeSeason}
+                                onSelect={handleSeason}
+                                disabled={status !== 'ready'}
+                            />
                             <div className="flex items-center gap-2 text-[10px] font-mono tracking-[0.3em] text-gray-500 uppercase">
                                 <span className="h-1.5 w-1.5 rounded-full bg-purple-500" />
                                 {locatedCount} circuits mapped
@@ -457,10 +548,15 @@ export default function ChampionshipPage() {
                 </div>
             </section>
 
-            {/* ═══════════ STANDINGS PLACEHOLDER ═══════════ */}
-            <div style={{ background: 'linear-gradient(180deg, #060918 0%, #0a0e27 100%)' }}>
-                <PlaceholderBand id="standings" num="04" title="The Standings" />
+            {/* ═══════════ THE STANDINGS (issue #6) ═══════════ */}
+            <div className="relative z-10">
+                <SectionDivider label="Chequered Flag" flip />
             </div>
+            <StandingsSection
+                season={activeSeason}
+                seasons={seasons}
+                onSeasonChange={handleSeason}
+            />
         </main>
     )
 }
