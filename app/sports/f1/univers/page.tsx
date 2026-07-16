@@ -7,16 +7,17 @@ import Navbar from '@/components/Navbar'
 import F1TeamsMarquee from '@/components/F1TeamsMarquee'
 import UniversBackground from '@/components/UniversBackground'
 import RivalryCards from '@/components/RivalryCards'
+import RaceWeekSection from '@/components/f1/RaceWeekSection'
 
 gsap.registerPlugin(ScrollTrigger)
 
 const heroImages = [
-    { src: '/img/f1-univers-hero.png', alt: 'Formula 1 racing action' },
-    { src: '/img/f1-univers-monaco.png', alt: 'Monaco Grand Prix historic circuit' },
-    { src: '/img/f1-univers-cockpit.png', alt: 'F1 cockpit technology' },
-    { src: '/img/f1-univers-fans.png', alt: 'F1 fans cheering with flares' },
-    { src: '/img/f1-univers-night.png', alt: 'F1 night race under the lights' },
-    { src: '/img/f1-univers-pitstop.png', alt: 'F1 pit stop action' },
+    { src: '/img/hero/1950_silverstone.jpg', alt: 'Formula 1 racing action' },
+    { src: '/img/hero/luigi_italy.jpg', alt: 'Monaco Grand Prix historic circuit' },
+    { src: '/img/hero/fini.jpg', alt: 'F1 cockpit technology' },
+    { src: '/img/hero/fini_fini.jpg', alt: 'F1 fans cheering with flares' },
+    // { src: '/img/f1-univers-night.png', alt: 'F1 night race under the lights' },
+    // { src: '/img/f1-univers-pitstop.png', alt: 'F1 pit stop action' },
 ]
 
 const AUTOPLAY_SECONDS = 6
@@ -480,6 +481,26 @@ export default function UniversPage() {
                         start: 'top 80%',
                         toggleActions: 'play reverse play reverse',
                     }
+                })
+
+                // Count-up des chiffres, synchronisé avec l'apparition des cartes
+                const numberEls = impactStatsRef.current.querySelectorAll<HTMLSpanElement>('.stat-number')
+                numberEls.forEach((el, i) => {
+                    const target = Number(el.dataset.value ?? '0')
+                    el.textContent = '0'
+                    const counter = { val: 0 }
+                    gsap.to(counter, {
+                        val: target,
+                        duration: 1.6,
+                        delay: 0.15 * i,
+                        ease: 'power2.out',
+                        onUpdate: () => { el.textContent = String(Math.round(counter.val)) },
+                        scrollTrigger: {
+                            trigger: impactStatsRef.current,
+                            start: 'top 80%',
+                            toggleActions: 'play reverse play reverse',
+                        }
+                    })
                 })
             }
 
@@ -1147,14 +1168,14 @@ export default function UniversPage() {
                     <div className="w-full lg:w-[50%] px-6 sm:px-12 md:px-20 xl:px-16 relative z-20 flex flex-col justify-center mt-16 lg:mt-[5vw]">
                         <div ref={impactStatsRef} className="grid grid-cols-2 gap-4 lg:gap-6">
                             {[
-                                { number: '24', label: 'Races per Season', sub: 'across 5 continents' },
-                                { number: '20+', label: 'Nations on the Grid', sub: 'drivers from every corner' },
-                                { number: '500M+', label: 'Global Fans', sub: 'tuning in each year' },
-                                { number: '75', label: 'Years of History', sub: 'since Silverstone 1950' },
+                                { value: 24, suffix: '', label: 'Races per Season', sub: 'across 5 continents' },
+                                { value: 20, suffix: '+', label: 'Nations on the Grid', sub: 'drivers from every corner' },
+                                { value: 500, suffix: 'M+', label: 'Global Fans', sub: 'tuning in each year' },
+                                { value: 75, suffix: '', label: 'Years of History', sub: 'since Silverstone 1950' },
                             ].map((stat) => (
                                 <div key={stat.label} className="stat-item bg-[#0f0f0f] border border-white/5 rounded-sm p-6 lg:p-8 flex flex-col gap-2">
                                     <span className="text-purple-400 text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight leading-none" style={{ fontFamily: 'var(--font-russo)' }}>
-                                        {stat.number}
+                                        <span className="stat-number" data-value={stat.value}>{stat.value}</span>{stat.suffix}
                                     </span>
                                     <span className="text-white text-sm font-semibold uppercase tracking-wide" style={{ fontFamily: 'var(--font-barlow)' }}>
                                         {stat.label}
@@ -1683,6 +1704,9 @@ export default function UniversPage() {
                     </div>
                 </div>
             </section>
+
+            {/* ═══ FOLLOW A RACE WEEK ═══ */}
+            <RaceWeekSection />
         </main>
     )
 }
