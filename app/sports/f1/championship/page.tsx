@@ -1,8 +1,6 @@
 'use client'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import dynamic from 'next/dynamic'
-import Image from 'next/image'
-import Link from 'next/link'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import BackgroundShapes from '@/components/BackgroundShapes'
@@ -28,13 +26,6 @@ const RaceGlobe = dynamic(() => import('@/components/f1/RaceGlobe'), {
 })
 
 type LoadStatus = 'loading' | 'ready' | 'error'
-
-const championshipSections = [
-    { id: 'drivers', num: '01', name: 'The Drivers', ready: false },
-    { id: 'teams', num: '02', name: 'The Teams', ready: false },
-    { id: 'calendar', num: '03', name: 'The Calendar', ready: true },
-    { id: 'standings', num: '04', name: 'The Standings', ready: true },
-]
 
 /** Bandeau placeholder pour les sections à venir (issues #4, #5). */
 function PlaceholderBand({ id, num, title }: { id: string; num: string; title: string }) {
@@ -67,14 +58,9 @@ export default function ChampionshipPage() {
     const [reloadKey, setReloadKey] = useState(0)
 
     const heroRef = useRef<HTMLElement>(null)
-    const heroBgRef = useRef<HTMLDivElement>(null)
+    const bgTextRef = useRef<HTMLDivElement>(null)
+    const bgTextH1Ref = useRef<HTMLHeadingElement>(null)
     const heroContentRef = useRef<HTMLDivElement>(null)
-    const speedLinesRef = useRef<HTMLDivElement>(null)
-    const scrollCueRef = useRef<HTMLDivElement>(null)
-    const titleRef = useRef<HTMLHeadingElement>(null)
-    const sweepRef = useRef<HTMLDivElement>(null)
-    const purpleLineRef = useRef<HTMLDivElement>(null)
-    const heroNavRef = useRef<HTMLDivElement>(null)
     const giantCalRef = useRef<HTMLDivElement>(null)
     const calHeaderRef = useRef<HTMLDivElement>(null)
     const globeWrapRef = useRef<HTMLDivElement>(null)
@@ -135,12 +121,6 @@ export default function ChampionshipPage() {
         setSeason(value)
     }
 
-    const handleAnchor = (event: React.MouseEvent, id: string) => {
-        event.preventDefault()
-        document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-        history.replaceState(null, '', `#${id}`)
-    }
-
     // ── Arrivée avec ancre (ex: /sports/f1/championship#calendar) ──
     useEffect(() => {
         if (status !== 'ready' || didHashScroll.current) return
@@ -155,74 +135,29 @@ export default function ChampionshipPage() {
         const ctx = gsap.context(() => {
             const tl = gsap.timeline({ defaults: { ease: 'power4.out' } })
 
-            gsap.set(titleRef.current, { opacity: 0 })
-            tl.fromTo(
-                sweepRef.current,
-                { x: '-100%' },
-                { x: '100%', duration: 1.3, ease: 'power2.inOut' },
-                0.2,
-            ).set(titleRef.current, { opacity: 1 }, 0.2 + 0.65)
-
-            tl.fromTo(
-                purpleLineRef.current,
-                { scaleX: 0 },
-                { scaleX: 1, duration: 0.65, ease: 'power3.inOut' },
-                1.1,
+            gsap.fromTo(
+                bgTextH1Ref.current,
+                { opacity: 0, scale: 0.95 },
+                { opacity: 1, scale: 1, duration: 2, ease: 'power3.out', delay: 0.1 }
             )
 
-            const plates = heroNavRef.current?.querySelectorAll('.champ-plate')
-            if (plates && plates.length > 0) {
-                tl.fromTo(
-                    plates,
-                    { opacity: 0, y: 40 },
-                    { opacity: 1, y: 0, duration: 0.55, stagger: 0.1, ease: 'power3.out' },
-                    1.3,
-                )
-            }
+            gsap.to(bgTextRef.current, {
+                y: -150,
+                ease: 'none',
+                scrollTrigger: {
+                    trigger: heroRef.current,
+                    start: 'top top',
+                    end: 'bottom top',
+                    scrub: true,
+                },
+            })
 
             tl.fromTo(
-                scrollCueRef.current,
-                { opacity: 0, y: -12 },
-                { opacity: 1, y: 0, duration: 0.5 },
-                1.7,
+                heroContentRef.current,
+                { opacity: 0, y: 30 },
+                { opacity: 1, y: 0, duration: 1.2, ease: 'power3.out', delay: 0.4 }
             )
 
-            // Lignes de vitesse : un balayage unique à l'arrivée, puis en
-            // boucle lente — le hero continue de vivre après l'entrée.
-            if (speedLinesRef.current) {
-                const lines = speedLinesRef.current.querySelectorAll('.speed-line')
-                tl.fromTo(
-                    lines,
-                    { scaleX: 0, opacity: 0 },
-                    { scaleX: 1, opacity: 1, duration: 0.9, stagger: 0.08, ease: 'power3.out' },
-                    0.9,
-                )
-                gsap.to(lines, {
-                    xPercent: 140,
-                    opacity: 0,
-                    duration: 2.2,
-                    stagger: { each: 0.5, repeat: -1, repeatDelay: 1.6 },
-                    ease: 'power2.in',
-                    delay: 2.4,
-                })
-            }
-
-            // ── Parallax du hero au scroll ──
-            // L'image de piste s'enfonce, le contenu monte et s'efface : la
-            // page « décolle » au lieu de simplement défiler.
-            gsap.to(heroBgRef.current, {
-                yPercent: 22,
-                scale: 1.12,
-                ease: 'none',
-                scrollTrigger: { trigger: heroRef.current, start: 'top top', end: 'bottom top', scrub: true },
-            })
-
-            gsap.to(heroContentRef.current, {
-                yPercent: -18,
-                opacity: 0,
-                ease: 'none',
-                scrollTrigger: { trigger: heroRef.current, start: 'top top', end: 'bottom top', scrub: true },
-            })
 
             // Parallax horizontal du mot géant CALENDAR
             if (giantCalRef.current && calHeaderRef.current) {
@@ -266,163 +201,40 @@ export default function ChampionshipPage() {
     }, [status])
 
     return (
-        <main className="relative w-full overflow-hidden bg-[#0a0000]">
+        <main className="relative w-full overflow-hidden bg-[#0a0a0a]" style={{ overflowX: 'clip' }}>
             <ChampionshipBackground />
             <Navbar shouldAnimate disableEntryAnimation />
+
+            {/* Titre géant d'arrière-plan */}
+            <div
+                ref={bgTextRef}
+                className="absolute top-24 left-0 w-full flex justify-center z-0 overflow-visible px-4 select-none pointer-events-none"
+            >
+                <h1
+                    ref={bgTextH1Ref}
+                    className="text-[#202020] font-black tracking-tighter leading-[0.8] text-center w-full"
+                    style={{ fontFamily: 'var(--font-russo)', fontSize: '11vw' }}
+                >
+                    CHAMPIONSHIP
+                </h1>
+            </div>
 
             {/* ═══════════ HERO ═══════════ */}
             <section
                 ref={heroRef as React.RefObject<HTMLElement>}
-                className="relative z-10 w-full min-h-[88vh] flex flex-col items-center justify-center overflow-hidden px-6 pt-36 pb-24"
+                className="relative z-10 w-full min-h-[55vh] flex flex-col items-center justify-center overflow-hidden px-6 pt-40 pb-20"
             >
-                {/* Ligne d'arrivée en parallax — la page s'ouvre sur le damier
-                    qui clôt chaque Grand Prix. */}
-                <div ref={heroBgRef} className="absolute inset-0 will-change-transform">
-                    <Image
-                        src="/img/piste.png"
-                        alt=""
-                        fill
-                        priority
-                        quality={90}
-                        sizes="100vw"
-                        // La photo est claire et très contrastée : on l'assombrit
-                        // à la source plutôt qu'en empilant des voiles opaques,
-                        // qui finissaient par effacer le damier.
-                        className="object-cover object-center brightness-[0.32] contrast-[1.15]"
-                    />
-                    {/* Teinte : violet en accent seulement — le fond reste
-                        noir/bleu nuit, conformément au reste du site. */}
-                    <div
-                        className="absolute inset-0"
-                        style={{
-                            background:
-                                'linear-gradient(180deg, rgba(10,0,0,0.55) 0%, rgba(40,10,78,0.42) 45%, rgba(10,14,39,0.92) 100%)',
-                        }}
-                    />
-                    <div
-                        className="absolute inset-0"
-                        style={{ background: 'radial-gradient(ellipse at center, transparent 38%, rgba(4,2,12,0.88) 100%)' }}
-                    />
-                </div>
-
-                {/* Faisceau diagonal violet */}
-                <div
-                    className="absolute -top-1/4 left-1/2 w-[140%] h-[150%] -translate-x-1/2 pointer-events-none opacity-60"
-                    style={{
-                        background:
-                            'linear-gradient(115deg, transparent 42%, rgba(126,34,206,0.18) 50%, transparent 58%)',
-                    }}
-                />
-
-                {/* Lignes de vitesse */}
-                <div ref={speedLinesRef} className="absolute inset-0 pointer-events-none overflow-hidden">
-                    {[18, 34, 62, 78].map((top, i) => (
-                        <div
-                            key={top}
-                            className="speed-line absolute h-px origin-left"
-                            style={{
-                                top: `${top}%`,
-                                left: '-10%',
-                                width: `${34 + i * 12}%`,
-                                opacity: 0,
-                                background: `linear-gradient(90deg, transparent, rgba(192,132,252,${0.5 - i * 0.08}), transparent)`,
-                            }}
-                        />
-                    ))}
-                </div>
-
-                <div ref={heroContentRef} className="relative z-10 flex flex-col items-center text-center w-full max-w-6xl mx-auto">
-                    <Link
-                        href="/sports/f1"
-                        className="group inline-flex items-center gap-2 mb-6 text-xs font-mono tracking-[0.35em] uppercase text-purple-400/70 hover:text-purple-300 transition-colors duration-300"
+                <div ref={heroContentRef} className="relative z-10 flex flex-col items-center text-center w-full max-w-4xl mx-auto">
+                    <h2
+                        className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-white uppercase tracking-tight leading-none drop-shadow-2xl mb-6"
+                        style={{ fontFamily: 'var(--font-russo)' }}
                     >
-                        <svg className="w-3.5 h-3.5 transition-transform duration-300 group-hover:-translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M7 16l-4-4m0 0l4-4m-4 4h18" />
-                        </svg>
-                        Formula 1
-                    </Link>
-
-                    <div className="relative overflow-hidden mb-5">
-                        <h1
-                            ref={titleRef}
-                            className="text-white text-[34px] sm:text-[54px] md:text-[76px] lg:text-[96px] font-black tracking-[0.06em] leading-none select-none drop-shadow-2xl"
-                            style={{ fontFamily: 'var(--font-russo)', opacity: 0 }}
-                        >
-                            THE <span className="text-purple-700">CHAMPIONSHIP</span>
-                        </h1>
-                        <div
-                            ref={sweepRef}
-                            className="absolute inset-0 bg-purple-800 z-10"
-                            style={{ transform: 'translateX(-100%)' }}
-                        />
-                    </div>
-
-                    <div
-                        ref={purpleLineRef}
-                        className="w-32 md:w-48 h-[3px] bg-purple-700 mb-14 origin-center"
-                        style={{ transform: 'scaleX(0)' }}
-                    />
-
-                    {/* Plaques d'accès aux 4 sections */}
-                    <div
-                        ref={heroNavRef}
-                        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 w-full max-w-4xl"
-                    >
-                        {championshipSections.map((section) => (
-                            <a
-                                key={section.id}
-                                href={`#${section.id}`}
-                                onClick={(event) => handleAnchor(event, section.id)}
-                                className="champ-plate group relative block h-full"
-                                style={{ opacity: 0 }}
-                            >
-                                {/* h-full + justify-center : « The Standings » passe sur
-                                    deux lignes et désalignerait les plaques voisines. */}
-                                <div
-                                    className={`relative flex h-full flex-col justify-center overflow-hidden rounded-sm border bg-black/30 backdrop-blur-md
-                                               px-6 py-5 text-center cursor-pointer
-                                               transition-all duration-500 ease-[cubic-bezier(0.19,1,0.22,1)]
-                                               group-hover:bg-white/10 group-hover:scale-[1.03]
-                                               group-hover:shadow-[0_0_40px_rgba(126,34,206,0.15)]
-                                               ${section.ready ? 'border-white/30' : 'border-white/15'}`}
-                                >
-                                    <div
-                                        className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none"
-                                        style={{ background: 'radial-gradient(ellipse at center, rgba(126,34,206,0.08) 0%, transparent 70%)' }}
-                                    />
-                                    <div className="relative z-10 flex flex-col items-center gap-1">
-                                        <span className={`text-[10px] font-mono tracking-[0.3em] ${section.ready ? 'text-purple-400/70' : 'text-white/25'}`}>
-                                            {section.num}
-                                        </span>
-                                        <span
-                                            className="text-white text-sm md:text-base font-bold tracking-[0.2em] uppercase transition-colors duration-300 group-hover:text-purple-500"
-                                            style={{ fontFamily: 'var(--font-outfit)' }}
-                                        >
-                                            {section.name}
-                                        </span>
-                                        <span className={`text-[9px] font-mono tracking-[0.25em] uppercase ${section.ready ? 'text-purple-400/70' : 'text-gray-600'}`}>
-                                            {section.ready ? 'Available' : 'Soon'}
-                                        </span>
-                                    </div>
-                                    <div className="absolute bottom-0 left-0 w-0 h-[2px] bg-purple-700 group-hover:w-full transition-all duration-500 ease-[cubic-bezier(0.19,1,0.22,1)]" />
-                                </div>
-                            </a>
-                        ))}
-                    </div>
+                        THE <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-500 to-purple-700 font-normal italic" style={{ fontFamily: 'var(--font-playfair)' }}>CHAMPIONSHIP</span>
+                    </h2>
+                    <p className="text-gray-400 text-base sm:text-lg md:text-xl leading-relaxed max-w-2xl" style={{ fontFamily: 'var(--font-barlow)' }}>
+                        Drivers, teams, calendar, and standings — follow the peak of motorsport.
+                    </p>
                 </div>
-
-                {/* Indicateur de scroll */}
-                <div ref={scrollCueRef} className="absolute bottom-10 z-10" style={{ opacity: 0 }}>
-                    <div className="flex flex-col items-center gap-2 animate-bounce">
-                        <div className="w-10 h-10 rounded-full border-2 border-white/40 flex items-center justify-center backdrop-blur-sm">
-                            <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 13.5L12 21m0 0l-7.5-7.5M12 21V3" />
-                            </svg>
-                        </div>
-                    </div>
-                </div>
-
-                <div className="absolute top-0 left-0 w-full h-[3px] bg-gradient-to-r from-transparent via-purple-700 to-transparent" />
             </section>
 
             {/* ═══════════ SECTIONS PLACEHOLDER ═══════════ */}

@@ -18,16 +18,16 @@ interface Stop {
 // #0a0e27 → #060918) pour que la refonte ne change pas l'identité, seulement
 // la façon dont elle respire.
 const HERO_STOP: Stop = {
-    top: '#0a0000',
-    bottom: '#0a0e27',
-    glow: 'rgba(126,34,206,0.20)',
+    top: '#0a0a0a',
+    bottom: '#0a0a0a',
+    glow: 'rgba(126,34,206,0.08)',
     glowX: '50%',
 }
 
 const SECTION_STOPS: Array<Stop & { selector: string }> = [
-    { selector: '#drivers', top: '#05040f', bottom: '#0a0e27', glow: 'rgba(147,51,234,0.16)', glowX: '25%' },
-    { selector: '#calendar', top: '#060918', bottom: '#0a0e27', glow: 'rgba(126,34,206,0.26)', glowX: '50%' },
-    { selector: '#standings', top: '#060918', bottom: '#100a2a', glow: 'rgba(168,85,247,0.22)', glowX: '75%' },
+    { selector: '#drivers', top: '#0a0a0a', bottom: '#0a0a0a', glow: 'rgba(147,51,234,0.06)', glowX: '25%' },
+    { selector: '#calendar', top: '#0a0a0a', bottom: '#0a0a0a', glow: 'rgba(126,34,206,0.08)', glowX: '50%' },
+    { selector: '#standings', top: '#0a0a0a', bottom: '#0a0a0a', glow: 'rgba(168,85,247,0.07)', glowX: '75%' },
 ]
 
 /**
