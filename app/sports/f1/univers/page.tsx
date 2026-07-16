@@ -5,6 +5,7 @@ import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import Navbar from '@/components/Navbar'
 import F1TeamsMarquee from '@/components/F1TeamsMarquee'
+import UniversBackground from '@/components/UniversBackground'
 
 gsap.registerPlugin(ScrollTrigger)
 
@@ -837,7 +838,7 @@ export default function UniversPage() {
     }
 
     // Soft Power background blobs drift gently with the mouse
-    const SOFT_BG_PARALLAX_AMOUNT = 36
+    const SOFT_BG_PARALLAX_AMOUNT = 80
     const handleSoftBgParallax = (e: React.MouseEvent) => {
         const container = softBgSectionRef.current
         if (!container) return
@@ -863,7 +864,8 @@ export default function UniversPage() {
     }
 
     return (
-        <main className="relative w-full bg-[#0a0a0a] min-h-0" style={{ overflowX: 'clip' }}>
+        <main className="relative w-full min-h-0" style={{ overflowX: 'clip' }}>
+            <UniversBackground />
             <Navbar shouldAnimate disableEntryAnimation />
 
             <div
@@ -965,8 +967,9 @@ export default function UniversPage() {
 
             {/* ═══ VERTICAL TIMELINE ═══ */}
             <section
+                id="timeline"
                 ref={timelineSectionRef as React.RefObject<HTMLElement>}
-                className="relative z-10 w-full bg-[#0a0a0a] py-24 lg:py-40"
+                className="relative z-10 w-full py-24 lg:py-40"
             >
                 <div className="max-w-[1400px] mx-auto px-6 sm:px-12 md:px-20 xl:px-32">
                     <div className="relative">
@@ -1102,7 +1105,7 @@ export default function UniversPage() {
             </section>
 
             {/* ═══ THE IMPACT ═══ */}
-            <section id="impact" className="relative z-10 w-full bg-[#0a0a0a] pt-24 lg:pt-40">
+            <section id="impact" className="relative z-10 w-full pt-24 lg:pt-40">
                 {/* Intro two-column */}
                 <div className="relative w-full max-w-[1920px] mx-auto flex flex-col lg:flex-row pb-24 lg:pb-32">
                     {/* Left: title + text */}
@@ -1199,6 +1202,7 @@ export default function UniversPage() {
 
                 {/* ═══ FULL-PAGE CAROUSEL ═══ */}
                 <div
+                    id="circuits-carousel"
                     ref={carouselContainerRef}
                     className="relative w-full overflow-hidden select-none"
                     style={{ height: '100vh' }}
@@ -1396,7 +1400,7 @@ export default function UniversPage() {
                 </div>
 
                 {/* ═══ BEYOND RACING — CULTURE, POWER & SOFT POWER ═══ */}
-                <div className="relative w-full overflow-hidden pt-4 pb-28 lg:pb-40">
+                <div className="relative w-full overflow-hidden pt-4">
                     {/* radial glow backdrop */}
                     <div
                         className="pointer-events-none absolute inset-0"
@@ -1497,8 +1501,14 @@ export default function UniversPage() {
                         onMouseLeave={resetSoftBgParallax}
                         className="relative w-full overflow-hidden py-24 lg:py-32 mt-24 lg:mt-36"
                     >
-                        {/* cinematic glow blobs */}
-                        <div className="pointer-events-none absolute inset-0 overflow-hidden">
+                        {/* cinematic glow blobs — masque en fondu bas pour éviter une coupure nette avec la section suivante */}
+                        <div
+                            className="pointer-events-none absolute inset-0 overflow-hidden"
+                            style={{
+                                maskImage: 'linear-gradient(to bottom, black 78%, transparent 100%)',
+                                WebkitMaskImage: 'linear-gradient(to bottom, black 78%, transparent 100%)',
+                            }}
+                        >
                             <div
                                 ref={(el) => { softBlobRefs.current[0] = el }}
                                 className="absolute will-change-transform rounded-full"
@@ -1565,14 +1575,8 @@ export default function UniversPage() {
             </section>
 
             {/* ═══ THE FANS — hover to reveal ═══ */}
-            <section id="fans" className="relative z-10 w-full bg-[#0a0a0a]">
+            <section id="fans" className="relative z-10 w-full">
                 <div ref={fansPinRef} className="relative h-screen w-full overflow-hidden">
-                    {/* Ambient glow */}
-                    <div
-                        className="pointer-events-none absolute inset-0 z-0"
-                        style={{ background: 'radial-gradient(ellipse 60% 50% at 50% 0%, rgba(168,85,247,0.10), transparent 70%)' }}
-                    />
-
                     {/* Overlapping fan-crowd image cluster */}
                     <div className="absolute inset-0 z-[1]">
                         <div
