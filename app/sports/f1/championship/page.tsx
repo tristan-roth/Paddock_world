@@ -229,7 +229,7 @@ export default function ChampionshipPage() {
                         className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-white uppercase tracking-tight leading-none drop-shadow-2xl mb-6"
                         style={{ fontFamily: 'var(--font-russo)' }}
                     >
-                        THE <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-500 to-purple-700 font-normal italic" style={{ fontFamily: 'var(--font-playfair)' }}>CHAMPIONSHIP</span>
+                        THE <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-500 to-purple-700" style={{ fontFamily: 'var(--font-playfair)' }}>CHAMPIONSHIP</span>
                     </h2>
                     <p className="text-gray-400 text-base sm:text-lg md:text-xl leading-relaxed max-w-2xl" style={{ fontFamily: 'var(--font-barlow)' }}>
                         Drivers, teams, calendar, and standings — follow the peak of motorsport.

@@ -1,5 +1,5 @@
 'use client'
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import BackgroundShapes from '@/components/BackgroundShapes'
@@ -45,11 +45,15 @@ function Flag({ nationality, className }: { nationality: string | null; classNam
 
 /**
  * Portique de départ F1 : les 5 feux s'allument un par un, s'éteignent —
- * et la grille s'élance. Déclencheur visuel de l'entrée des tableaux.
+ * et la grille s'élance. Déclencheur visuel de l'entrée des tableaux,
+ * escamoté (cf. StandingsSection) une fois son rôle joué.
  */
-function StartLights() {
+function StartLights({ ref }: { ref?: React.Ref<HTMLDivElement> }) {
     return (
-        <div className="start-lights inline-flex items-center gap-2 px-4 py-3 border border-white/10 bg-black/40 backdrop-blur-md rounded-sm">
+        <div
+            ref={ref}
+            className="start-lights inline-flex items-center gap-2 px-4 py-3 border border-white/10 bg-black/40 backdrop-blur-md rounded-sm overflow-hidden"
+        >
             {[0, 1, 2, 3, 4].map((i) => (
                 <span key={i} className="flex flex-col items-center gap-1.5">
                     <span className="h-1.5 w-4 rounded-[1px] bg-white/[0.06]" />
@@ -90,6 +94,7 @@ export default function StandingsSection({ season, seasons, onSeasonChange }: St
     const giantRef = useRef<HTMLDivElement>(null)
     const headerRef = useRef<HTMLDivElement>(null)
     const tableRef = useRef<HTMLDivElement>(null)
+    const startLightsRef = useRef<HTMLDivElement>(null)
     const didReveal = useRef(false)
     // Mise en grille en cours : tuée avant d'en relancer une (changement
     // d'onglet rapide) et au démontage.
@@ -130,13 +135,6 @@ export default function StandingsSection({ season, seasons, onSeasonChange }: St
             cancelled = true
         }
     }, [season, reloadKey])
-
-    const leaderPoints = useMemo(() => {
-        if (!standings) return 0
-        return tab === 'drivers'
-            ? (standings.drivers[0]?.points ?? 0)
-            : (standings.constructors[0]?.points ?? 0)
-    }, [standings, tab])
 
     // Saison mise en avant dans le sélecteur : celle demandée par la page, ou
     // à défaut celle réellement chargée (premier rendu, avant résolution).
@@ -256,6 +254,12 @@ export default function StandingsSection({ season, seasons, onSeasonChange }: St
 
             const bulbs = sectionRef.current?.querySelectorAll<HTMLElement>('.light-bulb')
 
+            // Un changement de saison rejoue cet effet : on ramène le portique
+            // dans son état visible avant de reconstruire la séquence.
+            if (startLightsRef.current) {
+                gsap.set(startLightsRef.current, { clearProps: 'all' })
+            }
+
             const tl = gsap.timeline({
                 scrollTrigger: { trigger: tableRef.current, start: 'top 80%', once: true },
             })
@@ -278,6 +282,30 @@ export default function StandingsSection({ season, seasons, onSeasonChange }: St
                         boxShadow: '0 0 0 rgba(0,0,0,0)',
                         duration: 0.12,
                     })
+            }
+
+            // Le portique a joué son rôle de déclencheur : il se rétracte et
+            // s'efface — sans être démonté, pour pouvoir rejouer la séquence
+            // au prochain changement de saison.
+            const lightsEl = startLightsRef.current
+            if (lightsEl) {
+                const startWidth = lightsEl.getBoundingClientRect().width
+                tl.to(
+                    lightsEl,
+                    {
+                        width: 0,
+                        opacity: 0,
+                        paddingLeft: 0,
+                        paddingRight: 0,
+                        duration: 0.6,
+                        ease: 'power3.inOut',
+                        onStart: () => {
+                            lightsEl.style.width = `${startWidth}px`
+                        },
+                        onComplete: () => gsap.set(lightsEl, { display: 'none' }),
+                    },
+                    '+=0.15',
+                )
             }
 
             // `call` plutôt que `add` : la grille est construite au moment où
@@ -384,7 +412,7 @@ export default function StandingsSection({ season, seasons, onSeasonChange }: St
                                 )
                             })}
                         </div>
-                        <StartLights />
+                        <StartLights ref={startLightsRef} />
                     </div>
                 )}
 
@@ -495,14 +523,7 @@ export default function StandingsSection({ season, seasons, onSeasonChange }: St
                                                 opacity: 0,
                                             } as React.CSSProperties}
                                         >
-                                            {/* Watermark position number */}
-                                            <div 
-                                                className="absolute bottom-2 right-4 font-black select-none pointer-events-none text-white/[0.025] uppercase font-russo text-[7.5rem] leading-none"
-                                            >
-                                                {String(entry.position).padStart(2, '0')}
-                                            </div>
-
-                                            {/* Card Top: Position Badge */}
+                                            {/* Card Top: label + numéro de position en contour, teinté écurie */}
                                             <div className="flex items-center justify-between w-full relative z-10">
                                                 <span className="flex items-center gap-1.5 text-[10px] font-mono tracking-[0.2em] text-gray-500 uppercase">
                                                     {isFirst ? (
@@ -530,12 +551,12 @@ export default function StandingsSection({ season, seasons, onSeasonChange }: St
                                                         </>
                                                     )}
                                                 </span>
-                                                <span className={`flex h-8 w-8 items-center justify-center rounded-full text-sm font-black font-russo
-                                                    ${isFirst ? 'bg-amber-400 text-black shadow-[0_0_15px_rgba(251,191,36,0.5)]' :
-                                                      isSecond ? 'bg-slate-300 text-black' : 'bg-amber-700 text-white'}`}
+                                                <OutlineText
+                                                    className="text-2xl md:text-3xl"
+                                                    stroke={`1.5px ${isFirst ? '#fbbf24' : isSecond ? '#cbd5e1' : '#b45309'}`}
                                                 >
-                                                    {entry.position}
-                                                </span>
+                                                    {String(entry.position).padStart(2, '0')}
+                                                </OutlineText>
                                             </div>
 
                                             {/* Card Middle: Driver or Constructor details */}
@@ -583,7 +604,7 @@ export default function StandingsSection({ season, seasons, onSeasonChange }: St
                                                         <h3 className="text-white text-lg md:text-2xl font-black uppercase tracking-wider font-outfit mt-0.5">
                                                             {(entry as typeof standings.constructors[0]).constructor.name}
                                                         </h3>
-                                                        <Flag nationality={(entry as typeof standings.constructors[0]).constructor.nationality} className="mt-1" />
+                                                        <Flag nationality={(entry as typeof standings.constructors[0]).constructor.nationality} className="mt-1 mx-auto" />
                                                     </div>
                                                 </div>
                                             )}
@@ -594,12 +615,6 @@ export default function StandingsSection({ season, seasons, onSeasonChange }: St
                                                     <span className="text-gray-500 text-[10px] uppercase font-mono tracking-wider">Wins</span>
                                                     <span className="text-white font-semibold font-barlow">
                                                         {entry.wins > 0 ? `${entry.wins} win${entry.wins > 1 ? 's' : ''}` : '—'}
-                                                    </span>
-                                                </div>
-                                                <div className="flex items-center justify-between text-xs">
-                                                    <span className="text-gray-505 text-[10px] uppercase font-mono tracking-wider">Gap</span>
-                                                    <span className="text-gray-400 font-mono text-[11px]">
-                                                        {isFirst ? 'LEADER' : `-${formatPoints(leaderPoints - entry.points)}`}
                                                     </span>
                                                 </div>
                                                 <div className="flex items-end justify-between mt-2">
@@ -679,12 +694,9 @@ export default function StandingsSection({ season, seasons, onSeasonChange }: St
                                                                 {entry.wins} win{entry.wins > 1 ? 's' : ''}
                                                             </span>
                                                         )}
-                                                        <span className="hidden md:inline text-[10px] font-mono text-gray-500 w-12 text-right">
-                                                            -{formatPoints(leaderPoints - entry.points)}
-                                                        </span>
                                                     </div>
 
-                                                    <span 
+                                                    <span
                                                         className="standing-points text-white text-base font-black font-russo min-w-[50px] text-right"
                                                         data-points={entry.points}
                                                     >
@@ -740,12 +752,9 @@ export default function StandingsSection({ season, seasons, onSeasonChange }: St
                                                                 {entry.wins} win{entry.wins > 1 ? 's' : ''}
                                                             </span>
                                                         )}
-                                                        <span className="hidden md:inline text-[10px] font-mono text-gray-505 w-12 text-right">
-                                                            -{formatPoints(leaderPoints - entry.points)}
-                                                        </span>
                                                     </div>
 
-                                                    <span 
+                                                    <span
                                                         className="standing-points text-white text-base font-black font-russo min-w-[50px] text-right"
                                                         data-points={entry.points}
                                                     >
