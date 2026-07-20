@@ -5,16 +5,19 @@ import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import Navbar from '@/components/Navbar'
 import F1TeamsMarquee from '@/components/F1TeamsMarquee'
+import UniversBackground from '@/components/UniversBackground'
+import RivalryCards from '@/components/RivalryCards'
+import RaceWeekSection from '@/components/f1/RaceWeekSection'
 
 gsap.registerPlugin(ScrollTrigger)
 
 const heroImages = [
-    { src: '/img/f1-univers-hero.png', alt: 'Formula 1 racing action' },
-    { src: '/img/f1-univers-monaco.png', alt: 'Monaco Grand Prix historic circuit' },
-    { src: '/img/f1-univers-cockpit.png', alt: 'F1 cockpit technology' },
-    { src: '/img/f1-univers-fans.png', alt: 'F1 fans cheering with flares' },
-    { src: '/img/f1-univers-night.png', alt: 'F1 night race under the lights' },
-    { src: '/img/f1-univers-pitstop.png', alt: 'F1 pit stop action' },
+    { src: '/img/hero/1950_silverstone.jpg', alt: 'Formula 1 racing action' },
+    { src: '/img/hero/luigi_italy.jpg', alt: 'Monaco Grand Prix historic circuit' },
+    { src: '/img/hero/fini.jpg', alt: 'F1 cockpit technology' },
+    { src: '/img/hero/fini_fini.jpg', alt: 'F1 fans cheering with flares' },
+    // { src: '/img/f1-univers-night.png', alt: 'F1 night race under the lights' },
+    // { src: '/img/f1-univers-pitstop.png', alt: 'F1 pit stop action' },
 ]
 
 const AUTOPLAY_SECONDS = 6
@@ -479,6 +482,26 @@ export default function UniversPage() {
                         toggleActions: 'play reverse play reverse',
                     }
                 })
+
+                // Count-up des chiffres, synchronisé avec l'apparition des cartes
+                const numberEls = impactStatsRef.current.querySelectorAll<HTMLSpanElement>('.stat-number')
+                numberEls.forEach((el, i) => {
+                    const target = Number(el.dataset.value ?? '0')
+                    el.textContent = '0'
+                    const counter = { val: 0 }
+                    gsap.to(counter, {
+                        val: target,
+                        duration: 1.6,
+                        delay: 0.15 * i,
+                        ease: 'power2.out',
+                        onUpdate: () => { el.textContent = String(Math.round(counter.val)) },
+                        scrollTrigger: {
+                            trigger: impactStatsRef.current,
+                            start: 'top 80%',
+                            toggleActions: 'play reverse play reverse',
+                        }
+                    })
+                })
             }
 
             // === CAROUSEL HEADER ===
@@ -837,7 +860,7 @@ export default function UniversPage() {
     }
 
     // Soft Power background blobs drift gently with the mouse
-    const SOFT_BG_PARALLAX_AMOUNT = 36
+    const SOFT_BG_PARALLAX_AMOUNT = 80
     const handleSoftBgParallax = (e: React.MouseEvent) => {
         const container = softBgSectionRef.current
         if (!container) return
@@ -863,7 +886,8 @@ export default function UniversPage() {
     }
 
     return (
-        <main className="relative w-full bg-[#0a0a0a] min-h-0" style={{ overflowX: 'clip' }}>
+        <main className="relative w-full min-h-0" style={{ overflowX: 'clip' }}>
+            <UniversBackground />
             <Navbar shouldAnimate disableEntryAnimation />
 
             <div
@@ -965,8 +989,9 @@ export default function UniversPage() {
 
             {/* ═══ VERTICAL TIMELINE ═══ */}
             <section
+                id="timeline"
                 ref={timelineSectionRef as React.RefObject<HTMLElement>}
-                className="relative z-10 w-full bg-[#0a0a0a] py-24 lg:py-40"
+                className="relative z-10 w-full py-24 lg:py-40"
             >
                 <div className="max-w-[1400px] mx-auto px-6 sm:px-12 md:px-20 xl:px-32">
                     <div className="relative">
@@ -1025,45 +1050,29 @@ export default function UniversPage() {
                                 </div>
                             </div>
 
-                            {/* ── Item 2: Rivalries — text LEFT, image RIGHT ── */}
+                            {/* ── Item 2: Rivalries — cartes duel interactives (clic pour ouvrir) ── */}
                             <div className="relative pl-12 lg:pl-0">
                                 <div ref={(el) => { timelineNodeRefs.current[1] = el }} className="absolute left-4 lg:left-1/2 top-7 w-3 h-3 z-10 rounded-full bg-purple-600 border-2 border-purple-400 shadow-[0_0_12px_rgba(168,85,247,0.6)]" />
-                                <div className="lg:grid lg:grid-cols-2 lg:gap-8 lg:items-start">
-                                    {/* Text LEFT */}
-                                    <div ref={(el) => { timelineBlockRefs.current[1] = el }} className="bg-[#0f0f0f] border border-white/5 rounded-sm p-6 lg:p-8">
-                                        <div className="lg:hidden relative w-full aspect-[16/10] rounded-sm overflow-hidden mb-6">
-                                            <Image src="/img/f1-univers-monaco.png" alt="Monaco Grand Prix circuit" fill quality={90} sizes="100vw" className="object-cover object-center" />
-                                            <div className="absolute inset-0 bg-black/20" />
-                                        </div>
-
-                                        <div className="relative overflow-hidden inline-block mb-3">
+                                <div ref={(el) => { timelineBlockRefs.current[1] = el }}>
+                                    <div className="mb-3">
+                                        <div className="relative overflow-hidden inline-block">
                                             <span ref={(el) => { timelineDateRefs.current[1] = el }} className="text-purple-500 text-xs tracking-[0.2em] uppercase block" style={{ fontFamily: 'var(--font-barlow)' }}>
                                                 1984 — 2021
                                             </span>
                                             <div ref={(el) => { timelineDateOverlayRefs.current[1] = el }} className="absolute inset-0 bg-purple-700 z-10" style={{ transform: 'translateX(-100%)' }} />
                                         </div>
+                                    </div>
 
-                                        <div ref={(el) => { timelineHeadingContainerRefs.current[1] = el }} className="relative overflow-hidden mb-6">
+                                    <div className="mb-10">
+                                        <div ref={(el) => { timelineHeadingContainerRefs.current[1] = el }} className="relative overflow-hidden inline-block">
                                             <h3 ref={(el) => { timelineHeadingRefs.current[1] = el }} className="text-2xl sm:text-3xl text-white font-bold uppercase tracking-tight" style={{ fontFamily: 'var(--font-russo)' }}>
                                                 Rivalries That <span className="text-purple-400">Defined</span> Eras
                                             </h3>
                                             <div ref={(el) => { timelineHeadingOverlayRefs.current[1] = el }} className="absolute inset-0 bg-purple-600 z-10" style={{ transform: 'translateX(-100%)' }} />
                                         </div>
-
-                                        <p className="text-gray-400 text-lg leading-relaxed" style={{ fontFamily: 'var(--font-barlow)' }}>
-                                            F1 has always been as much about the people as the cars. <span className="text-white font-medium">Senna vs Prost</span> — a psychological war as much as a racing one. Teammates who couldn&apos;t stand each other, battling for supremacy across multiple seasons. <span className="text-white font-medium">Schumacher vs Hill</span>, then vs Häkkinen — the Schumacher dominance era redefined what it meant to be a complete racing driver. And <span className="text-white font-medium">Hamilton vs Verstappen</span> — the 2021 season. Abu Dhabi. The last lap. These aren&apos;t just sports rivalries — they&apos;re the kind of stories that keep fans up at night, debating decades later.
-                                        </p>
                                     </div>
 
-                                    {/* Image RIGHT desktop */}
-                                    <div className="hidden lg:block">
-                                        <div ref={(el) => { timelineImgOuterRefs.current[1] = el }} className="relative w-full aspect-[16/10] rounded-sm overflow-hidden">
-                                            <div ref={(el) => { timelineImgInnerRefs.current[1] = el }} className="absolute left-0 right-0" style={{ top: '-12%', bottom: '-12%' }}>
-                                                <Image src="/img/f1-univers-monaco.png" alt="Monaco Grand Prix circuit" fill quality={90} sizes="45vw" className="object-cover object-center" />
-                                                <div className="absolute inset-0 bg-black/20" />
-                                            </div>
-                                        </div>
-                                    </div>
+                                    <RivalryCards />
                                 </div>
                             </div>
 
@@ -1102,7 +1111,7 @@ export default function UniversPage() {
             </section>
 
             {/* ═══ THE IMPACT ═══ */}
-            <section id="impact" className="relative z-10 w-full bg-[#0a0a0a] pt-24 lg:pt-40">
+            <section id="impact" className="relative z-10 w-full pt-24 lg:pt-40">
                 {/* Intro two-column */}
                 <div className="relative w-full max-w-[1920px] mx-auto flex flex-col lg:flex-row pb-24 lg:pb-32">
                     {/* Left: title + text */}
@@ -1159,14 +1168,14 @@ export default function UniversPage() {
                     <div className="w-full lg:w-[50%] px-6 sm:px-12 md:px-20 xl:px-16 relative z-20 flex flex-col justify-center mt-16 lg:mt-[5vw]">
                         <div ref={impactStatsRef} className="grid grid-cols-2 gap-4 lg:gap-6">
                             {[
-                                { number: '24', label: 'Races per Season', sub: 'across 5 continents' },
-                                { number: '20+', label: 'Nations on the Grid', sub: 'drivers from every corner' },
-                                { number: '500M+', label: 'Global Fans', sub: 'tuning in each year' },
-                                { number: '75', label: 'Years of History', sub: 'since Silverstone 1950' },
+                                { value: 24, suffix: '', label: 'Races per Season', sub: 'across 5 continents' },
+                                { value: 20, suffix: '+', label: 'Nations on the Grid', sub: 'drivers from every corner' },
+                                { value: 500, suffix: 'M+', label: 'Global Fans', sub: 'tuning in each year' },
+                                { value: 75, suffix: '', label: 'Years of History', sub: 'since Silverstone 1950' },
                             ].map((stat) => (
                                 <div key={stat.label} className="stat-item bg-[#0f0f0f] border border-white/5 rounded-sm p-6 lg:p-8 flex flex-col gap-2">
                                     <span className="text-purple-400 text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight leading-none" style={{ fontFamily: 'var(--font-russo)' }}>
-                                        {stat.number}
+                                        <span className="stat-number" data-value={stat.value}>{stat.value}</span>{stat.suffix}
                                     </span>
                                     <span className="text-white text-sm font-semibold uppercase tracking-wide" style={{ fontFamily: 'var(--font-barlow)' }}>
                                         {stat.label}
@@ -1199,6 +1208,7 @@ export default function UniversPage() {
 
                 {/* ═══ FULL-PAGE CAROUSEL ═══ */}
                 <div
+                    id="circuits-carousel"
                     ref={carouselContainerRef}
                     className="relative w-full overflow-hidden select-none"
                     style={{ height: '100vh' }}
@@ -1396,7 +1406,7 @@ export default function UniversPage() {
                 </div>
 
                 {/* ═══ BEYOND RACING — CULTURE, POWER & SOFT POWER ═══ */}
-                <div className="relative w-full overflow-hidden pt-4 pb-28 lg:pb-40">
+                <div className="relative w-full overflow-hidden pt-4">
                     {/* radial glow backdrop */}
                     <div
                         className="pointer-events-none absolute inset-0"
@@ -1497,8 +1507,14 @@ export default function UniversPage() {
                         onMouseLeave={resetSoftBgParallax}
                         className="relative w-full overflow-hidden py-24 lg:py-32 mt-24 lg:mt-36"
                     >
-                        {/* cinematic glow blobs */}
-                        <div className="pointer-events-none absolute inset-0 overflow-hidden">
+                        {/* cinematic glow blobs — masque en fondu bas pour éviter une coupure nette avec la section suivante */}
+                        <div
+                            className="pointer-events-none absolute inset-0 overflow-hidden"
+                            style={{
+                                maskImage: 'linear-gradient(to bottom, black 78%, transparent 100%)',
+                                WebkitMaskImage: 'linear-gradient(to bottom, black 78%, transparent 100%)',
+                            }}
+                        >
                             <div
                                 ref={(el) => { softBlobRefs.current[0] = el }}
                                 className="absolute will-change-transform rounded-full"
@@ -1565,14 +1581,8 @@ export default function UniversPage() {
             </section>
 
             {/* ═══ THE FANS — hover to reveal ═══ */}
-            <section id="fans" className="relative z-10 w-full bg-[#0a0a0a]">
+            <section id="fans" className="relative z-10 w-full">
                 <div ref={fansPinRef} className="relative h-screen w-full overflow-hidden">
-                    {/* Ambient glow */}
-                    <div
-                        className="pointer-events-none absolute inset-0 z-0"
-                        style={{ background: 'radial-gradient(ellipse 60% 50% at 50% 0%, rgba(168,85,247,0.10), transparent 70%)' }}
-                    />
-
                     {/* Overlapping fan-crowd image cluster */}
                     <div className="absolute inset-0 z-[1]">
                         <div
@@ -1694,6 +1704,9 @@ export default function UniversPage() {
                     </div>
                 </div>
             </section>
+
+            {/* ═══ FOLLOW A RACE WEEK ═══ */}
+            <RaceWeekSection />
         </main>
     )
 }
